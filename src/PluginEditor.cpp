@@ -2,6 +2,7 @@
  * Copyright (C) 2026 swtdr34mz (ARIA) */
 #include "PluginEditor.h"
 #include "BinaryData.h"
+#include "Art.h"
 #include <cmath>
 
 using namespace aria_ui;
@@ -57,59 +58,21 @@ bool Control::changed()
 /* ------------------------------------------------------------------------------------- knob --- */
 Knob::Knob(Panel &p, int param, bool timbre, juce::String l, bool b) : Control(p, param, timbre, std::move(l)), big(b) {}
 
+/* the knob's body, scale and label are the panel's (Panel::paintKnob); the knob draws its pointer */
 void Knob::paint(juce::Graphics &g)
 {
     float w = (float)getWidth();
-    float d = big ? 50.0f : 36.0f, ring = d + 14.0f;
+    float d = big ? 50.0f : 36.0f, R = d * 0.5f, ring = d + 14.0f;
     float cx = w * 0.5f, cy = ring * 0.5f + 1.0f;
-    float v = value();
-    bool bip = aria_param_info(index())->kind == PK_BIPOLAR;
-    /* the scale */
-    g.setColour(C_TICK);
-    for (int i = 0; i <= 10; i++) {
-        float a = -0.75f * PI + 1.5f * PI * (float)i / 10.0f;
-        float r0 = ring * 0.5f - 4.0f, r1 = ring * 0.5f;
-        if (bip && i == 5) g.setColour(C_WHITE.withAlpha(0.8f));
-        g.drawLine(cx + std::sin(a) * r0, cy - std::cos(a) * r0, cx + std::sin(a) * r1, cy - std::cos(a) * r1, 1.3f);
-        g.setColour(C_TICK);
-    }
-    /* shadow, the knurled skirt */
-    juce::Rectangle<float> k(cx - d * 0.5f, cy - d * 0.5f, d, d);
-    g.setColour(juce::Colours::black.withAlpha(0.55f));
-    g.fillEllipse(k.translated(0, 3.5f).expanded(1.5f));
-    g.setColour(Colour(0xff121213));
-    g.fillEllipse(k);
-    g.setColour(Colour(0xff26272a));
-    for (int i = 0; i < 48; i++) {
-        float a = 2.0f * PI * (float)i / 48.0f;
-        g.drawLine(cx + std::sin(a) * (d * 0.5f - 3.5f), cy - std::cos(a) * (d * 0.5f - 3.5f), cx + std::sin(a) * (d * 0.5f - 0.6f),
-                   cy - std::cos(a) * (d * 0.5f - 0.6f), 1.2f);
-    }
-    g.setColour(Colour(0xff3d3e41));
-    g.drawEllipse(k.reduced(0.5f), 0.8f);
-    /* the aluminium cap */
-    float inset = big ? 9.0f : 7.0f;
-    auto cap = k.reduced(inset);
-    juce::ColourGradient cg(Colour(0xffeeefef), cap.getX(), cap.getY(), Colour(0xff8a8e91), cap.getRight(), cap.getBottom(), false);
-    cg.addColour(0.45, Colour(0xffc6c9cb));
-    cg.addColour(0.6, Colour(0xffa9adb0));
-    g.setGradientFill(cg);
-    g.fillEllipse(cap);
-    juce::ColourGradient hl(juce::Colours::white.withAlpha(0.55f), cap.getCentreX() - cap.getWidth() * 0.15f, cap.getY() + cap.getHeight() * 0.2f,
-                            juce::Colours::white.withAlpha(0.0f), cap.getCentreX(), cap.getCentreY() + cap.getHeight() * 0.2f, true);
-    g.setGradientFill(hl);
-    g.fillEllipse(cap);
-    g.setColour(juce::Colours::black.withAlpha(0.35f));
-    g.drawEllipse(cap, 0.8f);
-    /* the pointer, on the skirt */
-    float a = -0.75f * PI + 1.5f * PI * (v / aria_param_max(index()));
-    float r0 = d * 0.5f - inset + 1.0f, r1 = d * 0.5f - 1.5f;
-    g.setColour(juce::Colours::white);
-    g.drawLine(cx + std::sin(a) * r0, cy - std::cos(a) * r0, cx + std::sin(a) * r1, cy - std::cos(a) * r1, 2.2f);
-    /* the label */
-    g.setColour(C_TEXT);
-    g.setFont(Fonts::get().label(11.5f));
-    g.drawFittedText(label, 0, (int)(ring + 4), getWidth(), 14, juce::Justification::centredTop, 1, 0.8f);
+    float a = -0.75f * PI + 1.5f * PI * (value() / aria_param_max(index()));
+    float rc = R * (big ? 0.64f : 0.6f);
+    float sx = std::sin(a), sy = -std::cos(a);
+    g.setColour(juce::Colours::black.withAlpha(0.7f));
+    g.drawLine(cx + sx * (rc + 1.5f) + 0.6f, cy + sy * (rc + 1.5f) + 0.8f, cx + sx * (R - 1.0f) + 0.6f, cy + sy * (R - 1.0f) + 0.8f, 2.4f);
+    g.setColour(Colour(0xfff7f7f5));
+    g.drawLine(cx + sx * (rc + 1.5f), cy + sy * (rc + 1.5f), cx + sx * (R - 1.0f), cy + sy * (R - 1.0f), 2.0f);
+    g.setColour(Colour(0x55000000));                 /* (an engraved dot on the cap's edge) */
+    g.fillEllipse(cx + sx * (rc - 3.2f) - 1.2f, cy + sy * (rc - 3.2f) - 1.2f, 2.4f, 2.4f);
 }
 
 void Knob::mouseDown(const juce::MouseEvent &) { startV = value(); begin(); }
@@ -132,34 +95,15 @@ void Knob::mouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetail
 
 /* ------------------------------------------------------------------------------------ fader --- */
 Fader::Fader(Panel &p, int param, bool timbre, juce::String l) : Control(p, param, timbre, std::move(l)) {}
+/* the slot, scale and label are the panel's (Panel::paintFader); the fader draws its cap */
 void Fader::paint(juce::Graphics &g)
 {
     float cx = (float)getWidth() * 0.5f, top = 4.0f, len = 110.0f;
-    g.setColour(Colour(0xff060607));
-    g.fillRoundedRectangle(cx - 2.0f, top, 4.0f, len, 2.0f);
-    g.setColour(Colour(0xff34363a));
-    g.drawLine(cx - 2.0f, top + len + 1.0f, cx + 2.0f, top + len + 1.0f, 1.0f);
-    g.setColour(C_TICK);
-    for (int i = 0; i <= 10; i++) {
-        float y = top + 7.0f + (len - 14.0f) * (float)i / 10.0f;
-        g.drawLine(cx - 12.0f, y, cx - 8.0f, y, 1.0f);
-        g.drawLine(cx + 8.0f, y, cx + 12.0f, y, 1.0f);
-    }
     float y = top + 7.0f + (len - 14.0f) * (1.0f - value()) - 7.0f;
-    juce::Rectangle<float> c(cx - 12.0f, y, 24.0f, 14.0f);
-    g.setColour(juce::Colours::black.withAlpha(0.6f));
-    g.fillRoundedRectangle(c.translated(0, 3), 2.0f);
-    juce::ColourGradient cg(Colour(0xff2e2f32), 0, c.getY(), Colour(0xff121314), 0, c.getBottom(), false);
-    g.setGradientFill(cg);
-    g.fillRoundedRectangle(c, 2.0f);
-    g.setColour(Colour(0xff4a4b4f));
-    g.drawLine(c.getX() + 1, c.getY() + 0.5f, c.getRight() - 1, c.getY() + 0.5f, 1.0f);
-    g.setColour(juce::Colours::white);
-    g.fillRect(c.getX() + 1.0f, c.getCentreY() - 1.0f, c.getWidth() - 2.0f, 2.0f);
-    g.setColour(C_TEXT);
-    g.setFont(Fonts::get().label(11.5f));
-    g.drawFittedText(label, 0, (int)(top + len + 6), getWidth(), 14, juce::Justification::centredTop, 1, 0.8f);
+    auto img = aria_art::faderCap();
+    g.drawImage(img, juce::Rectangle<float>(cx - 16.0f, y - 4.0f, 32.0f, 26.0f), juce::RectanglePlacement::stretchToFit);
 }
+
 void Fader::mouseDown(const juce::MouseEvent &) { startV = value(); begin(); }
 void Fader::mouseDrag(const juce::MouseEvent &e)
 {
@@ -193,36 +137,42 @@ void Button::paint(juce::Graphics &g)
     if (blink && blink()) on = (panel.blinkPhase / 8) % 2 == 0;
     auto ac = panel.accent;
     juce::Rectangle<float> b = small ? juce::Rectangle<float>(((float)getWidth() - 16.0f) * 0.5f, 2.0f, 16.0f, 16.0f)
-                                     : juce::Rectangle<float>(((float)getWidth() - 34.0f) * 0.5f, 3.0f, 34.0f, 16.0f);
-    float rad = small ? 8.0f : 3.0f;
+                                     : juce::Rectangle<float>(((float)getWidth() - 34.0f) * 0.5f, 6.0f, 34.0f, 16.0f);
+    float rad = small ? 8.0f : 3.5f;
+    /* the well it sits in, its shadow */
+    g.setColour(Colour(0xff050506)); g.fillRoundedRectangle(b.expanded(1.6f), rad + 1.4f);
+    g.setColour(Colour(0x22ffffff)); g.drawLine(b.getX() - 1, b.getBottom() + 1.9f, b.getRight() + 1, b.getBottom() + 1.9f, 0.8f);
     if (on) {
-        for (int i = 4; i >= 1; i--) {
-            g.setColour(ac.withAlpha(0.07f * (float)(5 - i)));
-            g.fillRoundedRectangle(b.expanded((float)i * 1.6f), rad + (float)i);
+        int reach = small ? 2 : 4;                   /* the glow, soft, inside the button's bounds */
+        for (int i = reach; i >= 1; i--) {
+            g.setColour(ac.withAlpha(0.10f + 0.05f * (float)(reach - i)));
+            g.fillRoundedRectangle(b.expanded((float)i * 0.9f + 0.6f), rad + (float)i);
         }
-        juce::ColourGradient cg(Colour(0xffffffff).interpolatedWith(ac, 0.25f), 0, b.getY(), ac, 0, b.getBottom(), false);
-        g.setGradientFill(cg);
+        juce::ColourGradient body(Colour(0xffffffff).interpolatedWith(ac, 0.35f), b.getCentreX(), b.getCentreY(), ac.darker(0.15f), b.getRight(), b.getBottom(), true);
+        g.setGradientFill(body);
+        g.fillRoundedRectangle(b, rad);
+        g.setColour(Colour(0x80ffffff)); g.drawLine(b.getX() + 2, b.getY() + 1.0f, b.getRight() - 2, b.getY() + 1.0f, 0.8f);
     } else {
-        g.setColour(juce::Colours::black.withAlpha(0.6f));
-        g.fillRoundedRectangle(b.translated(0, 2), rad);
-        juce::ColourGradient cg(Colour(0xff36373a), 0, b.getY(), Colour(0xff232426), 0, b.getBottom(), false);
-        g.setGradientFill(cg);
+        juce::ColourGradient body(Colour(0xff3a3b3f), 0, b.getY(), Colour(0xff1e1f22), 0, b.getBottom(), false);
+        g.setGradientFill(body);
+        g.fillRoundedRectangle(b, rad);
+        juce::ColourGradient sheen(Colour(0x1effffff), 0, b.getY(), Colour(0x00ffffff), 0, b.getCentreY(), false);
+        g.setGradientFill(sheen); g.fillRoundedRectangle(b.reduced(1.0f, 0.5f), rad);
+        g.setColour(Colour(0x40ffffff)); g.drawLine(b.getX() + 2, b.getY() + 0.8f, b.getRight() - 2, b.getY() + 0.8f, 0.7f);
     }
-    g.fillRoundedRectangle(b, rad);
-    g.setColour(Colour(0xff050505));
-    g.drawRoundedRectangle(b, rad, 1.0f);
-    if (!on) { g.setColour(Colour(0xff4a4b4f)); g.drawLine(b.getX() + 2, b.getY() + 1, b.getRight() - 2, b.getY() + 1, 1.0f); }
+    g.setColour(Colour(0xff020202));
+    g.drawRoundedRectangle(b, rad, 0.8f);
     juce::String t = label;
     if (kind == CYCLE) t = (label.isEmpty() ? "" : label + " ") + ariaValueText(index(), value());
     if (small) {
-        g.setColour(on ? Colour(0xff111111) : C_DIM);
+        g.setColour(on ? Colour(0xff151515) : C_DIM);
         g.setFont(Fonts::get().oled(10.0f));
         g.drawText(label, b, juce::Justification::centred);
         return;
     }
-    g.setColour(on || kind == CYCLE ? C_WHITE : Colour(0xff9a9ca0));
+    g.setColour(on || kind == CYCLE ? C_WHITE : Colour(0xffa4a6aa));
     g.setFont(Fonts::get().label(10.5f));
-    g.drawFittedText(t, 0, (int)b.getBottom() + 3, getWidth(), 13, juce::Justification::centredTop, 1, 0.7f);
+    g.drawFittedText(t, 0, (int)b.getBottom() + 4, getWidth(), 13, juce::Justification::centredTop, 1, 0.7f);
 }
 
 void Button::mouseDown(const juce::MouseEvent &e)
@@ -244,13 +194,7 @@ void Button::mouseDown(const juce::MouseEvent &e)
 /* ---------------------------------------------------------------------------------- display --- */
 void aria_ui::paintOled(juce::Graphics &g, juce::Rectangle<float> r)
 {
-    juce::ColourGradient bg(Colour(0xff050607), r.getX(), r.getY(), Colour(0xff121518), r.getRight(), r.getBottom(), false);
-    g.setGradientFill(bg);
-    g.fillRoundedRectangle(r, 5.0f);
-    g.setColour(juce::Colours::black);
-    g.drawRoundedRectangle(r.reduced(0.5f), 5.0f, 1.0f);
-    g.setColour(Colour(0xff34363a));
-    g.drawLine(r.getX() + 4, r.getBottom() - 0.5f, r.getRight() - 4, r.getBottom() - 0.5f, 1.0f);
+    aria_art::bezel(g, r.reduced(3.0f));
 }
 
 void Display::paint(juce::Graphics &g)
@@ -279,6 +223,7 @@ void Display::paint(juce::Graphics &g)
     g.drawFittedText(line.toUpperCase(), lr.translated(0, 0.6f).toNearestInt(), juce::Justification::left, 1, 0.7f);
     g.setColour(C_OLED);
     g.drawFittedText(line.toUpperCase(), lr.toNearestInt(), juce::Justification::left, 1, 0.7f);
+    aria_art::glass(g, r.reduced(3.0f));
 }
 
 /* ----------------------------------------------------------------------------- chord screen --- */
@@ -301,7 +246,8 @@ juce::String aria_ui::chordName(const int *notes, int n)
         { 0x291, "6" }, { 0x289, "m6" }, { 0x491, "7" }, { 0x891, "maj7" }, { 0x489, "m7" }, { 0x449, "m7b5" },
         { 0x249, "dim7" }, { 0x889, "mMaj7" }, { 0x095, "add9" }, { 0x08D, "madd9" }, { 0x495, "9" }, { 0x895, "maj9" },
         { 0x48D, "m9" }, { 0x4A1, "7sus4" }, { 0x081, "5" }, { 0x011, "(no5)" }, { 0x411, "7" }, { 0x811, "maj7" },
-        { 0x409, "m7" }, { 0x00D, "m(add9)" } };
+        { 0x409, "m7" }, { 0x00D, "m(add9)" }, { 0x885, "maj7sus2" }, { 0x485, "7sus2" }, { 0x295, "6/9" },
+        { 0x4A9, "m11" }, { 0x8D1, "maj7#11" }, { 0x4B5, "11" }, { 0x695, "13" }, { 0x491 | 0x002, "7b9" }, { 0x4D1, "7#11" } };
     int order[12], no = 0;                            /* the bass as the root first, then the others */
     order[no++] = lo % 12;
     for (int pc = 0; pc < 12; pc++) if (((set >> pc) & 1) && pc != lo % 12) order[no++] = pc;
@@ -377,6 +323,7 @@ void ChordScreen::paint(juce::Graphics &g)
         g.fillRect(key);
         if (has(k)) { g.setColour(C_OLED); g.fillEllipse(key.getCentreX() - 1.5f, key.getBottom() - 5.0f, 3.0f, 3.0f); }
     }
+    aria_art::glass(g, r.reduced(3.0f));
 }
 
 /* ------------------------------------------------------------------------------------ scope --- */
@@ -413,6 +360,7 @@ void Scope::paint(juce::Graphics &g)
     g.strokePath(p, juce::PathStrokeType(3.5f));
     g.setColour(C_OLED);
     g.strokePath(p, juce::PathStrokeType(1.3f));
+    aria_art::glass(g, r.reduced(3.0f));
 }
 
 /* ------------------------------------------------------------------------------------ panel --- */
@@ -422,16 +370,15 @@ Panel::Panel(AriaProcessor &p) : proc(p)
     build();
     addAndMakeVisible(display);
     display.setBounds(W - 34 - 30 - 300 - 84, 22, 300, 48);
-    for (auto *b : { &prev, &next }) {
-        addAndMakeVisible(*b);
-        b->setColour(juce::TextButton::buttonColourId, Colour(0xff26272a));
-        b->setColour(juce::TextButton::textColourOffId, C_TEXT);
+    for (int i = 0; i < 2; i++) {                /* the patch: back, on */
+        auto *b = new Button(*this, Button::ACTION, 0, false, i ? "NEXT" : "PREV");
+        b->onPress = [this, i] {
+            proc.setCurrentProgram((proc.getCurrentProgram() + (i ? 1 : ARIA_NPRESETS - 1)) % ARIA_NPRESETS);
+            lastTouched = -1;
+        };
+        controls.emplace_back(b); addAndMakeVisible(b);
+        b->setBounds(W - 34 - 30 - 84 + i * 42, 28, 42, 38);
     }
-    prev.setButtonText("<"); next.setButtonText(">");
-    prev.setBounds(W - 34 - 30 - 74, 31, 32, 30);
-    next.setBounds(W - 34 - 30 - 36, 31, 32, 30);
-    prev.onClick = [this] { proc.setCurrentProgram((proc.getCurrentProgram() + ARIA_NPRESETS - 1) % ARIA_NPRESETS); lastTouched = -1; };
-    next.onClick = [this] { proc.setCurrentProgram((proc.getCurrentProgram() + 1) % ARIA_NPRESETS); lastTouched = -1; };
     tag = juce::ImageCache::getFromMemory(BinaryData::swtdr34mztag_png, BinaryData::swtdr34mztag_pngSize);
     startTimerHz(30);
 }
@@ -537,12 +484,18 @@ void Panel::build()
       knob(m, TP_VCA_LEVEL, true, "LEVEL"); knob(m, TP_VCA_PAN, true, "PAN"); knob(m, TP_VCA_SPREAD, true, "SPREAD"); }
     { auto &m = add("DIFFUSION DELAY", x, ROW2, 312, H2); x += 312;
       knob(m, GP_DL_TIME_L, false, "TIME L"); knob(m, GP_DL_TIME_R, false, "TIME R"); knob(m, GP_DL_FB, false, "FDBK");
-      knob(m, GP_DL_CHAR, false, "CHAR"); knob(m, GP_DL_DIFF, false, "DIFF"); knob(m, GP_DL_MIX, false, "MIX");
+      knob(m, GP_DL_CHAR, false, "CHAR"); knob(m, GP_DL_DIFF, false, "DIFF"); knob(m, GP_DL_MOD, false, "CHORUS");
+      knob(m, GP_DL_MIX, false, "MIX");
       button(m, B::SWITCH, GP_DL_LINK, false, "LINK"); button(m, B::SWITCH, GP_DL_A, false, "A");
       button(m, B::SWITCH, GP_DL_B, false, "B"); }
     { auto &m = add("OUTPUT", x, ROW2, 120, H2);
       knob(m, GP_OUT_VOL, false, "VOLUME", true); knob(m, GP_OUT_LOWCUT, false, "LOW CUT"); }
     for (auto &m : modules) layoutModule(m);
+    {   /* QUALITY: the oversampling, by the display */
+        auto *q = new Button(*this, Button::CYCLE, GP_QUALITY, false, "");
+        controls.emplace_back(q); addAndMakeVisible(q);
+        q->setBounds(W - 34 - 30 - 300 - 84 - 84, 28, 64, 38);
+    }
     for (auto &m : modules) {
         if (m.title == "MIXER") { addAndMakeVisible(scope); scope.setBounds(m.x + 10, m.y + 182, m.w - 20, m.h - 188); }
         if (m.title == "CHORD MEMORY") { addAndMakeVisible(chordScreen); chordScreen.setBounds(m.x + 10, m.y + 26, m.w - 20, 116); }
@@ -576,88 +529,131 @@ void Panel::layoutModule(Module &m)
     if (!m.knobs.empty()) y = flow(m.knobs, kw, kh, 4, 6, y);
     /* buttons: count the rows first, then lay them from the bottom */
     auto bw = [](Button *b) { return b->small ? 20 : (b->kind == Button::CYCLE ? 58 : 42); };
-    auto bh = [](Button *b) { return b->small ? 20 : 34; };
+    auto bh = [](Button *b) { return b->small ? 20 : 38; };
     if (!m.buttons.empty()) {
         std::vector<Button *> big, dots;
         for (auto *b : m.buttons) (b->small ? dots : big).push_back(b);
         int hb = 0;
-        { int rowW = 0, rows = big.empty() ? 0 : 1; for (auto *b : big) { if (rowW + bw(b) > inner) { rows++; rowW = 0; } rowW += bw(b) + 4; } hb = rows * 40; }
+        { int rowW = 0, rows = big.empty() ? 0 : 1; for (auto *b : big) { if (rowW + bw(b) > inner) { rows++; rowW = 0; } rowW += bw(b) + 4; } hb = rows * 42; }
         if (!dots.empty()) hb += 36;
         int yb = m.y + m.h - hb - 6;
-        int after = flow(big, bw, bh, 4, 6, yb);
+        int after = flow(big, bw, bh, 4, 4, yb);
         if (!dots.empty()) flow(dots, bw, bh, 3, 4, after + 2);
     }
 }
 
+/* a knob's fixed parts: its scale, its body (the shadow, the skirt, the cap) and its label */
+void Panel::paintKnob(juce::Graphics &g, Knob &k)
+{
+    auto b = k.getBounds().toFloat();
+    float d = k.big ? 50.0f : 36.0f, ring = d + 14.0f;
+    float cx = b.getCentreX(), cy = b.getY() + ring * 0.5f + 1.0f;
+    bool bip = aria_param_info(k.index())->kind == PK_BIPOLAR;
+    for (int i = 0; i <= 10; i++) {
+        float a = -0.75f * PI + 1.5f * PI * (float)i / 10.0f;
+        bool major = i == 0 || i == 10 || (bip && i == 5);
+        float r0 = ring * 0.5f - (major ? 5.0f : 3.5f), r1 = ring * 0.5f;
+        g.setColour(major ? Colour(0xffd9dadc) : Colour(0xff8a8d91));
+        g.drawLine(cx + std::sin(a) * r0, cy - std::cos(a) * r0, cx + std::sin(a) * r1, cy - std::cos(a) * r1, major ? 1.4f : 1.0f);
+    }
+    auto img = aria_art::knob(d);
+    float size = d + 26.0f;
+    g.drawImage(img, juce::Rectangle<float>(cx - size * 0.5f, cy - size * 0.5f + 2.0f, size, size), juce::RectanglePlacement::stretchToFit);
+    g.setColour(Colour(0xffd4d5d7));
+    g.setFont(Fonts::get().label(11.5f));
+    g.drawFittedText(k.label, (int)b.getX() - 6, (int)(b.getY() + ring + 4), (int)b.getWidth() + 12, 14, juce::Justification::centredTop, 1, 0.8f);
+}
+
+/* a fader's fixed parts: the slot cut in the panel, the scale, the label */
+void Panel::paintFader(juce::Graphics &g, Fader &f)
+{
+    auto b = f.getBounds().toFloat();
+    float cx = b.getCentreX(), top = b.getY() + 4.0f, len = 110.0f;
+    juce::Rectangle<float> slot(cx - 2.5f, top, 5.0f, len);
+    g.setColour(Colour(0x40ffffff)); g.fillRoundedRectangle(slot.translated(0, 1.0f), 2.5f);
+    juce::ColourGradient sg(Colour(0xff000000), slot.getX(), 0, Colour(0xff141517), slot.getRight(), 0, false);
+    g.setGradientFill(sg); g.fillRoundedRectangle(slot, 2.5f);
+    for (int i = 0; i <= 10; i++) {
+        float y = top + 7.0f + (len - 14.0f) * (float)i / 10.0f;
+        bool major = i == 0 || i == 5 || i == 10;
+        g.setColour(major ? Colour(0xffc9cacc) : Colour(0xff76797d));
+        g.drawLine(cx - (major ? 14.0f : 12.0f), y, cx - 8.0f, y, 1.0f);
+        g.drawLine(cx + 8.0f, y, cx + (major ? 14.0f : 12.0f), y, 1.0f);
+    }
+    g.setColour(Colour(0xffd4d5d7));
+    g.setFont(Fonts::get().label(11.5f));
+    g.drawFittedText(f.label, (int)b.getX() - 4, (int)(top + len + 6), (int)b.getWidth() + 8, 14, juce::Justification::centredTop, 1, 0.8f);
+}
+
 void Panel::paint(juce::Graphics &g)
 {
-    /* the side plates */
-    for (int side = 0; side < 2; side++) {
-        juce::Rectangle<float> r(side ? (float)W - 34.0f : 0.0f, 0, 34, (float)H);
-        juce::ColourGradient cg(Colour(side ? 0xff151516 : 0xff0d0d0e), r.getX(), 0, Colour(side ? 0xff0d0d0e : 0xff151516), r.getRight(), 0, false);
-        cg.addColour(side ? 0.6 : 0.4, Colour(0xff2a2b2d));
-        g.setGradientFill(cg);
-        g.fillRect(r);
-        for (float yy : { 22.0f, (float)H - 31.0f }) {
-            juce::Rectangle<float> s(r.getCentreX() - 4.5f, yy, 9, 9);
-            juce::ColourGradient sc(Colour(0xff6a6c6f), s.getCentreX(), s.getCentreY(), Colour(0xff2b2c2e), s.getRight(), s.getBottom(), true);
-            g.setGradientFill(sc); g.fillEllipse(s);
-            g.setColour(juce::Colours::black); g.drawEllipse(s, 0.8f);
-            g.drawLine(s.getX() + 2, s.getCentreY(), s.getRight() - 2, s.getCentreY(), 1.0f);
-        }
+    using namespace aria_art;
+    if (!face.isValid()) {
+        face = aria_art::panel(W - 68, H);
+        sideL = sidePlate(34, H, false);
+        sideR = sidePlate(34, H, true);
     }
-    /* the panel */
-    juce::Rectangle<float> p(34, 0, (float)W - 68, (float)H);
-    juce::ColourGradient bg(C_PANEL_TOP, 0, 0, C_PANEL_BOT, 0, (float)H, false);
-    bg.addColour(0.3, C_PANEL);
-    g.setGradientFill(bg);
-    g.fillRect(p);
-    g.setColour(Colour(0xff3a3b3e)); g.drawLine(p.getX(), 0.5f, p.getRight(), 0.5f, 1.0f);
+    g.drawImage(sideL, juce::Rectangle<float>(0, 0, 34, (float)H), juce::RectanglePlacement::stretchToFit);
+    g.drawImage(sideR, juce::Rectangle<float>((float)W - 34, 0, 34, (float)H), juce::RectanglePlacement::stretchToFit);
+    g.drawImage(face, juce::Rectangle<float>(34, 0, (float)W - 68, (float)H), juce::RectanglePlacement::stretchToFit);
+    for (float y : { 26.0f, (float)H - 26.0f }) {
+        screw(g, { 17.0f, y }, 5.0f, 0.4f + y * 0.01f);
+        screw(g, { (float)W - 17.0f, y }, 5.0f, 1.1f - y * 0.013f);
+    }
     /* the header */
     auto &F = Fonts::get();
-    g.setColour(C_WHITE);
-    g.setFont(F.heading(34.0f).withExtraKerningFactor(0.42f));
-    g.drawText("ARIA", 64, 22, 200, 44, juce::Justification::left);
-    float aw = juce::GlyphArrangement::getStringWidth(F.heading(34.0f).withExtraKerningFactor(0.42f), "ARIA");
-    g.setColour(accent);
-    g.fillEllipse(64.0f + aw - 4.0f, 55.0f, 7.0f, 7.0f);
-    g.setColour(C_DIM);
+    auto brand = F.heading(36.0f).withExtraKerningFactor(0.42f);
+    g.setColour(Colour(0x66000000));
+    g.setFont(brand);
+    g.drawText("ARIA", 64, 23, 220, 44, juce::Justification::left);
+    g.setColour(Colour(0xfff2f2f0));
+    g.drawText("ARIA", 64, 22, 220, 44, juce::Justification::left);
+    float aw = juce::GlyphArrangement::getStringWidth(brand, "ARIA");
+    juce::ColourGradient dot(accent.brighter(0.4f), 64.0f + aw - 3.0f, 56.0f, accent.darker(0.3f), 64.0f + aw + 4.0f, 63.0f, false);
+    g.setGradientFill(dot);
+    g.fillEllipse(64.0f + aw - 4.0f, 56.0f, 7.0f, 7.0f);
+    g.setColour(Colour(0xff9a9ca0));
     g.setFont(F.heading(11.0f));
-    g.drawText(juce::String::fromUTF8("8-VOICE  \xc2\xb7  BI-TIMBRAL  \xc2\xb7  DUAL LADDER"), 64 + (int)aw + 26, 40, 400, 20, juce::Justification::left);
-    g.setColour(C_LINE);
-    g.drawLine(64.0f, 86.0f, (float)W - 64.0f, 86.0f, 1.0f);
+    g.drawText(juce::String::fromUTF8("8-VOICE  \xc2\xb7  BI-TIMBRAL  \xc2\xb7  DUAL LADDER  \xc2\xb7  ANALOG MODELLING"), 64 + (int)aw + 26, 40, 520, 20, juce::Justification::left);
+    auto groove = [&](float y) {                     /* a line cut in the panel: dark, lit below */
+        g.setColour(Colour(0xcc000000)); g.drawLine(64.0f, y, (float)W - 64.0f, y, 1.0f);
+        g.setColour(Colour(0x1effffff)); g.drawLine(64.0f, y + 1.0f, (float)W - 64.0f, y + 1.0f, 1.0f);
+    };
+    groove(86.0f);
     /* the modules: headings and separators */
     int lastRowY = -1;
     for (auto &m : modules) {
-        if (m.y == lastRowY) { g.setColour(C_LINE); g.drawLine((float)m.x, (float)m.y + 2, (float)m.x, (float)(m.y + m.h), 1.0f); }
+        if (m.y == lastRowY) {
+            g.setColour(Colour(0xaa000000)); g.drawLine((float)m.x, (float)m.y + 2, (float)m.x, (float)(m.y + m.h), 1.0f);
+            g.setColour(Colour(0x14ffffff)); g.drawLine((float)m.x + 1, (float)m.y + 2, (float)m.x + 1, (float)(m.y + m.h), 1.0f);
+        }
         lastRowY = m.y;
         auto hf = F.heading(11.5f);
         float tw = juce::GlyphArrangement::getStringWidth(hf, m.title);
         float cx = (float)m.x + (float)m.w * 0.5f, hy = (float)m.y + 9.0f;
-        g.setColour(C_HEAD_LINE);
+        g.setColour(Colour(0xff4a4c50));
         g.drawLine((float)m.x + 12, hy, cx - tw * 0.5f - 8, hy, 1.0f);
         g.drawLine(cx + tw * 0.5f + 8, hy, (float)(m.x + m.w) - 12, hy, 1.0f);
-        g.setColour(m.accent ? accent : Colour(0xffe2e3e4));
+        g.setColour(m.accent ? accent : Colour(0xffeceded));
         g.setFont(hf);
         g.drawText(m.title, juce::Rectangle<float>(cx - tw * 0.5f - 4, hy - 8, tw + 8, 16), juce::Justification::centred);
         if (m.accent) {
-            g.setColour(C_DIM);
+            g.setColour(Colour(0xff9a9ca0));
             g.setFont(F.heading(10.0f));
             g.drawText("KEY MAP", m.x, m.y + m.h - 4, m.w, 14, juce::Justification::centred);
         }
+        for (auto *f : m.faders) paintFader(g, *f);
+        for (auto *k : m.knobs) paintKnob(g, *k);
     }
-    g.setColour(C_LINE);
-    g.drawLine(64.0f, (float)H - 46.0f, (float)W - 64.0f, (float)H - 46.0f, 1.0f);
-    g.setColour(Colour(0xff6d6f73));
+    groove((float)H - 46.0f);
+    g.setColour(Colour(0xff7c7e82));
     g.setFont(F.heading(11.0f));
     g.drawText(juce::String::fromUTF8("VST3  \xc2\xb7  STANDALONE  \xc2\xb7  MPC"), 64, H - 38, 400, 20, juce::Justification::left);
     if (tag.isValid()) {
         float th = 14.0f, tw = th * (float)tag.getWidth() / (float)tag.getHeight();
-        g.setOpacity(0.9f);
+        g.setOpacity(0.92f);
         g.drawImage(tag, juce::Rectangle<float>((float)W - 64.0f - tw, (float)H - 35.0f, tw, th), juce::RectanglePlacement::centred);
-    } else {
-        g.setColour(C_WHITE);
-        g.drawText("SWTDR34MZ", W - 264, H - 38, 200, 20, juce::Justification::right);
+        g.setOpacity(1.0f);
     }
 }
 

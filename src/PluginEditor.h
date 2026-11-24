@@ -145,8 +145,9 @@ private:
     Display display{ *this };
     ChordScreen chordScreen{ *this };
     Scope scope{ *this };
-    juce::TextButton prev, next;
-    juce::Image tag;
+    juce::Image tag, face, sideL, sideR;
+    void paintKnob(juce::Graphics &, Knob &);
+    void paintFader(juce::Graphics &, Fader &);
     Knob *knob(Module &m, int param, bool timbre, const char *label, bool big = false);
     Fader *fader(Module &m, int param, bool timbre, const char *label);
     Button *button(Module &m, Button::Kind k, int param, bool timbre, const char *label, int radio = 0);

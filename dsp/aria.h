@@ -51,6 +51,7 @@ enum {
     GP_DL_TIME_L, GP_DL_TIME_R, GP_DL_LINK, GP_DL_FB, GP_DL_CHAR, GP_DL_DIFF, GP_DL_MIX, GP_DL_A, GP_DL_B,
     GP_OUT_VOL, GP_OUT_LOWCUT,                                                         /* OUTPUT */
     GP_CH_ON, GP_CH_KEY, GP_CH_MAP,                                                    /* CHORD MEMORY */
+    GP_DL_MOD, GP_QUALITY,                                             /* (added: DELAY CHORUS, the oversampling) */
     ARIA_NPARAM
 };
 
@@ -77,6 +78,7 @@ enum { ORD_SERIAL, ORD_STEREO, ORD_PARALLEL };
 enum { LW_SINE, LW_TRI, LW_SAW, LW_RAMP, LW_SQUARE, LW_SH, NLW };
 enum { LD_OFF, LD_PITCH, LD_OSC1, LD_OSC2, LD_F1, LD_F2, LD_FILTERS, LD_PW, LD_AMP, LD_PAN, LD_MOFREQ, LD_FM, NLD };
 enum { VC_SINGLE, VC_SPLIT, VC_STACK };
+enum { Q_ECO, Q_HIGH, Q_ULTRA };                          /* the voices at 1x, 2x, 4x the rate */
 
 /* ----------------------------------------------------------------- the engine --- */
 typedef struct aria aria_t;

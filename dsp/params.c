@@ -15,6 +15,7 @@ static const char *const C_LD[] = { "OFF", "PITCH", "OSC 1", "OSC 2", "FILTER 1"
 static const char *const C_VC[] = { "SINGLE", "SPLIT", "STACK" };
 static const char *const C_MAP[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
 static const char *const C_VA[] = { "1", "2", "3", "4", "5", "6", "7" };
+static const char *const C_Q[] = { "ECO 1X", "HIGH 2X", "ULTRA 4X" };
 
 #define K(n, d) { n, PK_KNOB, 0, d, 0 }
 #define B(n, d) { n, PK_BIPOLAR, 0, d, 0 }
@@ -119,6 +120,8 @@ const aria_param_t ARIA_GPARAMS[ARIA_NPARAM - GP_FIRST] = {
     [GP_CH_ON - GP_FIRST] = S("CHORD ON", 0),
     [GP_CH_KEY - GP_FIRST] = S("CHORD KEY", 0),
     [GP_CH_MAP - GP_FIRST] = C("CHORD KEY MAP", C_MAP, 0),
+    [GP_DL_MOD - GP_FIRST] = K("DELAY CHORUS", 0.25f),
+    [GP_QUALITY - GP_FIRST] = C("QUALITY", C_Q, Q_HIGH),
 };
 
 const aria_param_t *aria_param_info(int p)

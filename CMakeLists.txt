@@ -66,6 +66,7 @@ juce_add_binary_data(AriaData SOURCES
 target_sources(Aria PRIVATE
     src/PluginProcessor.cpp
     src/PluginEditor.cpp
+    src/Art.cpp
     dsp/aria.c
     dsp/params.c
     dsp/presets.c)
