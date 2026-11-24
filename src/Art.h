@@ -13,7 +13,8 @@ constexpr float SCALE = 2.0f;            /* the images' pixels per panel unit */
 juce::Image panel(int w, int h);         /* the face: black anodised, brushed, lit from above */
 juce::Image sidePlate(int w, int h, bool right);
 juce::Image knob(float diameter);        /* the knob without its pointer: shadow, knurled skirt, cap */
-juce::Image faderCap();                  /* 24 x 14 */
+juce::Image faderCap();
+void releaseCaches();                    /* (the last editor closed) */                  /* 24 x 14 */
 void screw(juce::Graphics &g, juce::Point<float> c, float r, float angle);
 void bezel(juce::Graphics &g, juce::Rectangle<float> r);        /* a display's recess and its black glass */
 void glass(juce::Graphics &g, juce::Rectangle<float> r);        /* the reflection over a display */

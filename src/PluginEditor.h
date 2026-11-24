@@ -12,12 +12,21 @@ namespace aria_ui {
 struct Fonts {
     juce::Typeface::Ptr semi, bold, mono;
     static Fonts &get();
+    static void release();
     juce::Font label(float h) const;
     juce::Font heading(float h) const;
     juce::Font oled(float h) const;
 };
 
 class Panel;
+
+/* the editors' shared fonts and drawn images: they live while an editor is open (a SharedResourcePointer in each)
+ * and go when the last one closes. Never function statics: those would be freed while the host unloads the DLL,
+ * under Windows' loader lock, where freeing fonts and images can hang the host (FL Studio froze on close). */
+struct UiResources {
+    UiResources() = default;
+    ~UiResources();
+};
 
 /* a control on the panel: a parameter of the timbre being edited (timbre) or a global one */
 class Control : public juce::Component
@@ -197,6 +206,7 @@ public:
     void paint(juce::Graphics &g) override { g.fillAll(juce::Colour(0xff0a0a0b)); }
 private:
     AriaProcessor &proc;
+    juce::SharedResourcePointer<aria_ui::UiResources> resources;   /* (before the panel: freed after it) */
     aria_ui::Panel panel;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(AriaEditor)
 };

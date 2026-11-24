@@ -82,9 +82,20 @@ Image sidePlate(int w, int h, bool right)
     return img;
 }
 
+/* the drawn images kept: plain pointers, freed by releaseCaches when the last editor closes (never function statics,
+ * which would be freed while the host unloads the DLL; see aria_ui::UiResources) */
+static std::map<int, Image> *knobCache = nullptr;
+static Image *faderImg = nullptr;
+void releaseCaches()
+{
+    delete knobCache; knobCache = nullptr;
+    delete faderImg; faderImg = nullptr;
+}
+
 Image knob(float d)
 {
-    static std::map<int, Image> cache;
+    if (knobCache == nullptr) knobCache = new std::map<int, Image>();
+    auto &cache = *knobCache;
     int key = (int)std::lround(d * 10.0f);
     if (auto it = cache.find(key); it != cache.end()) return it->second;
     float size = d + 26.0f;
@@ -146,7 +157,8 @@ Image knob(float d)
 
 Image faderCap()
 {
-    static Image img = [] {
+    if (faderImg != nullptr) return *faderImg;
+    faderImg = new Image([] {
         Image im(Image::ARGB, (int)(32 * SCALE), (int)(26 * SCALE), true);
         juce::Graphics g(im);
         g.addTransform(juce::AffineTransform::scale(SCALE));
@@ -163,8 +175,8 @@ Image faderCap()
         g.setColour(Colour(0xff000000)); g.fillRect(c.getX() + 1.5f, c.getCentreY() - 0.2f, c.getWidth() - 3.0f, 2.2f);
         g.setColour(Colour(0xfff4f4f4)); g.fillRect(c.getX() + 1.5f, c.getCentreY() - 1.2f, c.getWidth() - 3.0f, 1.6f);
         return im;
-    }();
-    return img;
+    }());
+    return *faderImg;
 }
 
 void screw(juce::Graphics &g, juce::Point<float> c, float r, float angle)

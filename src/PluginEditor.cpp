@@ -16,16 +16,23 @@ constexpr float PI = 3.14159265f;
 }
 
 /* ------------------------------------------------------------------------------------ fonts --- */
+static Fonts *fonts = nullptr;             /* (a plain pointer: nothing to free when the DLL unloads) */
 Fonts &Fonts::get()
 {
-    static Fonts f = [] {
-        Fonts x;
-        x.semi = juce::Typeface::createSystemTypefaceFor(BinaryData::FiraSansSemiBold_ttf, BinaryData::FiraSansSemiBold_ttfSize);
-        x.bold = juce::Typeface::createSystemTypefaceFor(BinaryData::FiraSansBold_ttf, BinaryData::FiraSansBold_ttfSize);
-        x.mono = juce::Typeface::createSystemTypefaceFor(BinaryData::AnonymousProBold_ttf, BinaryData::AnonymousProBold_ttfSize);
-        return x;
-    }();
-    return f;
+    if (fonts == nullptr) {
+        fonts = new Fonts();
+        fonts->semi = juce::Typeface::createSystemTypefaceFor(BinaryData::FiraSansSemiBold_ttf, BinaryData::FiraSansSemiBold_ttfSize);
+        fonts->bold = juce::Typeface::createSystemTypefaceFor(BinaryData::FiraSansBold_ttf, BinaryData::FiraSansBold_ttfSize);
+        fonts->mono = juce::Typeface::createSystemTypefaceFor(BinaryData::AnonymousProBold_ttf, BinaryData::AnonymousProBold_ttfSize);
+    }
+    return *fonts;
+}
+void Fonts::release() { delete fonts; fonts = nullptr; }
+
+UiResources::~UiResources()                 /* (the last editor closed: on the message thread, JUCE still up) */
+{
+    Fonts::release();
+    aria_art::releaseCaches();
 }
 juce::Font Fonts::label(float h) const { return juce::Font(juce::FontOptions(semi).withHeight(h)).withExtraKerningFactor(0.06f); }
 juce::Font Fonts::heading(float h) const { return juce::Font(juce::FontOptions(semi).withHeight(h)).withExtraKerningFactor(0.28f); }
