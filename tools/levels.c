@@ -1,6 +1,6 @@
 /* ARIA: evens out the factory sounds' loudness. Plays each (a chord, or a note for basses and leads), measures it
  * and writes tools/levels.json (each sound's VCA LEVEL, A and B) for tools/presets.py; and reports the peaks.
- *   cc -O2 -Idsp -o /tmp/levels tools/levels.c dsp/aria.c dsp/params.c dsp/presets.c -lm && /tmp/levels */
+ *   cc -O2 -Idsp -o /tmp/levels tools/levels.c dsp/aria.c dsp/params.c dsp/params_data.c dsp/presets.c -lm && /tmp/levels */
 #include "aria.h"
 #include "presets.h"
 #include <math.h>

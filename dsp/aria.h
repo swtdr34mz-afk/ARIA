@@ -68,8 +68,11 @@ typedef struct {
 } aria_param_t;
 extern const aria_param_t ARIA_TPARAMS[TP_COUNT];
 extern const aria_param_t ARIA_GPARAMS[ARIA_NPARAM - GP_FIRST];
+extern const char *const ARIA_TSHORT[TP_COUNT], *const ARIA_GSHORT[ARIA_NPARAM - GP_FIRST];
+void aria_param_short(int p, char *out, int len);   /* the MPC's name for it: "Cutoff 1", "B.Cutoff 1" */
 const aria_param_t *aria_param_info(int p);
 float aria_param_max(int p);             /* 1 for a knob, count - 1 for a choice, 1 for a switch */
+void aria_value_text(int p, float v, char *out, int len);   /* the value as the panel shows it: "2.45 kHz" */
 
 /* the choices */
 enum { OCT_16, OCT_8, OCT_4, OCT_2 };

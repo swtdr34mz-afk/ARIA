@@ -4,13 +4,20 @@ An 8-voice, bi-timbral analogue-modelling polysynth by **swtdr34mz**: two oscill
 per-voice mod oscillator, two 4-pole ladder filters (series, stereo or parallel), a chord memory with a KEY mode and
 8 key maps, and a diffusion delay. Planned as a VST3 / standalone plugin (Cubase, Windows) and an MPC plugin.
 
-**Status:** the engine, the arpeggiator and the plugin (VST3 and standalone for Windows, with the panel) are here.
-Still to come: the MPC version.
+**Status:** the engine, the arpeggiator, the plugin (VST3 and standalone for Windows, with the panel) and the MPC
+version (`mpc/`) are here.
 
 ## Download
 
 [Actions](https://github.com/swtdr34mz-afk/ARIA/actions) → the newest green run → **Artifacts** at the bottom:
 `ARIA-Windows` (a GitHub sign-in is needed for artifacts). `ARIA-demo-sounds` has the engine's demo sounds.
+
+## On the MPC
+
+ARIA also runs on Akai MPC standalone hardware (MPC XL, Live III, and the 32-bit MPCs), built with Akai's MPC Plugin
+SDK from the same engine: `mpc/` (its README: `mpc/plugin/README.md`). Download: Actions → the newest run →
+Artifacts → **ARIA-MPC**; copy its folder into `VST2 Plugins` on a drive of the MPC (MPC OS 3.10.1 or later,
+Preferences → Enhancements (Beta) → Enable Enhancements and External Plugin Support).
 
 ## Installieren (Windows, Cubase)
 
@@ -58,7 +65,7 @@ Test it (Linux or macOS, x86):
 
 ```
 cd tests && mkdir -p out
-cc -O2 -o demo demo.c ../dsp/aria.c ../dsp/params.c -lm && ./demo
+cc -O2 -o demo demo.c ../dsp/aria.c ../dsp/params.c ../dsp/params_data.c -lm && ./demo
 ```
 
 It checks the chord memory and the voice allocation, renders five demo sounds to `tests/out/*.wav` and measures the

@@ -117,6 +117,7 @@ struct aria {
     long arp_slot;
     double ppq, arp_off;                 /* where the clock is (quarter notes); the playing note's end */
     int host_play;
+    float obuf[2][CHUNK]; int opos;      /* the chunk rendered, and how much of it is given out */
 };
 
 /* ----------------------------------------------------------- the parameters --- */
@@ -156,7 +157,7 @@ static void line_alloc(line_t *l, float ms, float sr)
 {
     l->base = ms * 0.001f * sr;
     l->len = (int)(l->base + 0.003f * sr) + 4;          /* (room for the chorus) */
-    l->b = calloc((size_t)l->len, sizeof(float));
+    l->b = (float *)calloc((size_t)l->len, sizeof(float));
     l->w = 0;
 }
 static void delay_alloc(delay_t *d, float sr)
@@ -168,7 +169,7 @@ static void delay_alloc(delay_t *d, float sr)
     memset(d, 0, sizeof *d);
     d->len = (int)(DL_MAX_S * sr) + 8;
     for (int c = 0; c < 2; c++) {
-        d->buf[c] = calloc((size_t)d->len, sizeof(float));
+        d->buf[c] = (float *)calloc((size_t)d->len, sizeof(float));
         d->t[c] = 0.3f * sr;
         for (int i = 0; i < NPRE; i++) line_alloc(&d->pre[c][i], PRE_MS[c][i], sr);
         for (int i = 0; i < NLOOP; i++) line_alloc(&d->loop[c][i], LOOP_MS[c][i], sr);
@@ -203,11 +204,12 @@ static void voices_reset(aria_t *a)
 
 aria_t *aria_new(float sr)
 {
-    aria_t *a = calloc(1, sizeof *a);
+    aria_t *a = (aria_t *)calloc(1, sizeof *a);
     if (!a) return 0;
     a->seed = 0x12345678u;
     a->bpm = 120;
     a->arp_cur = -1; a->arp_slot = -1;
+    a->opos = CHUNK;
     aria_defaults(a);
     aria_set_rate(a, sr);
     return a;
@@ -986,11 +988,13 @@ static void delay_render(aria_t *a, float *l, float *r, int n)
     }
 }
 
-void aria_render(aria_t *a, float *outl, float *outr, int n)
+/* one chunk of CHUNK frames: everything moves on a fixed grid, so the sound does not depend on the host's block
+ * sizes (a note lands on the next grid point: within 16 frames) */
+static void render_chunk(aria_t *a, float *outl, float *outr)
 {
     float bus[ARIA_TIMBRES][2][CHUNK * MAXOS], ob[ARIA_TIMBRES][2][CHUNK], wl[CHUNK], wr[CHUNK];
-    while (n > 0) {
-        int m = n < CHUNK ? n : CHUNK;
+    {
+        const int m = CHUNK;
         /* the oversampling (a change: the voices' state starts over at the new rate) */
         int q = (int)a->p[GP_QUALITY], os = q == Q_ECO ? 1 : q == Q_ULTRA ? 4 : 2;
         if (os != a->os) {
@@ -1039,7 +1043,18 @@ void aria_render(aria_t *a, float *outl, float *outr, int n)
             outl[s] = 1.5f * tanh_f(L / 1.5f);
             outr[s] = 1.5f * tanh_f(Rr / 1.5f);
         }
-        outl += m; outr += m; n -= m;
+    }
+}
+
+void aria_render(aria_t *a, float *outl, float *outr, int n)
+{
+    while (n > 0) {
+        if (a->opos >= CHUNK) { render_chunk(a, a->obuf[0], a->obuf[1]); a->opos = 0; }
+        int m = CHUNK - a->opos;
+        if (m > n) m = n;
+        memcpy(outl, a->obuf[0] + a->opos, sizeof(float) * (size_t)m);
+        memcpy(outr, a->obuf[1] + a->opos, sizeof(float) * (size_t)m);
+        a->opos += m; outl += m; outr += m; n -= m;
     }
 }
 

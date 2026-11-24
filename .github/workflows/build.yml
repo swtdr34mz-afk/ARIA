@@ -22,12 +22,44 @@ jobs:
       - name: build and run
         run: |
           cd tests && mkdir -p out
-          cc -O2 -Wall -o demo demo.c ../dsp/aria.c ../dsp/params.c -lm
+          cc -O2 -Wall -o demo demo.c ../dsp/aria.c ../dsp/params.c ../dsp/params_data.c -lm
           ./demo
       - uses: actions/upload-artifact@v4
         with:
           name: ARIA-demo-sounds
           path: tests/out/*.wav
+
+  # ARIA for the MPC (mpc/): the SDK project made from the shared engine, built with Akai's MPC Plugin SDK (its Zig
+  # cross compiler: arm32 and arm64), checked by the SDK's host simulator and validator; the plugin folder zipped
+  mpc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: the MPC Plugin SDK (pinned)
+        run: |
+          git init -q mpc-sdk
+          git -C mpc-sdk remote add origin https://github.com/inmusic-software/mpc-plugin-builder-sdk
+          git -C mpc-sdk fetch -q --depth 1 origin a5949cf6fe2cbfb95bcbe0ddf1f7ef555e71f2be
+          git -C mpc-sdk checkout -q FETCH_HEAD
+      - name: build (native, arm32, arm64)
+        run: python3 mpc/build.py --sdk mpc-sdk --target all
+      - name: host test (the native build)
+        run: |
+          g++ -std=c++17 -O2 -Impc-sdk/framework mpc/test/mpc_host_test.cpp -ldl -o mpc_host_test
+          ./mpc_host_test "$(ls mpc/build/ARIA/build/native/*.so | head -1)"
+      - name: package
+        run: |
+          cd "mpc/build/ARIA/build"
+          file "swtdr34mz - VST - ARIA/VST/"*.so
+          cp "../README.md" "swtdr34mz - VST - ARIA/README.md"
+          zip -qr "$GITHUB_WORKSPACE/ARIA-MPC.zip" "swtdr34mz - VST - ARIA"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ARIA-MPC
+          path: ARIA-MPC.zip
 
   build:
     strategy:

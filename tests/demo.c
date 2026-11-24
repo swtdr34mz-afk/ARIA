@@ -1,4 +1,4 @@
-/* ARIA: the engine's tests, a CPU check and the demo sounds (WAV files). cc -O2 demo.c ../dsp/aria.c ../dsp/params.c -lm */
+/* ARIA: the engine's tests, a CPU check and the demo sounds (WAV files). cc -O2 demo.c ../dsp/aria.c ../dsp/params.c ../dsp/params_data.c -lm */
 #include "../dsp/aria.h"
 #include <math.h>
 #include <stdio.h>

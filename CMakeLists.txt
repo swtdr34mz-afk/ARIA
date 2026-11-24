@@ -69,6 +69,7 @@ target_sources(Aria PRIVATE
     src/Art.cpp
     dsp/aria.c
     dsp/params.c
+    dsp/params_data.c
     dsp/presets.c)
 
 target_include_directories(Aria PRIVATE dsp src)

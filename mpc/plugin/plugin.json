@@ -1,0 +1,17 @@
+{
+  "name": "ARIA",
+  "manufacturer": "swtdr34mz",
+  "version": "0.1.0",
+  "format": "vst2",
+  "kind": "instrument",
+  "uid": "Aria",
+  "numInputs": 0,
+  "numOutputs": 2,
+  "category": "Synth",
+  "file32": "VST/aria-arm32.so",
+  "file64": "VST/aria-arm64.so",
+  "description": "ARIA: an 8-voice, bi-timbral analogue-modelling polysynth. Two oscillators with a continuous wave mix, FM and sync, a per-voice mod oscillator, a saturating mixer, two transistor-ladder filters in series, stereo or parallel, looping envelopes, a chord memory with a chord on every key, an arpeggiator with a 16-step pattern on the MPC's grid, and a diffusion delay. The same engine as the ARIA VST3.",
+  "author": "swtdr34mz",
+  "url": "https://github.com/swtdr34mz-afk/ARIA",
+  "license": "MPL-2.0"
+}

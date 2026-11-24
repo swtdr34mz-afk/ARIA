@@ -13,54 +13,12 @@ static juce::String paramName(int i)
     return n;
 }
 
-static juce::String noteName(int n)
-{
-    static const char *const N[12] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-    return juce::String(N[n % 12]) + juce::String(n / 12 - 1);
-}
-
-/* a knob's value as the panel and the host show it */
+/* a knob's value as the panel and the host show it (dsp/params.c, shared with the MPC plugin) */
 juce::String ariaValueText(int i, float v)
 {
-    int p = i < GP_FIRST ? i % TP_COUNT : i;
-    const aria_param_t *d = aria_param_info(i);
-    if (d->kind == PK_CHOICE) return d->choice[juce::jlimit(0, d->count - 1, (int)std::lround(v))];
-    if (d->kind == PK_SWITCH) return v > 0.5f ? "ON" : "OFF";
-    if (i >= GP_FIRST) {
-        switch (p) {
-        case GP_VC_SPLIT: return noteName((int)std::lround(v * 127.0f));
-        case GP_TEMPO: return juce::String((int)std::lround(60.0f + 140.0f * v)) + " BPM";
-        case GP_DL_TIME_L: case GP_DL_TIME_R: {
-            float ms = 1.0f * std::pow(2000.0f, v);
-            return ms < 1000.0f ? juce::String(ms, 0) + " ms" : juce::String(ms / 1000.0f, 2) + " s";
-        }
-        default: break;
-        }
-    } else {
-        switch (p) {
-        case TP_O1_FREQ: case TP_O2_FREQ: {
-            float s = (v - 0.5f) * 14.0f;
-            return (s >= 0 ? "+" : "") + juce::String(s, 2) + " st";
-        }
-        case TP_FE_A: case TP_FE_D: case TP_FE_R: case TP_AE_A: case TP_AE_D: case TP_AE_R: {
-            float s = 0.0005f * std::pow(40000.0f, v);
-            return s < 1.0f ? juce::String(s * 1000.0f, s < 0.01f ? 1 : 0) + " ms" : juce::String(s, 2) + " s";
-        }
-        case TP_F1_CUT: case TP_F2_CUT: {
-            float hz = 20.0f * std::exp2(v * 10.0f);
-            return hz < 1000.0f ? juce::String(hz, 0) + " Hz" : juce::String(hz / 1000.0f, 2) + " kHz";
-        }
-        case TP_L1_RATE: case TP_L2_RATE: return juce::String(0.02f * std::pow(5000.0f, v), 2) + " Hz";
-        case TP_PL_RATE: return juce::String(0.5f * std::pow(40.0f, v), 2) + " Hz";
-        case TP_BEND: return juce::String((int)std::lround(v * 12.0f)) + " st";
-        default: break;
-        }
-    }
-    if (d->kind == PK_BIPOLAR) {
-        int x = (int)std::lround((v - 0.5f) * 200.0f);
-        return (x > 0 ? "+" : "") + juce::String(x);
-    }
-    return juce::String((int)std::lround(v * 100.0f));
+    char t[32];
+    aria_value_text(i, v, t, (int)sizeof t);
+    return juce::String(t);
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout AriaProcessor::createLayout()
