@@ -112,7 +112,8 @@ struct aria {
     int8_t held[128][9];                 /* each key held (id < 128): its count and the notes it plays */
     /* the arpeggiator */
     struct { int key, note; float vel; } arp[ARP_MAX];   /* the notes it holds, in the order played */
-    int arp_n, arp_keys, arp_pos, arp_dir, arp_fresh, arp_cur, arp_on;
+    int arp_n, arp_keys, arp_pos, arp_dir, arp_fresh, arp_cur, arp_on, arp_step;
+    long arp_count;                      /* steps since the arp started (the pattern's position) */
     long arp_slot;
     double ppq, arp_off;                 /* where the clock is (quarter notes); the playing note's end */
     int host_play;
@@ -526,6 +527,7 @@ static void arp_add(aria_t *a, int key, const int *notes, int n, float vel)
     if (a->p[GP_ARP_LATCH] > 0.5f && a->arp_keys == 0) { a->arp_n = 0; }      /* LATCH: a new chord after letting go */
     if (a->arp_n == 0) {
         a->arp_fresh = 1;
+        a->arp_count = 0;
         if (!a->host_play) { a->ppq = 0; a->arp_slot = -1; }                  /* (on its own: from this key) */
     }
     a->arp_keys++;
@@ -593,6 +595,11 @@ static void arp_chunk(aria_t *a, int m)
         if (slot != a->arp_slot) {
             a->arp_slot = slot;
             arp_stop_note(a);
+            /* the pattern: on the host's grid its step is the slot's, on its own it counts from the first key */
+            int len = (int)a->p[GP_ARP_LEN] + 1;
+            long c = a->host_play ? slot : a->arp_count++;
+            a->arp_step = (int)(((c % len) + len) % len);
+            if (a->p[GP_ARP_STEP1 + a->arp_step] < 0.5f) goto rest;    /* a rest: no note, the next one waits */
             /* the notes low to high (ORDER: as played), over the octaves */
             int idx[ARP_MAX], n = a->arp_n;
             for (int i = 0; i < n; i++) idx[i] = i;
@@ -607,9 +614,10 @@ static void arp_chunk(aria_t *a, int m)
                 a->arp_cur = note;
             }
             float gate = a->ps[GP_ARP_GATE];
-            double len = step * ((slot & 1) ? 1.0 - sw : 1.0 + sw);
-            a->arp_off = gate > 0.98f ? 1e30 : start + len * (0.05 + 0.93 * gate);
+            double slen = step * ((slot & 1) ? 1.0 - sw : 1.0 + sw);
+            a->arp_off = gate > 0.98f ? 1e30 : start + slen * (0.05 + 0.93 * gate);
         }
+    rest:;
     }
     if (a->arp_cur >= 0 && (end >= a->arp_off || !a->arp_n || !on)) arp_stop_note(a);
     a->ppq = end;
@@ -623,6 +631,7 @@ void aria_transport(aria_t *a, float bpm, double ppq, int playing)
     a->host_play = playing;
 }
 int aria_arp_note(const aria_t *a) { return a->arp_cur; }
+int aria_arp_step(const aria_t *a) { return (a->arp_on && a->arp_n) ? a->arp_step : -1; }
 
 /* ------------------------------------------------------------------- notes --- */
 void aria_note_on(aria_t *a, int id, int note, float vel)

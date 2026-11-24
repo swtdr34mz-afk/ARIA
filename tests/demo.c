@@ -165,6 +165,20 @@ int main(void)
         int only50 = ns > 0;
         for (int i = 0; i < ns; i++) if (seq[i] % 12 != 2) only50 = 0;
         CHECK(only50, "arp LATCH: a new key after letting go starts a new chord");
+        /* the pattern: four steps, the second a rest: three notes in four steps, none skipped */
+        aria_panic(a); aria_param(a, GP_ARP_LATCH, 0); aria_param(a, GP_ARP_OCT, 0); aria_param(a, GP_ARP_MODE, ARP_UP);
+        aria_param(a, GP_ARP_LEN, 3); aria_param(a, GP_ARP_STEP1 + 1, 0);
+        aria_transport(a, 120.0f, 0.0, 0);
+        aria_note_on(a, 60, 60, 1); aria_note_on(a, 62, 62, 1); aria_note_on(a, 64, 64, 1); aria_note_on(a, 65, 65, 1);
+        ns = 0; last = -2;
+        for (int i = 0; i < SR / 16; i++) {
+            aria_render(a, buf, buf2, 16);
+            int nn = aria_arp_note(a);
+            if (nn != last) { if (nn >= 0 && ns < 64) seq[ns++] = nn; last = nn; }
+        }
+        CHECK(ns == 6 && seq[0] == 60 && seq[1] == 62 && seq[2] == 64 && seq[3] == 65 && seq[4] == 60,
+              "arp pattern: a rest every 4 steps, 6 notes a second, none skipped");
+        aria_param(a, GP_ARP_LEN, 15); aria_param(a, GP_ARP_STEP1 + 1, 1);
         /* the host's grid: playing from beat 1.1, the steps fall on the 16ths */
         aria_panic(a); aria_param(a, GP_ARP_LATCH, 0); aria_param(a, GP_ARP_OCT, 0); aria_param(a, GP_ARP_MODE, ARP_UP);
         aria_note_on(a, 60, 60, 1); aria_note_on(a, 62, 62, 1);

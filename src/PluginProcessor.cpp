@@ -178,6 +178,7 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
     for (int c = 2; c < buffer.getNumChannels(); c++) buffer.clear(c, 0, n);
     learning.store(aria_chord_learning(engine));
     activeVoices.store(aria_voices_active(engine));
+    arpStep.store(aria_arp_step(engine));
     /* the screens */
     auto pack = [](const int8_t *n, int c) {
         uint64_t v = 0;

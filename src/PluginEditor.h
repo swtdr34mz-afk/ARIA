@@ -85,6 +85,16 @@ public:
     int radioValue;
 };
 
+/* a step of the arp pattern: a light key, its LED on when the step plays, the key lit when the arp is on it */
+class StepKey : public Control
+{
+public:
+    StepKey(Panel &p, int step);
+    void paint(juce::Graphics &) override;
+    void mouseDown(const juce::MouseEvent &) override;
+    int step;
+};
+
 class Display : public juce::Component
 {
 public:
@@ -138,7 +148,7 @@ public:
     juce::uint32 touchedAt = 0;
     int learning = 0;
     juce::uint32 blinkPhase = 0;
-    static constexpr int W = 1800, H = 720;
+    static constexpr int W = 1800, H = 790;
 private:
     void timerCallback() override;
     std::vector<std::unique_ptr<Control>> controls;
@@ -149,6 +159,12 @@ private:
     juce::Image tag, face, sideL, sideR;
     void paintKnob(juce::Graphics &, Knob &);
     void paintFader(juce::Graphics &, Fader &);
+    std::vector<StepKey *> steps;
+    int shownStep = -2, patternX = 0, patternW = 0;
+    float shownLen = -1.0f;
+public:
+    int arpStep = -1;
+private:
     Knob *knob(Module &m, int param, bool timbre, const char *label, bool big = false);
     Fader *fader(Module &m, int param, bool timbre, const char *label);
     Button *button(Module &m, Button::Kind k, int param, bool timbre, const char *label, int radio = 0);

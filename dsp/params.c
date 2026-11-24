@@ -18,6 +18,7 @@ static const char *const C_VA[] = { "1", "2", "3", "4", "5", "6", "7" };
 static const char *const C_Q[] = { "ECO 1X", "HIGH 2X", "ULTRA 4X" };
 static const char *const C_ARP[] = { "UP", "DOWN", "UP-DN", "ORDER", "RANDOM" };
 static const char *const C_AOCT[] = { "1 OCT", "2 OCT", "3 OCT", "4 OCT" };
+static const char *const C_LEN[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16" };
 static const char *const C_DIV[] = { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32" };
 
 #define K(n, d) { n, PK_KNOB, 0, d, 0 }
@@ -132,6 +133,15 @@ const aria_param_t ARIA_GPARAMS[ARIA_NPARAM - GP_FIRST] = {
     [GP_ARP_GATE - GP_FIRST] = K("ARP GATE", 0.5f),
     [GP_ARP_SWING - GP_FIRST] = K("ARP SWING", 0),
     [GP_ARP_LATCH - GP_FIRST] = S("ARP LATCH", 0),
+    [GP_ARP_LEN - GP_FIRST] = C("ARP PATTERN LENGTH", C_LEN, 15),
+    [GP_ARP_STEP1 + 0 - GP_FIRST] = S("ARP STEP 1", 1), [GP_ARP_STEP1 + 1 - GP_FIRST] = S("ARP STEP 2", 1),
+    [GP_ARP_STEP1 + 2 - GP_FIRST] = S("ARP STEP 3", 1), [GP_ARP_STEP1 + 3 - GP_FIRST] = S("ARP STEP 4", 1),
+    [GP_ARP_STEP1 + 4 - GP_FIRST] = S("ARP STEP 5", 1), [GP_ARP_STEP1 + 5 - GP_FIRST] = S("ARP STEP 6", 1),
+    [GP_ARP_STEP1 + 6 - GP_FIRST] = S("ARP STEP 7", 1), [GP_ARP_STEP1 + 7 - GP_FIRST] = S("ARP STEP 8", 1),
+    [GP_ARP_STEP1 + 8 - GP_FIRST] = S("ARP STEP 9", 1), [GP_ARP_STEP1 + 9 - GP_FIRST] = S("ARP STEP 10", 1),
+    [GP_ARP_STEP1 + 10 - GP_FIRST] = S("ARP STEP 11", 1), [GP_ARP_STEP1 + 11 - GP_FIRST] = S("ARP STEP 12", 1),
+    [GP_ARP_STEP1 + 12 - GP_FIRST] = S("ARP STEP 13", 1), [GP_ARP_STEP1 + 13 - GP_FIRST] = S("ARP STEP 14", 1),
+    [GP_ARP_STEP1 + 14 - GP_FIRST] = S("ARP STEP 15", 1), [GP_ARP_STEP1 + 15 - GP_FIRST] = S("ARP STEP 16", 1),
 };
 
 const aria_param_t *aria_param_info(int p)

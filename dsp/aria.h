@@ -53,6 +53,7 @@ enum {
     GP_CH_ON, GP_CH_KEY, GP_CH_MAP,                                                    /* CHORD MEMORY */
     GP_DL_MOD, GP_QUALITY,                                             /* (added: DELAY CHORUS, the oversampling) */
     GP_ARP_ON, GP_ARP_MODE, GP_ARP_OCT, GP_ARP_DIV, GP_ARP_GATE, GP_ARP_SWING, GP_ARP_LATCH,   /* ARPEGGIATOR */
+    GP_ARP_LEN, GP_ARP_STEP1, GP_ARP_STEP16 = GP_ARP_STEP1 + 15,      /* ARP PATTERN: its length, each step on or a rest */
     ARIA_NPARAM
 };
 
@@ -104,6 +105,7 @@ void aria_tempo(aria_t *a, float bpm);
  * while it plays, the arpeggiator follows its grid, else it runs on its own from the first key */
 void aria_transport(aria_t *a, float bpm, double ppq, int playing);
 int aria_arp_note(const aria_t *a);              /* the note the arpeggiator plays now (-1: none) */
+int aria_arp_step(const aria_t *a);              /* the pattern's step now, 0..15 (-1: not running) */
 void aria_all_off(aria_t *a);
 void aria_panic(aria_t *a);
 void aria_render(aria_t *a, float *l, float *r, int n);

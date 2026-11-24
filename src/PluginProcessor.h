@@ -49,6 +49,7 @@ public:
     std::atomic<int> editTimbre{0};           /* the panel shows timbre A (0) or B (1) */
     std::atomic<float> uiScale{0.8f};
     std::atomic<int> activeVoices{0};
+    std::atomic<int> arpStep{-1};
     juce::MidiKeyboardState keyboardState;    /* (the standalone's keys, from the computer keyboard) */
 
     /* for the panel's screens (written each block): the chord memory's keys and notes, the scope */
