@@ -14,6 +14,8 @@
 #define NPRE 4                           /* the delay's diffusion: allpasses before the line, a side */
 #define NLOOP 8                          /* and in its feedback, a side (24 lines in all) */
 #define MONO_STACK 16
+#define ARP_MAX 32                       /* notes the arpeggiator holds */
+#define ARP_KEY 0x7FFF0                  /* the key its notes play under */
 
 /* ------------------------------------------------------------------ helpers --- */
 static inline float clampf(float x, float lo, float hi) { return x < lo ? lo : x > hi ? hi : x; }
@@ -108,6 +110,12 @@ struct aria {
     int learning; int8_t learn[8]; int learn_n;
     int8_t last[8]; int last_n, last_key;   /* the last key and the notes it played (the screen) */
     int8_t held[128][9];                 /* each key held (id < 128): its count and the notes it plays */
+    /* the arpeggiator */
+    struct { int key, note; float vel; } arp[ARP_MAX];   /* the notes it holds, in the order played */
+    int arp_n, arp_keys, arp_pos, arp_dir, arp_fresh, arp_cur, arp_on;
+    long arp_slot;
+    double ppq, arp_off;                 /* where the clock is (quarter notes); the playing note's end */
+    int host_play;
 };
 
 /* ----------------------------------------------------------- the parameters --- */
@@ -198,6 +206,7 @@ aria_t *aria_new(float sr)
     if (!a) return 0;
     a->seed = 0x12345678u;
     a->bpm = 120;
+    a->arp_cur = -1; a->arp_slot = -1;
     aria_defaults(a);
     aria_set_rate(a, sr);
     return a;
@@ -500,6 +509,121 @@ int aria_chord_load(aria_t *a, const uint8_t *in, int size)
     return 1;
 }
 
+/* ------------------------------------------------------------ arpeggiator --- */
+static const double DIV_Q[6] = { 1.0, 0.5, 1.0 / 3.0, 0.25, 1.0 / 6.0, 0.125 };   /* a step, in quarter notes */
+
+static void arp_stop_note(aria_t *a)
+{
+    if (a->arp_cur >= 0) { release_key(a, ARP_KEY); a->arp_cur = -1; }
+}
+static void arp_clear(aria_t *a)
+{
+    arp_stop_note(a);
+    a->arp_n = 0; a->arp_keys = 0;
+}
+static void arp_add(aria_t *a, int key, const int *notes, int n, float vel)
+{
+    if (a->p[GP_ARP_LATCH] > 0.5f && a->arp_keys == 0) { a->arp_n = 0; }      /* LATCH: a new chord after letting go */
+    if (a->arp_n == 0) {
+        a->arp_fresh = 1;
+        if (!a->host_play) { a->ppq = 0; a->arp_slot = -1; }                  /* (on its own: from this key) */
+    }
+    a->arp_keys++;
+    for (int i = 0; i < n; i++) {
+        int dup = 0;
+        for (int k = 0; k < a->arp_n; k++) if (a->arp[k].note == notes[i]) { dup = 1; break; }
+        if (dup || a->arp_n >= ARP_MAX) continue;
+        a->arp[a->arp_n].key = key; a->arp[a->arp_n].note = notes[i]; a->arp[a->arp_n].vel = vel;
+        a->arp_n++;
+    }
+}
+static void arp_remove(aria_t *a, int key)
+{
+    int had = 0;
+    for (int k = 0; k < a->arp_n; k++) if (a->arp[k].key == key) { had = 1; break; }
+    if (!had) return;
+    if (a->arp_keys > 0) a->arp_keys--;
+    if (a->p[GP_ARP_LATCH] > 0.5f) return;   /* (kept until the next chord) */
+    int m = 0;
+    for (int k = 0; k < a->arp_n; k++) if (a->arp[k].key != key) a->arp[m++] = a->arp[k];
+    a->arp_n = m;
+    if (!m) arp_stop_note(a);
+}
+
+/* the next note: its index in the held notes over the octaves (L of them) */
+static int arp_next(aria_t *a, int L)
+{
+    int mode = (int)a->p[GP_ARP_MODE];
+    if (a->arp_fresh) {
+        a->arp_fresh = 0; a->arp_dir = 1;
+        a->arp_pos = mode == ARP_DOWN ? L - 1 : mode == ARP_RANDOM ? (int)(rnd(&a->seed) % (uint32_t)L) : 0;
+        return a->arp_pos;
+    }
+    switch (mode) {
+    case ARP_DOWN: a->arp_pos = (a->arp_pos - 1 + L) % L; break;
+    case ARP_UPDOWN:
+        if (L == 1) { a->arp_pos = 0; break; }
+        a->arp_pos += a->arp_dir;
+        if (a->arp_pos >= L) { a->arp_pos = L - 2; a->arp_dir = -1; }
+        if (a->arp_pos < 0) { a->arp_pos = 1; a->arp_dir = 1; }
+        break;
+    case ARP_RANDOM: {
+        int p = (int)(rnd(&a->seed) % (uint32_t)L);
+        if (L > 1 && p == a->arp_pos) p = (p + 1) % L;
+        a->arp_pos = p;
+        break;
+    }
+    default: a->arp_pos = (a->arp_pos + 1) % L; break;
+    }
+    return a->arp_pos;
+}
+
+/* a chunk of m frames: a step that falls in it plays, a note whose gate ends stops; the clock moves on */
+static void arp_chunk(aria_t *a, int m)
+{
+    int on = a->p[GP_ARP_ON] > 0.5f;
+    if (on != a->arp_on) { if (!on) arp_clear(a); a->arp_on = on; a->arp_slot = -1; }
+    double step = DIV_Q[(int)a->p[GP_ARP_DIV]];
+    double end = a->ppq + (double)m * a->bpm / 60.0 / a->sr;
+    if (on && a->arp_n) {
+        double sw = a->ps[GP_ARP_SWING] * 0.5;           /* the off-beat later by up to half a step */
+        double pair = floor(a->ppq / (2.0 * step)), in = a->ppq - pair * 2.0 * step;
+        long slot = (long)pair * 2 + (in >= step * (1.0 + sw) ? 1 : 0);
+        double start = pair * 2.0 * step + ((slot & 1) ? step * (1.0 + sw) : 0.0);
+        if (slot != a->arp_slot) {
+            a->arp_slot = slot;
+            arp_stop_note(a);
+            /* the notes low to high (ORDER: as played), over the octaves */
+            int idx[ARP_MAX], n = a->arp_n;
+            for (int i = 0; i < n; i++) idx[i] = i;
+            if ((int)a->p[GP_ARP_MODE] != ARP_ORDER)
+                for (int i = 1; i < n; i++)
+                    for (int j = i; j > 0 && a->arp[idx[j]].note < a->arp[idx[j - 1]].note; j--) { int t = idx[j]; idx[j] = idx[j - 1]; idx[j - 1] = t; }
+            int oct = (int)a->p[GP_ARP_OCT] + 1, L = n * oct;
+            int k = arp_next(a, L);
+            int note = a->arp[idx[k % n]].note + 12 * (k / n);
+            if (note <= 127) {
+                play_note(a, ARP_KEY, note, a->arp[idx[k % n]].vel);
+                a->arp_cur = note;
+            }
+            float gate = a->ps[GP_ARP_GATE];
+            double len = step * ((slot & 1) ? 1.0 - sw : 1.0 + sw);
+            a->arp_off = gate > 0.98f ? 1e30 : start + len * (0.05 + 0.93 * gate);
+        }
+    }
+    if (a->arp_cur >= 0 && (end >= a->arp_off || !a->arp_n || !on)) arp_stop_note(a);
+    a->ppq = end;
+}
+
+void aria_transport(aria_t *a, float bpm, double ppq, int playing)
+{
+    if (bpm > 10.0f) a->bpm = bpm;
+    if (playing) a->ppq = ppq;
+    else if (a->host_play) { arp_stop_note(a); a->arp_slot = -1; }      /* (stopped: the arp's own clock again) */
+    a->host_play = playing;
+}
+int aria_arp_note(const aria_t *a) { return a->arp_cur; }
+
 /* ------------------------------------------------------------------- notes --- */
 void aria_note_on(aria_t *a, int id, int note, float vel)
 {
@@ -511,9 +635,12 @@ void aria_note_on(aria_t *a, int id, int note, float vel)
         aria_chord_set_key(a, m, note, a->learn, a->learn_n);
         a->learning = 0;
     }
-    release_key(a, id);                      /* (the same key again) */
     int out[8], n = expand(a, note, out);
-    for (int i = 0; i < n; i++) play_note(a, id, out[i], vel);
+    if (a->p[GP_ARP_ON] > 0.5f && !a->learning) arp_add(a, id, out, n, vel);
+    else {
+        release_key(a, id);                  /* (the same key again) */
+        for (int i = 0; i < n; i++) play_note(a, id, out[i], vel);
+    }
     a->last_n = n; a->last_key = note;
     if (id >= 0 && id < 128) { a->held[id][0] = (int8_t)n; for (int i = 0; i < n; i++) a->held[id][1 + i] = (int8_t)out[i]; }
     for (int i = 0; i < n; i++) a->last[i] = (int8_t)out[i];
@@ -521,6 +648,7 @@ void aria_note_on(aria_t *a, int id, int note, float vel)
 void aria_note_off(aria_t *a, int id)
 {
     if (id >= 0 && id < 128) a->held[id][0] = 0;
+    if (a->arp_n) arp_remove(a, id);
     release_key(a, id);
 }
 
@@ -540,6 +668,7 @@ void aria_tempo(aria_t *a, float bpm) { if (bpm > 10) a->bpm = bpm; }
 void aria_all_off(aria_t *a)
 {
     memset(a->held, 0, sizeof a->held);
+    arp_clear(a);
     for (int t = 0; t < ARIA_TIMBRES; t++) a->tb[t].nstack = 0;
     for (int i = 0; i < ARIA_VOICES; i++) {
         voice_t *v = &a->v[i];
@@ -549,6 +678,7 @@ void aria_all_off(aria_t *a)
 void aria_panic(aria_t *a)
 {
     memset(a->held, 0, sizeof a->held);
+    a->arp_n = a->arp_keys = 0; a->arp_cur = -1; a->arp_slot = -1;
     voices_reset(a);
     delay_clear(&a->dl);
     a->sustain = 0;
@@ -861,6 +991,7 @@ void aria_render(aria_t *a, float *outl, float *outr, int n)
         int mi = m * os;
         /* the knobs move */
         for (int p = 0; p < ARIA_NPARAM; p++) a->ps[p] += (a->p[p] - a->ps[p]) * 0.12f;
+        arp_chunk(a, m);
         for (int t = 0; t < ARIA_TIMBRES; t++) timbre_control(a, t);
         memset(bus, 0, sizeof bus);
         for (int i = 0; i < ARIA_VOICES; i++) {

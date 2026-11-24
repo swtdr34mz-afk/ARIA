@@ -16,6 +16,9 @@ static const char *const C_VC[] = { "SINGLE", "SPLIT", "STACK" };
 static const char *const C_MAP[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
 static const char *const C_VA[] = { "1", "2", "3", "4", "5", "6", "7" };
 static const char *const C_Q[] = { "ECO 1X", "HIGH 2X", "ULTRA 4X" };
+static const char *const C_ARP[] = { "UP", "DOWN", "UP-DN", "ORDER", "RANDOM" };
+static const char *const C_AOCT[] = { "1 OCT", "2 OCT", "3 OCT", "4 OCT" };
+static const char *const C_DIV[] = { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32" };
 
 #define K(n, d) { n, PK_KNOB, 0, d, 0 }
 #define B(n, d) { n, PK_BIPOLAR, 0, d, 0 }
@@ -122,6 +125,13 @@ const aria_param_t ARIA_GPARAMS[ARIA_NPARAM - GP_FIRST] = {
     [GP_CH_MAP - GP_FIRST] = C("CHORD KEY MAP", C_MAP, 0),
     [GP_DL_MOD - GP_FIRST] = K("DELAY CHORUS", 0.25f),
     [GP_QUALITY - GP_FIRST] = C("QUALITY", C_Q, Q_HIGH),
+    [GP_ARP_ON - GP_FIRST] = S("ARP ON", 0),
+    [GP_ARP_MODE - GP_FIRST] = C("ARP MODE", C_ARP, ARP_UP),
+    [GP_ARP_OCT - GP_FIRST] = C("ARP OCTAVES", C_AOCT, 0),
+    [GP_ARP_DIV - GP_FIRST] = C("ARP RATE", C_DIV, DIV_16),
+    [GP_ARP_GATE - GP_FIRST] = K("ARP GATE", 0.5f),
+    [GP_ARP_SWING - GP_FIRST] = K("ARP SWING", 0),
+    [GP_ARP_LATCH - GP_FIRST] = S("ARP LATCH", 0),
 };
 
 const aria_param_t *aria_param_info(int p)

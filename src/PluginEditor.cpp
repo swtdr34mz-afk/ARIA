@@ -414,53 +414,58 @@ void Panel::build()
     };
     modules.reserve(20);
     int x = X0;
-    { auto &m = add("MOD OSC", x, ROW1, 220, H1); x += 220;
+    { auto &m = add("MOD OSC", x, ROW1, 230, H1); x += 230;
       knob(m, TP_MO_FREQ, true, "FREQ"); knob(m, TP_MO_PITCH, true, "PITCH"); knob(m, TP_MO_FILTER, true, "FILTER");
       knob(m, TP_MO_PWM, true, "PWM"); knob(m, TP_MO_VCA, true, "VCA"); knob(m, TP_MO_PAN, true, "PAN");
       button(m, B::SWITCH, TP_MO_AUDIO, true, "AUDIO"); button(m, B::SWITCH, TP_MO_KBTRK, true, "KB");
       button(m, B::SWITCH, TP_MO_KBRESET, true, "RESET"); button(m, B::SWITCH, TP_MO_UNI, true, "UNI");
       button(m, B::CYCLE, TP_MO_WAVE, true, ""); button(m, B::CYCLE, TP_MO_PITCH_DEST, true, "P>");
       button(m, B::CYCLE, TP_MO_FILTER_DEST, true, "F>"); }
-    { auto &m = add("OSCILLATOR 1", x, ROW1, 190, H1); x += 190;
+    { auto &m = add("OSCILLATOR 1", x, ROW1, 200, H1); x += 200;
       knob(m, TP_O1_FREQ, true, "FREQ"); knob(m, TP_O1_TRISAW, true, "TRI-SAW"); knob(m, TP_O1_PW, true, "WIDTH");
       knob(m, TP_O1_MIX, true, "WAVE MIX"); knob(m, TP_FM_AMT, true, "FM AMT");
       button(m, B::CYCLE, TP_O1_OCT, true, ""); button(m, B::SWITCH, TP_FM_21, true, "FM 2>1"); }
-    { auto &m = add("OSCILLATOR 2", x, ROW1, 190, H1); x += 190;
+    { auto &m = add("OSCILLATOR 2", x, ROW1, 200, H1); x += 200;
       knob(m, TP_O2_FREQ, true, "FREQ"); knob(m, TP_O2_TRISAW, true, "TRI-SAW"); knob(m, TP_O2_PW, true, "WIDTH");
       knob(m, TP_O2_MIX, true, "WAVE MIX");
       button(m, B::CYCLE, TP_O2_OCT, true, ""); button(m, B::SWITCH, TP_O2_SYNC, true, "SYNC");
       button(m, B::SWITCH, TP_FM_12, true, "FM 1>2"); }
-    { auto &m = add("MIXER", x, ROW1, 230, H1); x += 230;
+    { auto &m = add("MIXER", x, ROW1, 250, H1); x += 250;
       fader(m, TP_MX_O1, true, "OSC 1"); fader(m, TP_MX_RING, true, "RING"); fader(m, TP_MX_O2, true, "OSC 2");
       fader(m, TP_MX_MOD, true, "MOD"); fader(m, TP_MX_NOISE, true, "NOISE"); fader(m, TP_MX_OVERLOAD, true, "DRIVE"); }
-    { auto &m = add("LADDER FILTERS", x, ROW1, 300, H1); x += 300;
+    { auto &m = add("LADDER FILTERS", x, ROW1, 330, H1); x += 330;
       knob(m, TP_F1_CUT, true, "CUTOFF 1", true); knob(m, TP_F1_RES, true, "RES 1"); knob(m, TP_F2_RES, true, "RES 2");
-      knob(m, TP_F2_CUT, true, "CUTOFF 2", true); knob(m, TP_F1_ENV, true, "ENV 1"); knob(m, TP_F2_ENV, true, "ENV 2");
+      knob(m, TP_F2_CUT, true, "CUTOFF 2", true); knob(m, TP_F1_ENV, true, "ENV 1")->newRow = true; knob(m, TP_F2_ENV, true, "ENV 2");
       button(m, B::SWITCH, TP_F1_HP, true, "HP 1"); button(m, B::SWITCH, TP_F_LINK, true, "LINK");
       button(m, B::RADIO, TP_F_ORDER, true, "SER", ORD_SERIAL); button(m, B::RADIO, TP_F_ORDER, true, "STR", ORD_STEREO);
       button(m, B::RADIO, TP_F_ORDER, true, "PAR", ORD_PARALLEL);
       button(m, B::CYCLE, TP_F1_KB, true, "KB1"); button(m, B::CYCLE, TP_F2_KB, true, "KB2"); }
-    { auto &m = add("FILTER ENV", x, ROW1, 211, H1); x += 211;
+    { auto &m = add("FILTER ENV", x, ROW1, 231, H1); x += 231;
       fader(m, TP_FE_A, true, "A"); fader(m, TP_FE_D, true, "D"); fader(m, TP_FE_S, true, "S"); fader(m, TP_FE_R, true, "R");
       knob(m, TP_FE_CURVE, true, "CURVE");
       button(m, B::SWITCH, TP_FE_LOOP, true, "LOOP"); button(m, B::SWITCH, TP_FE_VEL, true, "VEL"); }
-    { auto &m = add("AMP ENV", x, ROW1, 211, H1); x += 211;
+    { auto &m = add("AMP ENV", x, ROW1, 231, H1); x += 231;
       fader(m, TP_AE_A, true, "A"); fader(m, TP_AE_D, true, "D"); fader(m, TP_AE_S, true, "S"); fader(m, TP_AE_R, true, "R");
       knob(m, TP_AE_CURVE, true, "CURVE");
       button(m, B::SWITCH, TP_AE_LOOP, true, "LOOP"); button(m, B::SWITCH, TP_AE_VEL, true, "VEL"); }
 
     x = X0;
-    { auto &m = add("LFO 1", x, ROW2, 130, H2); x += 130;
+    { auto &m = add("LFO 1", x, ROW2, 124, H2); x += 124;
       knob(m, TP_L1_RATE, true, "RATE"); knob(m, TP_L1_AMT, true, "AMT");
       button(m, B::CYCLE, TP_L1_WAVE, true, ""); button(m, B::CYCLE, TP_L1_DEST, true, ">"); }
-    { auto &m = add("LFO 2", x, ROW2, 130, H2); x += 130;
+    { auto &m = add("LFO 2", x, ROW2, 124, H2); x += 124;
       knob(m, TP_L2_RATE, true, "RATE"); knob(m, TP_L2_AMT, true, "AMT");
       button(m, B::CYCLE, TP_L2_WAVE, true, ""); button(m, B::CYCLE, TP_L2_DEST, true, ">"); }
-    { auto &m = add("PITCH LFO", x, ROW2, 150, H2); x += 150;
+    { auto &m = add("PITCH LFO", x, ROW2, 130, H2); x += 130;
       knob(m, TP_PL_RATE, true, "RATE"); knob(m, TP_PL_SHAPE, true, "SHAPE"); knob(m, TP_PL_AMT, true, "AMT"); }
-    { auto &m = add("PERFORM", x, ROW2, 110, H2); x += 110;
+    { auto &m = add("PERFORM", x, ROW2, 100, H2); x += 100;
       knob(m, TP_GLIDE, true, "GLIDE"); knob(m, TP_BEND, true, "BEND"); }
-    { auto &m = add("CHORD MEMORY", x, ROW2, 210, H2); x += 210; m.accent = true;
+    { auto &m = add("ARPEGGIATOR", x, ROW2, 198, H2); x += 198;
+      knob(m, GP_ARP_GATE, false, "GATE"); knob(m, GP_ARP_SWING, false, "SWING");
+      button(m, B::SWITCH, GP_ARP_ON, false, "ON"); button(m, B::SWITCH, GP_ARP_LATCH, false, "LATCH");
+      button(m, B::CYCLE, GP_ARP_DIV, false, ""); button(m, B::CYCLE, GP_ARP_MODE, false, "");
+      button(m, B::CYCLE, GP_ARP_OCT, false, ""); }
+    { auto &m = add("CHORD MEMORY", x, ROW2, 200, H2); x += 200; m.accent = true;
       button(m, B::SWITCH, GP_CH_ON, false, "ON"); button(m, B::SWITCH, GP_CH_KEY, false, "KEY");
       auto *l = button(m, B::ACTION, GP_CH_ON, false, "LEARN");
       l->onPress = [this] { proc.learnRequest.store(1); };
@@ -471,7 +476,7 @@ void Panel::build()
           b->label = juce::String(i + 1);
           b->small = true;
       } }
-    { auto &m = add("VOICES", x, ROW2, 250, H2); x += 250;
+    { auto &m = add("VOICES", x, ROW2, 242, H2); x += 242;
       knob(m, TP_DETUNE, true, "DETUNE"); knob(m, GP_VC_SPLIT, false, "SPLIT");
       button(m, B::ACTION, 0, false, "EDIT A")->onPress = [this] { proc.editTimbre.store(0); repaint(); };
       m.buttons.back()->lit = [this] { return proc.editTimbre.load() == 0; };
@@ -480,9 +485,9 @@ void Panel::build()
       button(m, B::RADIO, GP_VC_MODE, false, "SINGLE", VC_SINGLE); button(m, B::RADIO, GP_VC_MODE, false, "SPLIT", VC_SPLIT);
       button(m, B::RADIO, GP_VC_MODE, false, "STACK", VC_STACK); button(m, B::CYCLE, GP_VC_VOICES_A, false, "A");
       button(m, B::SWITCH, TP_UNISON, true, "UNI"); button(m, B::SWITCH, TP_MONO, true, "MONO"); }
-    { auto &m = add("VCA", x, ROW2, 140, H2); x += 140;
+    { auto &m = add("VCA", x, ROW2, 130, H2); x += 130;
       knob(m, TP_VCA_LEVEL, true, "LEVEL"); knob(m, TP_VCA_PAN, true, "PAN"); knob(m, TP_VCA_SPREAD, true, "SPREAD"); }
-    { auto &m = add("DIFFUSION DELAY", x, ROW2, 312, H2); x += 312;
+    { auto &m = add("DIFFUSION DELAY", x, ROW2, 304, H2); x += 304;
       knob(m, GP_DL_TIME_L, false, "TIME L"); knob(m, GP_DL_TIME_R, false, "TIME R"); knob(m, GP_DL_FB, false, "FDBK");
       knob(m, GP_DL_CHAR, false, "CHAR"); knob(m, GP_DL_DIFF, false, "DIFF"); knob(m, GP_DL_MOD, false, "CHORUS");
       knob(m, GP_DL_MIX, false, "MIX");
@@ -507,12 +512,13 @@ void Panel::layoutModule(Module &m)
 {
     const int pad = 10, inner = m.w - 2 * pad;
     int y = m.y + 28;
+    auto breaks = [](juce::Component *c) { auto *k = dynamic_cast<Knob *>(c); return k != nullptr && k->newRow; };
     auto flow = [&](auto &items, auto wOf, auto hOf, int gapX, int gapY, int yTop) {
         size_t i = 0;
         int yy = yTop;
         while (i < items.size()) {
             size_t j = i; int rowW = 0, rowH = 0;
-            while (j < items.size() && rowW + wOf(items[j]) + (j > i ? gapX : 0) <= inner) { rowW += wOf(items[j]) + (j > i ? gapX : 0); rowH = std::max(rowH, hOf(items[j])); j++; }
+            while (j < items.size() && rowW + wOf(items[j]) + (j > i ? gapX : 0) <= inner && !(j > i && breaks(items[j]))) { rowW += wOf(items[j]) + (j > i ? gapX : 0); rowH = std::max(rowH, hOf(items[j])); j++; }
             if (j == i) j = i + 1;
             int xx = m.x + pad + (inner - rowW) / 2;
             for (size_t k = i; k < j; k++) { items[k]->setBounds(xx, yy, wOf(items[k]), hOf(items[k])); xx += wOf(items[k]) + gapX; }
@@ -521,7 +527,7 @@ void Panel::layoutModule(Module &m)
         }
         return yy;
     };
-    auto kw = [](Knob *k) { return k->big ? 70 : 52; };
+    auto kw = [](Knob *k) { return k->big ? 70 : 50; };
     auto kh = [](Knob *k) { return k->big ? 84 : 68; };
     auto fw = [](Fader *) { return 32; };
     auto fh = [](Fader *) { return 134; };
@@ -538,7 +544,7 @@ void Panel::layoutModule(Module &m)
         if (!dots.empty()) hb += 36;
         int yb = m.y + m.h - hb - 6;
         int after = flow(big, bw, bh, 4, 4, yb);
-        if (!dots.empty()) flow(dots, bw, bh, 3, 4, after + 2);
+        if (!dots.empty()) flow(dots, bw, bh, 2, 4, after + 2);
     }
 }
 

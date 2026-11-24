@@ -122,6 +122,68 @@ int main(void)
         aria_panic(a); aria_defaults(a);
     }
 
+    /* ---- the arpeggiator ---- */
+    {
+        aria_param(a, GP_ARP_ON, 1); aria_param(a, GP_ARP_DIV, DIV_16); aria_param(a, GP_ARP_GATE, 0.5f);
+        aria_transport(a, 120.0f, 0.0, 0);
+        aria_note_on(a, 60, 60, 1); aria_note_on(a, 67, 67, 1); aria_note_on(a, 64, 64, 1);
+        int seq[64], ns = 0, last = -2, offs = 0;
+        float buf[16], buf2[16];
+        for (int i = 0; i < SR / 16; i++) {          /* one second */
+            aria_render(a, buf, buf2, 16);
+            int nn = aria_arp_note(a);
+            if (nn != last) { if (nn >= 0 && ns < 64) seq[ns++] = nn; else if (nn < 0) offs++; last = nn; }
+        }
+        CHECK(ns == 8, "arp: 1/16 at 120 BPM, eight notes a second");
+        CHECK(ns >= 4 && seq[0] == 60 && seq[1] == 64 && seq[2] == 67 && seq[3] == 60, "arp UP: low to high, again");
+        CHECK(offs >= 7, "arp GATE 50%: each note stops before the next");
+        aria_param(a, GP_ARP_OCT, 1); aria_param(a, GP_ARP_MODE, ARP_UPDOWN);
+        aria_note_off(a, 60); aria_note_off(a, 64); aria_note_off(a, 67);
+        for (int i = 0; i < 100; i++) aria_render(a, buf, buf2, 16);
+        CHECK(aria_arp_note(a) == -1, "arp: keys let go, the arp stops");
+        aria_note_on(a, 60, 60, 1); aria_note_on(a, 64, 64, 1);
+        ns = 0; last = -2;
+        for (int i = 0; i < SR / 16; i++) {
+            aria_render(a, buf, buf2, 16);
+            int nn = aria_arp_note(a);
+            if (nn != last) { if (nn >= 0 && ns < 64) seq[ns++] = nn; last = nn; }
+        }
+        CHECK(ns == 8 && seq[0] == 60 && seq[1] == 64 && seq[2] == 72 && seq[3] == 76 && seq[4] == 72 && seq[5] == 64,
+              "arp UP-DN over 2 octaves: 60 64 72 76 72 64 ...");
+        aria_param(a, GP_ARP_LATCH, 1);
+        aria_note_off(a, 60); aria_note_off(a, 64);
+        int played = 0;
+        for (int i = 0; i < 600; i++) { aria_render(a, buf, buf2, 16); if (aria_arp_note(a) >= 0) played++; }
+        CHECK(played > 100, "arp LATCH: plays on after the keys are let go");
+        aria_note_on(a, 50, 50, 1); aria_note_off(a, 50);
+        ns = 0; last = -2;
+        for (int i = 0; i < SR / 32; i++) {
+            aria_render(a, buf, buf2, 16);
+            int nn = aria_arp_note(a);
+            if (nn != last) { if (nn >= 0 && ns < 64) seq[ns++] = nn; last = nn; }
+        }
+        int only50 = ns > 0;
+        for (int i = 0; i < ns; i++) if (seq[i] % 12 != 2) only50 = 0;
+        CHECK(only50, "arp LATCH: a new key after letting go starts a new chord");
+        /* the host's grid: playing from beat 1.1, the steps fall on the 16ths */
+        aria_panic(a); aria_param(a, GP_ARP_LATCH, 0); aria_param(a, GP_ARP_OCT, 0); aria_param(a, GP_ARP_MODE, ARP_UP);
+        aria_note_on(a, 60, 60, 1); aria_note_on(a, 62, 62, 1);
+        int trig = 0; double first = -1; last = aria_arp_note(a);
+        for (int blk = 0; blk < 40; blk++) {
+            double ppq = 1.1 + blk * 512.0 * 2.0 / SR;   /* 120 BPM: 2 quarters a second */
+            aria_transport(a, 120.0f, ppq, 1);
+            for (int i = 0; i < 32; i++) {
+                aria_render(a, buf, buf2, 16);
+                int nn = aria_arp_note(a);
+                if (nn >= 0 && nn != last) { trig++; if (first < 0 && trig == 2) first = ppq + (i + 1) * 16.0 * 2.0 / SR; }
+                last = nn;
+            }
+        }
+        CHECK(first > 0 && fabs(first - 1.25) < 0.01, "arp with the host: the next step on the 16th (1.25)");
+        aria_transport(a, 120.0f, 0, 0);
+        aria_panic(a); aria_defaults(a);
+    }
+
     /* ---- voices ---- */
     for (int i = 0; i < 10; i++) aria_note_on(a, 20 + i, 48 + i, 1);
     aria_render(a, tmp, tmp2, 256);
@@ -229,6 +291,27 @@ int main(void)
         ev[7].dur = 1.5f;
         float pk = play(a, ev, 8, 7, "out/ARIA-05-sync-lead.wav", &bad);
         CHECK(pk > 0.01f && pk < 1.6f, "demo 5 sync lead: sound, no blow-up");
+        aria_panic(a); aria_defaults(a);
+    }
+    /* 6. the arpeggiator through the chord memory: one key a bar, each a chord (KEY map 1), UP-DN over 2 octaves */
+    {
+        static const int8_t CH[4][4] = { { 57, 60, 64, 67 }, { 53, 57, 60, 64 }, { 48, 52, 55, 59 }, { 55, 59, 62, 65 } };
+        static const int K4[4] = { 69, 65, 60, 67 };
+        for (int i = 0; i < 4; i++) aria_chord_set_key(a, 0, K4[i], CH[i], 4);
+        SET(GP_CH_ON, 1); SET(GP_CH_KEY, 1); SET(GP_CH_MAP, 0);
+        SET(GP_ARP_ON, 1); SET(GP_ARP_MODE, ARP_UPDOWN); SET(GP_ARP_OCT, 1); SET(GP_ARP_DIV, DIV_16); SET(GP_ARP_GATE, 0.45f);
+        SET(GP_ARP_SWING, 0.25f);
+        aria_transport(a, 112.0f, 0.0, 0);
+        SET(A(TP_O1_MIX), 0.6f); SET(A(TP_MX_O2), 0.5f); SET(A(TP_O2_FREQ), 0.5f + 0.08f / 14.0f);
+        SET(A(TP_F1_CUT), 0.38f); SET(A(TP_F1_RES), 0.55f); SET(A(TP_F1_ENV), 0.78f); SET(A(TP_F1_KB), KB_HALF);
+        SET(A(TP_FE_D), 0.4f); SET(A(TP_FE_S), 0.05f); SET(A(TP_AE_D), 0.5f); SET(A(TP_AE_S), 0.3f); SET(A(TP_AE_R), 0.35f);
+        SET(A(TP_VCA_SPREAD), 0.6f); SET(A(TP_MX_OVERLOAD), 0.25f);
+        SET(GP_DL_MIX, 0.32f); SET(GP_DL_FB, 0.5f); SET(GP_DL_TIME_L, 0.6f); SET(GP_DL_TIME_R, 0.66f); SET(GP_DL_DIFF, 0.45f);
+        float bar = 4.0f * 60.0f / 112.0f;
+        ev_t ev[4];
+        for (int i = 0; i < 4; i++) { ev[i].t = i * bar; ev[i].dur = bar - 0.05f; ev[i].note = K4[i]; ev[i].vel = 0.85f; }
+        float pk = play(a, ev, 4, 4 * bar + 2.5f, "out/ARIA-06-arp-chords.wav", &bad);
+        CHECK(pk > 0.01f && pk < 1.6f, "demo 6 arp through the chord memory: sound, no blow-up");
         aria_panic(a); aria_defaults(a);
     }
     CHECK(bad == 0, "no NaN or Inf in any demo");

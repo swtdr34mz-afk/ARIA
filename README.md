@@ -4,8 +4,8 @@ An 8-voice, bi-timbral analogue-modelling polysynth by **swtdr34mz**: two oscill
 per-voice mod oscillator, two 4-pole ladder filters (series, stereo or parallel), a chord memory with a KEY mode and
 8 key maps, and a diffusion delay. Planned as a VST3 / standalone plugin (Cubase, Windows) and an MPC plugin.
 
-**Status:** the engine and the plugin (VST3 and standalone for Windows, with the panel) are here. Still to come: the
-arpeggiator, more factory sounds and the MPC version.
+**Status:** the engine, the arpeggiator and the plugin (VST3 and standalone for Windows, with the panel) are here.
+Still to come: more factory sounds and the MPC version.
 
 ## Download
 
@@ -31,7 +31,12 @@ arpeggiator, more factory sounds and the MPC version.
   noch einmal: ohne KEY ist das der Akkord (verschoben auf jede Taste), mit KEY drückst du danach die Taste, auf der er
   liegen soll. Die Punkte 1–8 sind die Key Maps; 1–4 kommen fertig mit: C-Dur-Septakkorde, C-Dur-Dreiklänge,
   c-Moll-Septakkorde, c-Moll-Nonenakkorde auf den weißen Tasten. Alles wird mit dem Projekt gespeichert.
-- **Patches:** die Pfeile neben dem Display (oder die Programme des Hosts).
+- **ARPEGGIATOR:** ON, LATCH (die Noten bleiben nach dem Loslassen, bis ein neuer Akkord kommt), Rate (1/4 bis 1/32,
+  auch triolisch), Richtung (UP, DOWN, UP-DN, ORDER = wie gespielt, RANDOM), 1–4 Oktaven, GATE (Notenlänge), SWING.
+  Läuft im Takt von Cubase bzw. der MPC, sobald der Host spielt; sonst ab der ersten Taste. Mit der Chord Memory
+  zusammen wird jeder Akkord einer Taste arpeggiert (Preset ARP CHORDS).
+- **QUALITY** (neben dem Display): ECO 1X, HIGH 2X (Standard), ULTRA 4X – das Oversampling der Stimmen.
+- **Patches:** PREV / NEXT neben dem Display (oder die Programme des Hosts).
 
 ## Auf Deutsch, kurz
 

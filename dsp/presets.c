@@ -74,6 +74,17 @@ static const aria_set_t PULSING_DRONE[] = {
     { GP_DL_MIX, 0.35f }, { GP_DL_FB, 0.6f }, { GP_DL_DIFF, 0.6f }, END
 };
 
+static const aria_set_t ARP_CHORDS[] = {   /* one key, a chord (key map 1), arpeggiated up and down over two octaves */
+    { GP_CH_ON, 1 }, { GP_CH_KEY, 1 }, { GP_CH_MAP, 0 },
+    { GP_ARP_ON, 1 }, { GP_ARP_MODE, ARP_UPDOWN }, { GP_ARP_OCT, 1 }, { GP_ARP_DIV, DIV_16 }, { GP_ARP_GATE, 0.45f },
+    { GP_ARP_SWING, 0.2f },
+    { A_(TP_O1_MIX), 0.6f }, { A_(TP_MX_O2), 0.5f }, { A_(TP_O2_FREQ), 0.5057f },
+    { A_(TP_F1_CUT), 0.38f }, { A_(TP_F1_RES), 0.55f }, { A_(TP_F1_ENV), 0.78f }, { A_(TP_F1_KB), KB_HALF },
+    { A_(TP_FE_D), 0.4f }, { A_(TP_FE_S), 0.05f }, { A_(TP_AE_D), 0.5f }, { A_(TP_AE_S), 0.3f }, { A_(TP_AE_R), 0.35f },
+    { A_(TP_VCA_SPREAD), 0.6f }, { A_(TP_MX_OVERLOAD), 0.25f },
+    { GP_DL_MIX, 0.32f }, { GP_DL_FB, 0.5f }, { GP_DL_TIME_L, 0.6f }, { GP_DL_TIME_R, 0.66f }, { GP_DL_DIFF, 0.45f }, END
+};
+
 const aria_preset_t ARIA_PRESETS[ARIA_NPRESETS] = {
     { "INIT", INIT },
     { "GLASS PAD", GLASS_PAD },
@@ -84,6 +95,7 @@ const aria_preset_t ARIA_PRESETS[ARIA_NPRESETS] = {
     { "SPLIT BASS PAD", SPLIT_BASS_PAD },
     { "RING BELLS", RING_BELLS },
     { "PULSING DRONE", PULSING_DRONE },
+    { "ARP CHORDS", ARP_CHORDS },
 };
 
 void aria_preset_values(int i, float *out)

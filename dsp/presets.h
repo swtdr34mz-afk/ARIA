@@ -9,7 +9,7 @@ extern "C" {
 
 typedef struct { int p; float v; } aria_set_t;          /* a parameter and its value; p -1 ends a list */
 typedef struct { const char *name; const aria_set_t *set; } aria_preset_t;
-#define ARIA_NPRESETS 9
+#define ARIA_NPRESETS 10
 extern const aria_preset_t ARIA_PRESETS[ARIA_NPRESETS];
 void aria_preset_values(int i, float *out);             /* every parameter's value in factory sound i (ARIA_NPARAM) */
 void aria_factory_keymaps(aria_t *a);                   /* key maps 1-4: the chords of C major and C minor */

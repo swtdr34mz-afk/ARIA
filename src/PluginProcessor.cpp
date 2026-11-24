@@ -149,6 +149,16 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
     if (!sl.isLocked()) { buffer.clear(); return; }      /* (the state is being loaded) */
     keyboardState.processNextMidiBuffer(midi, 0, n, true);
     sendParams(false);
+    {   /* the host's tempo and position: the arpeggiator's grid */
+        float bpm = 120.0f; double ppq = 0.0; bool playing = false;
+        if (auto *ph = getPlayHead())
+            if (auto pos = ph->getPosition()) {
+                if (auto b = pos->getBpm()) bpm = (float)*b;
+                if (auto q = pos->getPpqPosition()) ppq = *q;
+                playing = pos->getIsPlaying();
+            }
+        aria_transport(engine, bpm, ppq, playing ? 1 : 0);
+    }
     if (learnRequest.exchange(0)) aria_chord_learn(engine);
     if (cancelRequest.exchange(0)) aria_chord_cancel(engine);
 

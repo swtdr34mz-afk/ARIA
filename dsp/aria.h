@@ -52,6 +52,7 @@ enum {
     GP_OUT_VOL, GP_OUT_LOWCUT,                                                         /* OUTPUT */
     GP_CH_ON, GP_CH_KEY, GP_CH_MAP,                                                    /* CHORD MEMORY */
     GP_DL_MOD, GP_QUALITY,                                             /* (added: DELAY CHORUS, the oversampling) */
+    GP_ARP_ON, GP_ARP_MODE, GP_ARP_OCT, GP_ARP_DIV, GP_ARP_GATE, GP_ARP_SWING, GP_ARP_LATCH,   /* ARPEGGIATOR */
     ARIA_NPARAM
 };
 
@@ -79,6 +80,8 @@ enum { LW_SINE, LW_TRI, LW_SAW, LW_RAMP, LW_SQUARE, LW_SH, NLW };
 enum { LD_OFF, LD_PITCH, LD_OSC1, LD_OSC2, LD_F1, LD_F2, LD_FILTERS, LD_PW, LD_AMP, LD_PAN, LD_MOFREQ, LD_FM, NLD };
 enum { VC_SINGLE, VC_SPLIT, VC_STACK };
 enum { Q_ECO, Q_HIGH, Q_ULTRA };                          /* the voices at 1x, 2x, 4x the rate */
+enum { ARP_UP, ARP_DOWN, ARP_UPDOWN, ARP_ORDER, ARP_RANDOM };
+enum { DIV_4, DIV_8, DIV_8T, DIV_16, DIV_16T, DIV_32 };
 
 /* ----------------------------------------------------------------- the engine --- */
 typedef struct aria aria_t;
@@ -97,6 +100,10 @@ void aria_bend(aria_t *a, float v);              /* -1..1 */
 void aria_modwheel(aria_t *a, float v);          /* 0..1: more vibrato (the PITCH LFO) and LFO 1 */
 void aria_pressure(aria_t *a, float v);          /* 0..1: aftertouch, opens the filters a little */
 void aria_tempo(aria_t *a, float bpm);
+/* the host's transport, each block before the render: its tempo, where it is (in quarter notes) and whether it plays;
+ * while it plays, the arpeggiator follows its grid, else it runs on its own from the first key */
+void aria_transport(aria_t *a, float bpm, double ppq, int playing);
+int aria_arp_note(const aria_t *a);              /* the note the arpeggiator plays now (-1: none) */
 void aria_all_off(aria_t *a);
 void aria_panic(aria_t *a);
 void aria_render(aria_t *a, float *l, float *r, int n);

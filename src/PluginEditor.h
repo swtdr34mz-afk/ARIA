@@ -50,6 +50,7 @@ public:
     void mouseDoubleClick(const juce::MouseEvent &) override;
     void mouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetails &) override;
     bool big;
+    bool newRow = false;                     /* (the panel: this knob starts a new row) */
 private:
     float startV = 0;
 };
@@ -137,7 +138,7 @@ public:
     juce::uint32 touchedAt = 0;
     int learning = 0;
     juce::uint32 blinkPhase = 0;
-    static constexpr int W = 1680, H = 720;
+    static constexpr int W = 1800, H = 720;
 private:
     void timerCallback() override;
     std::vector<std::unique_ptr<Control>> controls;
