@@ -75,7 +75,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AriaProcessor::createLayout(
             for (int k = 0; k < d->count; k++) ch.add(d->choice[k]);
             layout.add(std::make_unique<juce::AudioParameterChoice>(id, paramName(i), ch, (int)def[i]));
         } else if (d->kind == PK_SWITCH) {
-            layout.add(std::make_unique<juce::AudioParameterBool>(id, paramName(i), def[i] > 0.5f));
+            /* (a choice OFF/ON, not a bool: it saves and restores exactly) */
+            layout.add(std::make_unique<juce::AudioParameterChoice>(id, paramName(i), juce::StringArray{ "OFF", "ON" }, def[i] > 0.5f ? 1 : 0));
         } else {
             layout.add(std::make_unique<juce::AudioParameterFloat>(
                 id, paramName(i), juce::NormalisableRange<float>(0.0f, 1.0f), def[i],
