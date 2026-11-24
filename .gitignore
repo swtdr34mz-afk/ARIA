@@ -1,0 +1,4 @@
+tests/out/
+tests/demo
+*.o
+build/
