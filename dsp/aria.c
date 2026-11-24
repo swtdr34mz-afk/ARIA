@@ -293,6 +293,9 @@ static inline float env_tick(env_t *e, const float inc[4], float sus, float c, i
  * last stage (averaged over two samples: the half-sample delay) with part of the input added back (the bass the
  * ladder loses to resonance, partly restored), run at the oversampled rate. g = 1 - exp(-2 pi fc / fs); k 0..1.4,
  * self-oscillating from about 1 (the knob: 0 to 1.4). hp: the four-pole high-pass from the same stages. */
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((unused))                  /* (the reference: voices_filter runs ladder4, the same sums) */
+#endif
 static inline float ladder(ladder_t *f, float x, float g, float k, int hp)
 {
     float fb = 0.5f * (f->y[3] + f->fb);
