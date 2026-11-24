@@ -80,6 +80,7 @@ void Knob::mouseDrag(const juce::MouseEvent &e)
 {
     float range = aria_param_max(index());
     float sens = e.mods.isShiftDown() ? 900.0f : 220.0f;
+    if (aria_param_info(index())->kind == PK_CHOICE) sens = 40.0f * range;   /* (40 px a step) */
     setValue(startV - (float)e.getDistanceFromDragStartY() / sens * range);
 }
 void Knob::mouseUp(const juce::MouseEvent &) { end(); }
@@ -90,7 +91,40 @@ void Knob::mouseDoubleClick(const juce::MouseEvent &)
 }
 void Knob::mouseWheelMove(const juce::MouseEvent &, const juce::MouseWheelDetails &w)
 {
+    if (aria_param_info(index())->kind == PK_CHOICE) {    /* (a stepped knob: one choice a notch) */
+        if (w.deltaY != 0) { begin(); setValue(value() + (w.deltaY > 0 ? 1.0f : -1.0f)); end(); }
+        return;
+    }
     begin(); setValue(value() + w.deltaY * 0.05f * aria_param_max(index())); end();
+}
+
+/* -------------------------------------------------------------------------------- LED list --- */
+LedList::LedList(Panel &p, int param, bool timbre) : Control(p, param, timbre, {}) {}
+void LedList::paint(juce::Graphics &g)
+{
+    auto *info = aria_param_info(index());
+    int sel = (int)std::lround(value());
+    g.setFont(Fonts::get().label(11.5f));
+    for (int i = 0; i < info->count; i++) {
+        float y = (float)(i * LINE) + 3.0f;
+        juce::Rectangle<float> led(2.0f, y + 2.0f, 13.0f, 9.0f);
+        g.setColour(juce::Colours::black.withAlpha(0.8f)); g.fillRoundedRectangle(led.expanded(1.2f), 2.5f);
+        if (i == sel) {
+            for (int r = 4; r >= 1; r--) { g.setColour(role.withAlpha(0.09f)); g.fillRoundedRectangle(led.expanded((float)r), 3.0f); }
+            juce::ColourGradient lg(role.brighter(0.6f), led.getCentreX(), led.getY(), role, led.getCentreX(), led.getBottom(), false);
+            g.setGradientFill(lg); g.fillRoundedRectangle(led, 2.0f);
+            g.setColour(juce::Colours::white.withAlpha(0.45f)); g.fillRoundedRectangle(led.reduced(2.5f, 2.5f).withHeight(2.0f), 1.0f);
+        } else {
+            g.setColour(role.withMultipliedBrightness(0.28f).withMultipliedSaturation(0.8f)); g.fillRoundedRectangle(led, 2.0f);
+        }
+        g.setColour(i == sel ? Colour(0xfff2f2f0) : Colour(0xff9a9da1));
+        g.drawText(info->choice[i], 22, (int)y - 1, getWidth() - 22, 16, juce::Justification::centredLeft);
+    }
+}
+void LedList::mouseDown(const juce::MouseEvent &e)
+{
+    int i = juce::jlimit(0, (int)aria_param_info(index())->count - 1, (e.y - 3) / LINE);
+    begin(); setValue((float)i); end();
 }
 
 /* ------------------------------------------------------------------------------------ fader --- */
@@ -545,17 +579,27 @@ void Panel::build()
         const int Y = BAND_Y, HB = BAND_H;
         int bx = X0;
         { auto &m = add("LOW SPLIT", bx, Y, 372, HB); bx += 372;
-          knob(m, GP_LS_POINT, false, "POINT"); knob(m, GP_LS_BALANCE, false, "BALANCE");
-          button(m, B::CYCLE, GP_LS_SPLIT, false, ""); button(m, B::SWITCH, GP_LS_HOLD, false, "LOW HOLD");
-          button(m, B::CYCLE, GP_LS_SCALE_L, false, "L"); button(m, B::CYCLE, GP_LS_SCALE_R, false, "R");
-          button(m, B::CYCLE, GP_LS_KEY, false, "KEY"); button(m, B::CYCLE, GP_LS_FOLLOW, false, "");
-          layoutModule(m); }
+          /* as on the Prophet 67: the SPLIT knob steps OFF / -1 / -2 / -3 OCT, its LEDs beside it; POINT, BALANCE,
+             LOW HOLD (the scales, key and follow stay in the engine at their defaults) */
+          auto *sp = knob(m, GP_LS_SPLIT, false, "SPLIT"); auto *pt = knob(m, GP_LS_POINT, false, "POINT");
+          auto *bl = knob(m, GP_LS_BALANCE, false, "BALANCE");
+          auto *hd = button(m, B::SWITCH, GP_LS_HOLD, false, "LOW HOLD");
+          auto *leds = new LedList(*this, GP_LS_SPLIT, false);
+          leds->role = m.col;
+          controls.emplace_back(leds); addAndMakeVisible(leds);
+          int ky = Y + 60, x = m.x + 24;
+          sp->setBounds(x, ky, 50, 68); x += 58;
+          leds->setBounds(x, ky + 2, 72, 4 * LedList::LINE + 4); x += 86;
+          pt->setBounds(x, ky, 50, 68); x += 62;
+          bl->setBounds(x, ky, 50, 68); x += 66;
+          hd->setBounds(x, ky + 10, 58, 38); }
         { auto &m = add("PLAY", bx, Y, 120, HB); bx += 120;
           button(m, B::SWITCH, GP_HOLD, false, "HOLD");
           auto *off = button(m, B::ACTION, 0, false, "ALL OFF");
           off->onPress = [this] { proc.panicRequest.store(1); };
           off->role = Colour(0xffff4a3d);
-          layoutModule(m); }
+          m.buttons[0]->setBounds(m.x + 12, Y + 70, 44, 38);    /* (level with LOW HOLD) */
+          off->setBounds(m.x + 64, Y + 70, 44, 38); }
         int px = bx;
         { auto &m = add("ARP PATTERN", bx, Y, 820, HB); bx += 820; (void)m; }
         {   /* the steps in four groups, LENGTH before them and ALL ON after */
@@ -665,9 +709,11 @@ void Panel::paintKnob(juce::Graphics &g, Knob &k)
     float d = k.big ? 50.0f : 36.0f, ring = d + 14.0f;
     float cx = b.getCentreX(), cy = b.getY() + ring * 0.5f + 1.0f;
     bool bip = aria_param_info(k.index())->kind == PK_BIPOLAR;
-    for (int i = 0; i <= 10; i++) {
-        float a = -0.75f * PI + 1.5f * PI * (float)i / 10.0f;
-        bool major = i == 0 || i == 10 || (bip && i == 5);
+    bool step = aria_param_info(k.index())->kind == PK_CHOICE;
+    int n = step ? (int)aria_param_max(k.index()) : 10;
+    for (int i = 0; i <= n; i++) {
+        float a = -0.75f * PI + 1.5f * PI * (float)i / (float)n;
+        bool major = step || i == 0 || i == 10 || (bip && i == 5);
         float r0 = ring * 0.5f - (major ? 5.0f : 3.5f), r1 = ring * 0.5f;
         g.setColour(major ? Colour(0xffd9dadc) : Colour(0xff8a8d91));
         g.drawLine(cx + std::sin(a) * r0, cy - std::cos(a) * r0, cx + std::sin(a) * r1, cy - std::cos(a) * r1, major ? 1.4f : 1.0f);

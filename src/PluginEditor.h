@@ -86,6 +86,17 @@ public:
     int radioValue;
 };
 
+/* a choice shown as a column of LEDs with their names (LOW SPLIT: OFF, -1 OCT ...); a click on a line picks it */
+class LedList : public Control
+{
+public:
+    LedList(Panel &p, int param, bool timbre);
+    void paint(juce::Graphics &) override;
+    void mouseDown(const juce::MouseEvent &) override;
+    juce::Colour role{ 0xffffb02e };
+    static constexpr int LINE = 19;
+};
+
 /* a step of the arp pattern: a light key, its LED on when the step plays, the key lit when the arp is on it */
 class StepKey : public Control
 {
