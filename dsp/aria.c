@@ -1256,6 +1256,7 @@ static inline float ap_tick(line_t *l, float x, float g, float mod)
     float pos = (float)l->w - (l->base + mod);
     if (pos < 0) pos += (float)l->len;
     int i0 = (int)pos; float fr = pos - (float)i0;
+    if (i0 >= l->len) i0 -= l->len;            /* (a position a hair below 0 rounds up to len: not past the end) */
     int i1 = i0 + 1 >= l->len ? 0 : i0 + 1;
     float d = l->b[i0] + (l->b[i1] - l->b[i0]) * fr;
     float y = -g * x + d;
@@ -1297,6 +1298,7 @@ static void delay_render(aria_t *a, float *l, float *r, int n)
             float pos = (float)d->w - d->t[ch];
             if (pos < 0) pos += (float)d->len;
             int i0 = (int)pos; float fr = pos - (float)i0;
+            if (i0 >= d->len) i0 -= d->len;
             int i1 = i0 + 1 >= d->len ? 0 : i0 + 1;
             float v = d->buf[ch][i0] + (d->buf[ch][i1] - d->buf[ch][i0]) * fr;
             if (!flat) {
