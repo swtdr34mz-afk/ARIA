@@ -17,11 +17,11 @@ zweiter Druck auf dieselbe Funktionstaste öffnet deren zweite Seite.
 
 | Taste | Seite | 2× gedrückt |
 |---|---|---|
-| 1 | **OSC**: Oszillator 1, Oszillator 2, Mod-Osc | – |
+| 1 | **OSC**: Oszillator 1, Oszillator 2, Mod-Osc | **ENV**: Filter- und Amp-Hüllkurve (Fader), Kurve, Loop, Velocity |
 | 2 | **MIXER**: Mixer (Fader), VCA, Output (Volume, Low Cut, QUALITY, INIT) | – |
 | 3 | **FILTER**: beide Ladder-Filter (HP, LINK, Reihenfolge, Keytracking) | **VOICES**: Detune, Splitpunkt, Stimmen für A, Single/Split/Stack, Unison, Mono |
-| 4 | **ENV**: Filter- und Amp-Hüllkurve (Fader), Kurve, Loop, Velocity | – |
-| 5 | **LFO**: LFO 1, LFO 2, Pitch-LFO | **FX**: Diffusion Delay |
+| 4 | **LFO**: LFO 1, LFO 2, Pitch-LFO | – |
+| 5 | **FX**: Diffusion Delay | – |
 | 6 | **DIV**: LOW SPLIT, Chord Memory (ON, KEY, Key Map, LEARN) | **ARP**: Arpeggiator mit den 16 Pattern-Schritten, Perform (Glide, Bend, HOLD) |
 
 Regler: ziehen oder mit dem Q-Link drehen; Doppeltipp öffnet das große Werte-Fenster (bei Auswahlen die Liste).

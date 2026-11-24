@@ -8,11 +8,11 @@
  * and which MPC parameter it shows, for make_skin.py. With --preview, a picture of each page as the MPC shows it,
  * with the function keys under it, instead.
  *
- *   OSC     OSCILLATOR 1, OSCILLATOR 2, MOD OSC               (function key 1)
- *   MIXER   MIXER, VCA, OUTPUT                                (2)
- *   FILTER  LADDER FILTERS;  again: VOICES                    (3)
- *   ENV     FILTER ENV, AMP ENV                               (4)
- *   LFO     LFO 1, LFO 2, PITCH LFO;  again: FX (DIFFUSION DELAY)                  (5)
+ *   OSC     OSCILLATOR 1, OSCILLATOR 2, MOD OSC;  again: ENV (FILTER ENV, AMP ENV)          (function key 1)
+ *   MIXER   MIXER, VCA, OUTPUT                                                         (2)
+ *   FILTER  LADDER FILTERS;  again: VOICES                                             (3)
+ *   LFO     LFO 1, LFO 2, PITCH LFO                                                    (4)
+ *   FX      DIFFUSION DELAY                                                            (5)
  *   DIV     LOW SPLIT, CHORD MEMORY;  again: ARP (ARPEGGIATOR with its pattern, PERFORM)   (6)
  *
  * A page is laid out at 2/3 of the MPC's 1280 x 628 and drawn at 1.5x: the VST's knobs and buttons, touch-sized.
@@ -46,8 +46,8 @@ struct Page { const char *name; int key, sub; std::vector<Sec> s; std::vector<st
 constexpr int A = 0;
 #define T(x) TP(A, TP_##x)
 
-const char *KEYS[6] = { "OSC", "MIXER", "FILTER", "ENV", "LFO", "DIV" };
-const char *SUBS[6] = { "", "", "VOICES", "", "FX", "ARP" };
+const char *KEYS[6] = { "OSC", "MIXER", "FILTER", "LFO", "FX", "DIV" };
+const char *SUBS[6] = { "ENV", "", "VOICES", "", "", "ARP" };
 
 std::vector<Page> pages()
 {
@@ -84,18 +84,18 @@ std::vector<Page> pages()
             { "VOICES", 1.0f, 3, { { T(DETUNE), KNOB, "DETUNE" }, { GP_VC_SPLIT, KNOB, "SPLIT" }, { GP_VC_VOICES_A, KNOB, "A VOICES" },
                                   { GP_VC_MODE, CHOICE, "" }, { T(UNISON), SWITCH, "UNI" }, { T(MONO), SWITCH, "MONO" } } } },
           { { T(DETUNE), GP_VC_SPLIT, GP_VC_VOICES_A, -1 } } },
-        { "ENV", 3, 0, {
+        { "ENV", 0, 1, {
             { "FILTER ENV", 1.0f, 4, { { T(FE_A), FADER, "A" }, { T(FE_D), FADER, "D" }, { T(FE_S), FADER, "S" }, { T(FE_R), FADER, "R" },
                                       { T(FE_CURVE), KNOB, "CURVE" }, { T(FE_LOOP), SWITCH, "LOOP" }, { T(FE_VEL), SWITCH, "VEL" } } },
             { "AMP ENV", 1.0f, 4, { { T(AE_A), FADER, "A" }, { T(AE_D), FADER, "D" }, { T(AE_S), FADER, "S" }, { T(AE_R), FADER, "R" },
                                    { T(AE_CURVE), KNOB, "CURVE" }, { T(AE_LOOP), SWITCH, "LOOP" }, { T(AE_VEL), SWITCH, "VEL" } } } },
           { { T(FE_A), T(FE_D), T(FE_S), T(FE_R) }, { T(AE_A), T(AE_D), T(AE_S), T(AE_R) }, { T(FE_CURVE), T(AE_CURVE), -1, -1 } } },
-        { "LFO", 4, 0, {
+        { "LFO", 3, 0, {
             { "LFO 1", 1.0f, 2, { { T(L1_RATE), KNOB, "RATE" }, { T(L1_AMT), KNOB, "AMT" }, { T(L1_WAVE), CHOICE, "" }, { T(L1_DEST), CHOICE, "" } } },
             { "LFO 2", 1.0f, 2, { { T(L2_RATE), KNOB, "RATE" }, { T(L2_AMT), KNOB, "AMT" }, { T(L2_WAVE), CHOICE, "" }, { T(L2_DEST), CHOICE, "" } } },
             { "PITCH LFO", 1.0f, 3, { { T(PL_RATE), KNOB, "RATE" }, { T(PL_SHAPE), KNOB, "SHAPE" }, { T(PL_AMT), KNOB, "AMT" } } } },
           { { T(L1_RATE), T(L1_AMT), T(L2_RATE), T(L2_AMT) }, { T(PL_RATE), T(PL_SHAPE), T(PL_AMT), -1 } } },
-        { "FX", 4, 1, {
+        { "FX", 4, 0, {
             { "DIFFUSION DELAY", 1.0f, 4, { { GP_DL_TIME_L, KNOB, "TIME L" }, { GP_DL_TIME_R, KNOB, "TIME R" }, { GP_DL_FB, KNOB, "FDBK" },
                                            { GP_DL_MIX, KNOB, "MIX" }, { GP_DL_CHAR, KNOB, "CHAR" }, { GP_DL_DIFF, KNOB, "DIFF" },
                                            { GP_DL_MOD, KNOB, "CHORUS" }, { GP_DL_LINK, SWITCH, "LINK" }, { GP_DL_A, SWITCH, "A" },

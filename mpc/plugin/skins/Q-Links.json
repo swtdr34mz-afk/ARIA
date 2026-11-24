@@ -100,8 +100,8 @@
         }
       },
       {
-        "Tab": 4,
-        "SubTab": 1,
+        "Tab": 1,
+        "SubTab": 2,
         "Bank Direction": "RowTopDown",
         "Q-Links": {
           "Q-Link 1": -1,
@@ -123,7 +123,7 @@
         }
       },
       {
-        "Tab": 5,
+        "Tab": 4,
         "SubTab": 1,
         "Bank Direction": "RowTopDown",
         "Q-Links": {
@@ -147,7 +147,7 @@
       },
       {
         "Tab": 5,
-        "SubTab": 2,
+        "SubTab": 1,
         "Bank Direction": "RowTopDown",
         "Q-Links": {
           "Q-Link 1": -1,

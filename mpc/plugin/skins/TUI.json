@@ -10393,8 +10393,8 @@
       {
         "version": 1,
         "tabName": "ENV",
-        "fnKeyIndex": 3,
-        "fnKeySubIndex": 0,
+        "fnKeyIndex": 0,
+        "fnKeySubIndex": 1,
         "componentDefinition": {
           "version": 2,
           "actions": [],
@@ -10977,7 +10977,7 @@
       {
         "version": 1,
         "tabName": "LFO",
-        "fnKeyIndex": 4,
+        "fnKeyIndex": 3,
         "fnKeySubIndex": 0,
         "componentDefinition": {
           "version": 2,
@@ -12315,7 +12315,7 @@
         "version": 1,
         "tabName": "FX",
         "fnKeyIndex": 4,
-        "fnKeySubIndex": 1,
+        "fnKeySubIndex": 0,
         "componentDefinition": {
           "version": 2,
           "actions": [],
