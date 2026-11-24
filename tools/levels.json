@@ -1,42 +1,394 @@
 {
-  "INIT": [0.671, null],
-  "WARM STRINGS": [0.759, null],
-  "GLASS PAD": [0.783, null],
-  "VELVET PAD": [0.851, null],
-  "DARK MATTER": [0.875, null],
-  "SHIMMER HALO": [1.000, null],
-  "SWEEP PAD": [0.687, null],
-  "SLOW MOTION": [1.000, null],
-  "OVERLOAD BASS": [1.000, null],
-  "SUB BASS": [0.939, null],
-  "ACID LINE": [0.992, null],
-  "FAT FIVE": [0.544, null],
-  "PLUCK BASS": [1.000, null],
-  "RUBBER BASS": [0.901, null],
-  "LADDER GROWL": [0.916, null],
-  "FM KEYS": [0.935, null],
-  "VINTAGE EP": [0.838, null],
-  "CLAV FUNK": [1.000, null],
-  "ORGANIC ORGAN": [0.673, null],
-  "CHORD KEYS": [0.949, null],
-  "CRYSTAL BELLS": [0.937, null],
-  "RING BELLS": [1.000, null],
-  "SYNC LEAD": [1.000, null],
-  "MOOGY LEAD": [0.990, null],
-  "SQUARE SOLO": [0.787, null],
-  "SCREAMER": [0.539, null],
-  "POLY BRASS": [0.724, null],
-  "BRASS STABS": [1.000, null],
-  "PLUCK ECHO": [1.000, null],
-  "ARP CHORDS": [1.000, null],
-  "SEQ PULSE": [1.000, null],
-  "TRANCE GATE": [0.727, null],
-  "UP AND AWAY": [1.000, null],
-  "PULSING DRONE": [0.955, null],
-  "WIND TUNNEL": [1.000, null],
-  "ROBOT TALK": [1.000, null],
-  "SPACE SIREN": [1.000, null],
-  "SPLIT BASS PAD": [0.734, 0.734],
-  "BASS + LEAD": [0.870, 0.870],
-  "STACK STRINGS": [0.669, 0.669]
+  "INIT": [
+    0.671,
+    null
+  ],
+  "WARM STRINGS": [
+    0.759,
+    null
+  ],
+  "GLASS PAD": [
+    0.783,
+    null
+  ],
+  "VELVET PAD": [
+    0.851,
+    null
+  ],
+  "DARK MATTER": [
+    0.875,
+    null
+  ],
+  "SHIMMER HALO": [
+    1.0,
+    null
+  ],
+  "SWEEP PAD": [
+    0.687,
+    null
+  ],
+  "SLOW MOTION": [
+    1.0,
+    null
+  ],
+  "OVERLOAD BASS": [
+    1.0,
+    null
+  ],
+  "SUB BASS": [
+    0.939,
+    null
+  ],
+  "ACID LINE": [
+    0.992,
+    null
+  ],
+  "FAT FIVE": [
+    0.544,
+    null
+  ],
+  "PLUCK BASS": [
+    1.0,
+    null
+  ],
+  "RUBBER BASS": [
+    0.901,
+    null
+  ],
+  "LADDER GROWL": [
+    0.916,
+    null
+  ],
+  "FM KEYS": [
+    0.935,
+    null
+  ],
+  "VINTAGE EP": [
+    0.838,
+    null
+  ],
+  "CLAV FUNK": [
+    1.0,
+    null
+  ],
+  "ORGANIC ORGAN": [
+    0.673,
+    null
+  ],
+  "CHORD KEYS": [
+    0.949,
+    null
+  ],
+  "CRYSTAL BELLS": [
+    0.937,
+    null
+  ],
+  "RING BELLS": [
+    1.0,
+    null
+  ],
+  "SYNC LEAD": [
+    1.0,
+    null
+  ],
+  "MOOGY LEAD": [
+    0.99,
+    null
+  ],
+  "SQUARE SOLO": [
+    0.787,
+    null
+  ],
+  "SCREAMER": [
+    0.539,
+    null
+  ],
+  "POLY BRASS": [
+    0.724,
+    null
+  ],
+  "BRASS STABS": [
+    1.0,
+    null
+  ],
+  "PLUCK ECHO": [
+    1.0,
+    null
+  ],
+  "ARP CHORDS": [
+    1.0,
+    null
+  ],
+  "SEQ PULSE": [
+    1.0,
+    null
+  ],
+  "TRANCE GATE": [
+    0.727,
+    null
+  ],
+  "UP AND AWAY": [
+    1.0,
+    null
+  ],
+  "PULSING DRONE": [
+    0.955,
+    null
+  ],
+  "WIND TUNNEL": [
+    1.0,
+    null
+  ],
+  "ROBOT TALK": [
+    1.0,
+    null
+  ],
+  "SPACE SIREN": [
+    1.0,
+    null
+  ],
+  "SPLIT BASS PAD": [
+    0.734,
+    0.734
+  ],
+  "BASS + LEAD": [
+    0.87,
+    0.87
+  ],
+  "STACK STRINGS": [
+    0.669,
+    0.669
+  ],
+  "SKYLINE BRASS": [
+    0.976,
+    null
+  ],
+  "ANTHEM BRASS": [
+    1.0,
+    null
+  ],
+  "SLOW SWELL BRASS": [
+    0.987,
+    null
+  ],
+  "HORN SECTION": [
+    0.934,
+    null
+  ],
+  "MONOLITH BRASS": [
+    0.752,
+    0.752
+  ],
+  "DUST HORNS": [
+    0.918,
+    null
+  ],
+  "FIFTH FANFARE": [
+    1.0,
+    null
+  ],
+  "NEON RAIN": [
+    0.832,
+    null
+  ],
+  "CATHEDRAL": [
+    0.78,
+    0.78
+  ],
+  "ORBITAL DAWN": [
+    0.731,
+    null
+  ],
+  "SILK HORIZON": [
+    0.666,
+    null
+  ],
+  "DEEP FIELD": [
+    0.792,
+    null
+  ],
+  "GOLDEN HOUR": [
+    0.772,
+    null
+  ],
+  "AURORA": [
+    0.834,
+    null
+  ],
+  "MEMORY OF SNOW": [
+    0.981,
+    null
+  ],
+  "VAST HORIZON": [
+    0.841,
+    null
+  ],
+  "CS STRINGS": [
+    0.97,
+    null
+  ],
+  "ELEGY STRINGS": [
+    0.992,
+    null
+  ],
+  "VIOLA ENSEMBLE": [
+    0.986,
+    null
+  ],
+  "TREMOLO STRINGS": [
+    1.0,
+    null
+  ],
+  "HIGH STRINGS": [
+    0.924,
+    null
+  ],
+  "STRING MACHINE": [
+    0.788,
+    null
+  ],
+  "VICTORY LEAD": [
+    1.0,
+    null
+  ],
+  "RIBBON CRY": [
+    0.833,
+    null
+  ],
+  "NIGHT SAX": [
+    0.944,
+    null
+  ],
+  "GLASS FLUTE": [
+    0.996,
+    null
+  ],
+  "ICE OBOE": [
+    1.0,
+    null
+  ],
+  "DISTANT TRUMPET": [
+    1.0,
+    null
+  ],
+  "SYNC SPIRAL": [
+    0.962,
+    null
+  ],
+  "EVENING LEAD": [
+    0.803,
+    null
+  ],
+  "TINE DREAM": [
+    0.889,
+    null
+  ],
+  "ELECTRIC GRAND": [
+    1.0,
+    null
+  ],
+  "HARPSI ROYAL": [
+    1.0,
+    null
+  ],
+  "CELESTIAL HARP": [
+    1.0,
+    null
+  ],
+  "MALLET COAST": [
+    0.987,
+    null
+  ],
+  "SOFT POLY KEYS": [
+    0.954,
+    null
+  ],
+  "TEMPLE BELLS": [
+    1.0,
+    null
+  ],
+  "CRYSTAL TOWER": [
+    0.877,
+    null
+  ],
+  "BRONZE GONG": [
+    1.0,
+    null
+  ],
+  "MUSIC BOX STARS": [
+    0.952,
+    null
+  ],
+  "GLASS HARMONICA": [
+    0.94,
+    null
+  ],
+  "TIDAL BASS": [
+    0.991,
+    null
+  ],
+  "CS BASS": [
+    1.0,
+    null
+  ],
+  "PROCESSION BASS": [
+    0.984,
+    null
+  ],
+  "DEEP PEDAL": [
+    1.0,
+    null
+  ],
+  "DUSK CITY": [
+    1.0,
+    null
+  ],
+  "SPACE CARRIER": [
+    0.764,
+    null
+  ],
+  "DISTANT SIGNAL": [
+    1.0,
+    null
+  ],
+  "OCEAN BREATH": [
+    1.0,
+    null
+  ],
+  "THUNDER DRUM": [
+    1.0,
+    null
+  ],
+  "STARFIELD": [
+    0.793,
+    null
+  ],
+  "EPIC SCORE": [
+    0.819,
+    0.819
+  ],
+  "BRASS + STRINGS": [
+    0.878,
+    0.878
+  ],
+  "LOW SPLIT ANTHEM": [
+    0.987,
+    null
+  ],
+  "HOLD CATHEDRAL": [
+    0.985,
+    null
+  ],
+  "LOW DRONE HOLD": [
+    0.753,
+    null
+  ],
+  "ECHO SEQUENCE": [
+    1.0,
+    null
+  ],
+  "STARS IN MOTION": [
+    1.0,
+    null
+  ]
 }

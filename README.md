@@ -50,8 +50,7 @@ Preferences → Enhancements (Beta) → Enable Enhancements and External Plugin 
   Lautstärke links gegen rechts, LOW HOLD hält die linke Hand nach dem Loslassen.
 - **PLAY:** HOLD hält die Noten nach dem Loslassen; ein neuer Akkord ersetzt den alten, HOLD aus lässt alles los.
   **ALL OFF** beendet alle Noten sofort.
-- **Patches:** PREV / NEXT unter dem Display (oder die Programme des Hosts): 40 Werkssounds in Kategorien (PAD, BASS,
-  KEYS, LEAD, BRASS, PLUCK, ARP, FX, SPLIT). **SAVE** speichert den Sound unter einem Namen als eigenes Preset
+- **Patches:** PREV / NEXT unter dem Display (oder die Programme des Hosts): 98 Werkssounds in Kategorien (PAD, STRINGS, BRASS, BASS, KEYS, BELLS, LEAD, PLUCK, ARP, ATMOS, FX, SPLIT); ab Nr. 41 die Cinema-Sammlung: große Filmmusik-Sounds im Stil der CS-80-Ära (Brass, Strings, Pads, Leads, Glocken, Atmosphären). Modrad = Vibrato, Aftertouch = heller. **SAVE** speichert den Sound unter einem Namen als eigenes Preset
   (Datei in `Dokumente/ARIA/Presets`, eine `.aria` je Sound); eigene Presets kommen nach den Werkssounds.
 - **TEMPO** (im ARPEGGIATOR): das Tempo, wenn kein Host eins vorgibt (Standalone-App).
 
