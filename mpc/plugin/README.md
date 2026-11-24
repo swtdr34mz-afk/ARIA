@@ -14,15 +14,15 @@ An 8-voice, bi-timbral analogue-modelling polysynth by **swtdr34mz**, the same e
 
 | Seite | Inhalt |
 |---|---|
-| FILTER | Filter 1 und 2 (Cutoff, Resonanz, Hüllkurve, Keytracking), HP, LINK, Reihenfolge, Overload, Level, Pan, Spread, Detune |
-| OSC | beide Oszillatoren (Oktave, Dreieck–Säge, Pulsbreite, Wave Mix), Stimmung, FM, Sync, Glide, Bend |
-| MIX/MOD | Mixer, Mod-Oszillator und seine Ziele |
-| ENV | Filter- und Amp-Hüllkurve, Kurven, Loop, Velocity, Unison, Mono |
-| LFO/VOX | LFO 1 und 2, Vibrato, Stimmen-Modus (Single/Split/Stack), Splitpunkt, INIT |
-| ARP | Arpeggiator, Chord Memory (ON, KEY, Key Map, LEARN), QUALITY |
+| FILTER | Filter 1 und 2 (Cutoff, Resonanz, Hüllkurve, Keytracking), HP, LINK, Reihenfolge, Overload, Level, Spread, Detune, Glide |
+| OSC | beide Oszillatoren (Oktave, Dreieck–Säge, Pulsbreite, Wave Mix), Stimmung, FM, Sync, Mixer |
+| ENV | Filter- und Amp-Hüllkurve, Kurven, Velocity, Unison, Mono, Stimmen-Modus (Single/Split/Stack), Splitpunkt |
+| MOD | LFO 1 und 2, Mod-Oszillator, Vibrato |
+| ARP/FX | Arpeggiator, Chord Memory (ON, KEY, Key Map, LEARN), Diffusion Delay |
 | STEPS | das Arp-Pattern: 16 Schritte an oder Pause |
-| DELAY | Diffusion Delay, Low Cut, Volume |
-| TIMBRE B | das Wichtigste von Timbre B (Filter, Hüllkurven, Oszillator) |
+
+Alles Weitere (Timbre B, die übrigen Delay-, LFO- und Mod-Osc-Regler, QUALITY, INIT) steht in der Parameterliste
+des Plugins.
 
 Die Q-Links drehen auf jeder Seite die vier Reihen (oben die erste). Der Arp läuft im Tempo der MPC und rastet im
 Takt ein, wenn sie spielt. **QUALITY**: HIGH (2x Oversampling, Standard auf MPC XL / Live III) oder ECO (weniger
