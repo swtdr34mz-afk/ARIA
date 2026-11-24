@@ -101,6 +101,9 @@ struct aria {
     int os;                              /* oversampling now: 1, 2, 4 */
     float vsr;                           /* the voices' rate (sr * os) */
     hb_t dec[4][ARIA_TIMBRES][2];        /* the cascade: [0] 2x to 1x .. [3] 16x to 8x */
+    /* a chunk's voices between their two halves: the mixer's output, the filters' coefficients, the VCA and pan */
+    struct { float x[CHUNK * MAXOS], g1[CHUNK * MAXOS], g2[CHUNK * MAXOS], amp[CHUNK * MAXOS], gl[CHUNK * MAXOS],
+             gr[CHUNK * MAXOS]; } vs[ARIA_VOICES];
     uint32_t age, seed;
     int sustain;
     float bend, mw, press, bpm;
@@ -306,6 +309,102 @@ static inline float ladder_g(float oct, float sr)       /* oct: the cutoff in oc
 {
     float hz = 20.0f * exp2f(clampf(oct, -1.0f, 10.2f));
     return 1.0f - expf(-2.0f * PI_F * clampf(hz, 5.0f, 0.45f * sr) / sr);
+}
+
+/* four voices' ladders at once (the same sums as ladder() above, lane by lane: the same sound, a quarter of the
+ * work). SSE on x86 (every x64 CPU has it), NEON on ARM (the MPC), else plain C the compiler may vectorise. */
+#if !defined(ARIA_NO_SIMD) && (defined(__SSE2__) || defined(_M_X64) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2))
+#include <emmintrin.h>
+typedef __m128 v4;
+#define V_SET(x) _mm_set1_ps(x)
+#define V_LOAD(p) _mm_loadu_ps(p)
+#define V_STORE(p, v) _mm_storeu_ps(p, v)
+#define V_ADD _mm_add_ps
+#define V_SUB _mm_sub_ps
+#define V_MUL _mm_mul_ps
+#define V_DIV _mm_div_ps
+#define V_MIN _mm_min_ps
+#define V_MAX _mm_max_ps
+static inline v4 V_SEL(v4 m, v4 a, v4 b) { return _mm_or_ps(_mm_and_ps(m, a), _mm_andnot_ps(m, b)); }
+static inline v4 V_MASK(const int *f) { return _mm_castsi128_ps(_mm_set_epi32(-(f[3] != 0), -(f[2] != 0), -(f[1] != 0), -(f[0] != 0))); }
+#elif !defined(ARIA_NO_SIMD) && (defined(__ARM_NEON) || defined(__ARM_NEON__))
+#include <arm_neon.h>
+typedef float32x4_t v4;
+#define V_SET(x) vdupq_n_f32(x)
+#define V_LOAD(p) vld1q_f32(p)
+#define V_STORE(p, v) vst1q_f32(p, v)
+#define V_ADD vaddq_f32
+#define V_SUB vsubq_f32
+#define V_MUL vmulq_f32
+#define V_MIN vminq_f32
+#define V_MAX vmaxq_f32
+#if defined(__aarch64__)
+#define V_DIV vdivq_f32
+#else
+static inline v4 V_DIV(v4 a, v4 b)        /* (32-bit ARM has no vector divide: the estimate, refined twice) */
+{
+    v4 r = vrecpeq_f32(b);
+    r = vmulq_f32(vrecpsq_f32(b, r), r);
+    r = vmulq_f32(vrecpsq_f32(b, r), r);
+    return vmulq_f32(a, r);
+}
+#endif
+static inline v4 V_SEL(v4 m, v4 a, v4 b) { return vbslq_f32(vreinterpretq_u32_f32(m), a, b); }
+static inline v4 V_MASK(const int *f)
+{
+    uint32_t u[4] = { f[0] ? 0xFFFFFFFFu : 0u, f[1] ? 0xFFFFFFFFu : 0u, f[2] ? 0xFFFFFFFFu : 0u, f[3] ? 0xFFFFFFFFu : 0u };
+    return vreinterpretq_f32_u32(vld1q_u32(u));
+}
+#else
+typedef struct { float f[4]; } v4;
+static inline v4 V_SET(float x) { v4 r = { { x, x, x, x } }; return r; }
+static inline v4 V_LOAD(const float *p) { v4 r = { { p[0], p[1], p[2], p[3] } }; return r; }
+#define V_STORE(p, v) memcpy((p), (v).f, sizeof(float) * 4)
+#define V_OP(name, e) static inline v4 name(v4 a, v4 b) { v4 r; for (int i = 0; i < 4; i++) { float x = a.f[i], y = b.f[i]; r.f[i] = (e); } return r; }
+V_OP(V_ADD, x + y) V_OP(V_SUB, x - y) V_OP(V_MUL, x * y) V_OP(V_DIV, x / y) V_OP(V_MIN, x < y ? x : y) V_OP(V_MAX, x > y ? x : y)
+static inline v4 V_SEL(v4 m, v4 a, v4 b) { v4 r; for (int i = 0; i < 4; i++) r.f[i] = m.f[i] != 0.0f ? a.f[i] : b.f[i]; return r; }
+static inline v4 V_MASK(const int *f) { v4 r; for (int i = 0; i < 4; i++) r.f[i] = f[i] ? 1.0f : 0.0f; return r; }
+#endif
+
+static inline v4 tanh_v(v4 x)              /* tanh_f, four at once */
+{
+    x = V_MIN(V_MAX(x, V_SET(-3.0f)), V_SET(3.0f));
+    v4 x2 = V_MUL(x, x);
+    return V_DIV(V_MUL(x, V_ADD(V_SET(27.0f), x2)), V_ADD(V_SET(27.0f), V_MUL(V_MUL(V_SET(9.0f), x), x)));
+}
+typedef struct { v4 y0, y1, y2, y3, t0, t1, t2, t3, fb; } ladder4_t;
+static void ladder4_load(ladder4_t *L, ladder_t *const f[4])
+{
+    float b[9][4];
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) { b[j][i] = f[i]->y[j]; b[4 + j][i] = f[i]->ty[j]; }
+        b[8][i] = f[i]->fb;
+    }
+    L->y0 = V_LOAD(b[0]); L->y1 = V_LOAD(b[1]); L->y2 = V_LOAD(b[2]); L->y3 = V_LOAD(b[3]);
+    L->t0 = V_LOAD(b[4]); L->t1 = V_LOAD(b[5]); L->t2 = V_LOAD(b[6]); L->t3 = V_LOAD(b[7]); L->fb = V_LOAD(b[8]);
+}
+static void ladder4_save(const ladder4_t *L, ladder_t *const f[4])
+{
+    float b[9][4];
+    V_STORE(b[0], L->y0); V_STORE(b[1], L->y1); V_STORE(b[2], L->y2); V_STORE(b[3], L->y3);
+    V_STORE(b[4], L->t0); V_STORE(b[5], L->t1); V_STORE(b[6], L->t2); V_STORE(b[7], L->t3); V_STORE(b[8], L->fb);
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) { f[i]->y[j] = b[j][i]; f[i]->ty[j] = b[4 + j][i]; }
+        f[i]->fb = b[8][i];
+    }
+}
+/* kin: 1 + 2k, k4: 4k, kout: 1 + 0.6k (as ladder() works them out) */
+static inline v4 ladder4(ladder4_t *f, v4 x, v4 g, v4 kin, v4 k4, v4 kout, v4 hp)
+{
+    v4 fb = V_MUL(V_SET(0.5f), V_ADD(f->y3, f->fb));
+    f->fb = f->y3;
+    v4 u = tanh_v(V_SUB(V_MUL(x, kin), V_MUL(k4, fb)));
+    f->y0 = V_ADD(f->y0, V_MUL(g, V_SUB(u, f->t0)));     f->t0 = tanh_v(f->y0);
+    f->y1 = V_ADD(f->y1, V_MUL(g, V_SUB(f->t0, f->t1))); f->t1 = tanh_v(f->y1);
+    f->y2 = V_ADD(f->y2, V_MUL(g, V_SUB(f->t1, f->t2))); f->t2 = tanh_v(f->y2);
+    f->y3 = V_ADD(f->y3, V_MUL(g, V_SUB(f->t2, f->t3))); f->t3 = tanh_v(f->y3);
+    v4 hpo = V_ADD(V_SUB(V_ADD(V_SUB(u, V_MUL(V_SET(4.0f), f->y0)), V_MUL(V_SET(6.0f), f->y1)), V_MUL(V_SET(4.0f), f->y2)), f->y3);
+    return V_SEL(hp, hpo, V_MUL(f->y3, kout));
 }
 
 /* the half-band decimators: two in, one out (Laurent de Soras' polyphase IIR), one design a stage of the cascade,
@@ -962,9 +1061,12 @@ static inline float osc_wave(float p, float dt, float ts, float pw, float mix)
     return ts_part * (1.0f - mix) + pul * mix;
 }
 
-/* a voice's chunk of samples, added to its timbre's bus */
-static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
+/* a voice's chunk, its first half: the mod osc, the oscillators, the mixer, the envelopes and the VCA, into the
+ * voice's scratch (a->vs); the filters follow four voices at a time (voices_filter) */
+static void voice_render(aria_t *a, voice_t *v, int n)
 {
+    float *X = a->vs[v - a->v].x, *G1s = a->vs[v - a->v].g1, *G2s = a->vs[v - a->v].g2;
+    float *AMP = a->vs[v - a->v].amp, *GL = a->vs[v - a->v].gl, *GR = a->vs[v - a->v].gr;
     int t = v->timbre;
     const float *P = &a->ps[TP(t, 0)];
     const float *R = &a->p[TP(t, 0)];
@@ -985,8 +1087,6 @@ static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
     float ovn = 1.15f / powf(drive, 0.6f), ofb = 0.25f * ov;
     float cb = bias > 0.0f ? tanh_f(bias) : 0.0f;
     float dca = 1.0f - 2.0f * PI_F * 12.0f / sr;
-    int order = (int)R[TP_F_ORDER], hp1 = R[TP_F1_HP] > 0.5f;
-    float k1 = v->k1, k2 = v->k2;
     int audio_f = mo_audio && mo_f > 0.0f;
     float G1 = ladder_g(v->cut1, sr), G2 = ladder_g(v->cut2, sr);
     float finc[4], ainc[4];
@@ -1004,6 +1104,7 @@ static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
     float pw1b = P[TP_O1_PW] + v->c_pw, pw2b = P[TP_O2_PW] + v->c_pw;
     float i1b = v->inc1, i2b = v->inc2, im = v->incm;
     float gl = 0.70710678f, gr = 0.70710678f;
+    int ph = 0;                              /* (s % os) */
 
     for (int s = 0; s < n; s++) {
         /* the mod osc */
@@ -1052,32 +1153,93 @@ static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
         y *= ovn;
         v->dc_y = y - v->dc_x + dca * v->dc_y; v->dc_x = y;   /* (the bias's DC out) */
         x = v->dc_y;
-        /* the filters */
+        /* the filters' coefficients (they run in voices_filter) */
         float g1 = G1, g2 = G2;
         if (audio_f) {
             if (fdest != DESTF_F2) g1 = ladder_g(v->cut1 + mo_f * mv, sr);
             if (fdest != DESTF_F1) g2 = ladder_g(v->cut2 + mo_f * mv, sr);
         }
-        float yl, yr;
-        if (order == ORD_SERIAL) { yl = ladder(&v->f2, ladder(&v->f1, x, g1, k1, hp1), g2, k2, 0); yr = yl; }
-        else if (order == ORD_STEREO) { yl = ladder(&v->f1, x, g1, k1, hp1); yr = ladder(&v->f2, x, g2, k2, 0); }
-        else { yl = 0.65f * (ladder(&v->f1, x, g1, k1, hp1) + ladder(&v->f2, x, g2, k2, 0)); yr = yl; }
+        X[s] = x; G1s[s] = g1; G2s[s] = g2;
         /* the envelopes and the VCA */
-        if (s % os == 0) {
+        if (ph == 0) {
             env_tick(&v->fe, finc, P[TP_FE_S], P[TP_FE_CURVE], floop, v->gate);
             env_tick(&v->ae, ainc, P[TP_AE_S], P[TP_AE_CURVE], aloop, v->gate);
         }
         float ae = v->ae.lvl;
         float amp = ae * level;
         if (mo_vca > 0.0f) amp *= 1.0f - mo_vca * (mo_uni ? 1.0f - mv : 0.5f * (1.0f - mv));
-        if (s % os == 0 && (mo_pan != 0.0f || s == 0)) {     /* (the pan: once a frame of the output rate) */
+        if (ph == 0 && (mo_pan != 0.0f || s == 0)) {         /* (the pan: once a frame of the output rate) */
             float pan = clampf(pan0 + mo_pan * mv, -1.0f, 1.0f);
             gl = sqrtf(0.5f * (1.0f - pan)); gr = sqrtf(0.5f * (1.0f + pan));
         }
-        bl[s] += yl * amp * gl;
-        br[s] += yr * amp * gr;
+        AMP[s] = amp; GL[s] = gl; GR[s] = gr;
+        if (++ph == os) ph = 0;
     }
     if (v->ae.stage == ES_IDLE) { v->active = 0; v->gate = 0; v->held = 0; }
+}
+
+/* a chunk's voices, their second half: both filters, four voices at a time, then the VCA and the pan onto the
+ * timbre's bus (as voice_render did them one by one, to the bit) */
+static void voices_filter(aria_t *a, voice_t *const *vv, int nv, float bus[][2][CHUNK * MAXOS], int n)
+{
+    for (int b0 = 0; b0 < nv; b0 += 4) {
+        int nl = nv - b0 < 4 ? nv - b0 : 4;
+        ladder_t dummy[2][4];
+        ladder_t *f1[4], *f2[4];
+        voice_t *lane[4];
+        int hp[4], ser[4], ste[4];
+        float kin1[4], k41[4], ko1[4], kin2[4], k42[4], ko2[4];
+        const float *X[4], *G1[4], *G2[4];
+        static const float zero[CHUNK * MAXOS] = { 0 };
+        memset(dummy, 0, sizeof dummy);
+        for (int i = 0; i < 4; i++) {
+            if (i < nl) {
+                voice_t *v = vv[b0 + i];
+                const float *R = &a->p[TP(v->timbre, 0)];
+                int k = (int)(v - a->v);
+                lane[i] = v; f1[i] = &v->f1; f2[i] = &v->f2;
+                int order = (int)R[TP_F_ORDER];
+                hp[i] = R[TP_F1_HP] > 0.5f; ser[i] = order == ORD_SERIAL; ste[i] = order == ORD_STEREO;
+                kin1[i] = 1.0f + 2.0f * v->k1; k41[i] = 4.0f * v->k1; ko1[i] = 1.0f + 0.6f * v->k1;
+                kin2[i] = 1.0f + 2.0f * v->k2; k42[i] = 4.0f * v->k2; ko2[i] = 1.0f + 0.6f * v->k2;
+                X[i] = a->vs[k].x; G1[i] = a->vs[k].g1; G2[i] = a->vs[k].g2;
+            } else {
+                lane[i] = NULL; f1[i] = &dummy[0][i]; f2[i] = &dummy[1][i];
+                hp[i] = 0; ser[i] = 1; ste[i] = 0;
+                kin1[i] = k41[i] = ko1[i] = kin2[i] = k42[i] = ko2[i] = 0.0f;
+                X[i] = G1[i] = G2[i] = zero;
+            }
+        }
+        ladder4_t L1, L2;
+        ladder4_load(&L1, f1); ladder4_load(&L2, f2);
+        v4 Kin1 = V_LOAD(kin1), K41 = V_LOAD(k41), Ko1 = V_LOAD(ko1), Kin2 = V_LOAD(kin2), K42 = V_LOAD(k42), Ko2 = V_LOAD(ko2);
+        static const int none[4] = { 0, 0, 0, 0 };
+        v4 Hp = V_MASK(hp), Ser = V_MASK(ser), Ste = V_MASK(ste), No = V_MASK(none);
+        float yl[4][CHUNK * MAXOS], yr[4][CHUNK * MAXOS];
+        for (int s = 0; s < n; s++) {
+            float xs[4] = { X[0][s], X[1][s], X[2][s], X[3][s] };
+            float g1[4] = { G1[0][s], G1[1][s], G1[2][s], G1[3][s] }, g2[4] = { G2[0][s], G2[1][s], G2[2][s], G2[3][s] };
+            v4 x = V_LOAD(xs);
+            v4 o1 = ladder4(&L1, x, V_LOAD(g1), Kin1, K41, Ko1, Hp);
+            v4 o2 = ladder4(&L2, V_SEL(Ser, o1, x), V_LOAD(g2), Kin2, K42, Ko2, No);
+            v4 par = V_MUL(V_SET(0.65f), V_ADD(o1, o2));
+            v4 l = V_SEL(Ser, o2, V_SEL(Ste, o1, par)), r = V_SEL(Ser, o2, V_SEL(Ste, o2, par));
+            float lo[4], ro[4];
+            V_STORE(lo, l); V_STORE(ro, r);
+            for (int i = 0; i < 4; i++) { yl[i][s] = lo[i]; yr[i][s] = ro[i]; }
+        }
+        ladder4_save(&L1, f1); ladder4_save(&L2, f2);
+        for (int i = 0; i < nl; i++) {
+            voice_t *v = lane[i];
+            int k = (int)(v - a->v);
+            float *bl = bus[v->timbre][0], *br = bus[v->timbre][1];
+            const float *AMP = a->vs[k].amp, *GL = a->vs[k].gl, *GR = a->vs[k].gr;
+            for (int s = 0; s < n; s++) {
+                bl[s] += yl[i][s] * AMP[s] * GL[s];
+                br[s] += yr[i][s] * AMP[s] * GR[s];
+            }
+        }
+    }
 }
 
 /* the diffusion delay: one chunk, wet out of the send in (in place).
@@ -1179,12 +1341,16 @@ static void render_chunk(aria_t *a, float *outl, float *outr)
         arp_chunk(a, m);
         for (int t = 0; t < ARIA_TIMBRES; t++) timbre_control(a, t);
         memset(bus, 0, sizeof bus);
+        voice_t *vv[ARIA_VOICES];
+        int nv = 0;
         for (int i = 0; i < ARIA_VOICES; i++) {
             voice_t *v = &a->v[i];
             if (!v->active) continue;
             voice_control(a, v);
-            voice_render(a, v, bus[v->timbre][0], bus[v->timbre][1], mi);
+            voice_render(a, v, mi);
+            vv[nv++] = v;
         }
+        voices_filter(a, vv, nv, bus, mi);
         /* back to the output rate */
         for (int t = 0; t < ARIA_TIMBRES; t++)
             for (int c = 0; c < 2; c++) {
