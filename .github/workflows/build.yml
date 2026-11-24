@@ -1,0 +1,91 @@
+# Builds ARIA for Windows (VST3, Standalone) on every push, checks it with pluginval, and runs the engine's tests.
+# The zips are under the run's "Artifacts"; a tag v* (or a release published on GitHub) also puts them in its release.
+name: build
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  # the engine's tests (tests/demo.c): the chord memory, the voices, five demo sounds, the CPU; no JUCE needed
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: build and run
+        run: |
+          cd tests && mkdir -p out
+          cc -O2 -Wall -o demo demo.c ../dsp/aria.c ../dsp/params.c -lm
+          ./demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ARIA-demo-sounds
+          path: tests/out/*.wav
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: Windows
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: configure
+        shell: bash
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: build
+        shell: bash
+        run: cmake --build build --config Release --parallel 4
+
+      - name: pluginval (Windows)
+        # the plugin checked as a host would: loading, its parameters fuzzed, state saved and restored, the editor
+        # opened, every buffer size and rate (Tracktion's pluginval, strictness 8)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/Tracktion/pluginval/releases/download/v1.0.4/pluginval_Windows.zip -OutFile pluginval.zip
+          Expand-Archive pluginval.zip -DestinationPath pluginval
+          $p = Start-Process -FilePath pluginval/pluginval.exe -ArgumentList '--strictness-level','8','--timeout-ms','600000','--output-dir','pluginval-log','--validate','"build/Aria_artefacts/Release/VST3/ARIA.vst3"' -Wait -PassThru -NoNewWindow
+          Get-ChildItem pluginval-log -ErrorAction SilentlyContinue | ForEach-Object { Get-Content $_.FullName | Select-Object -Last 60 }
+          if ($p.ExitCode -ne 0) { throw "pluginval failed ($($p.ExitCode))" }
+
+      - uses: actions/upload-artifact@v4
+        if: always() && runner.os == 'Windows'
+        with:
+          name: pluginval-log
+          path: pluginval-log
+          if-no-files-found: ignore
+
+      - name: package (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $a = "build/Aria_artefacts/Release"
+          $o = "ARIA-Windows"
+          New-Item -ItemType Directory -Force $o | Out-Null
+          Copy-Item -Recurse "$a/VST3/ARIA.vst3" $o/
+          Copy-Item "$a/Standalone/ARIA.exe" $o/
+          Copy-Item README.md $o/
+          Compress-Archive -Path $o -DestinationPath ARIA-Windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ARIA-${{ matrix.name }}
+          path: ARIA-*.zip
+
+      - name: release
+        if: startsWith(github.ref, 'refs/tags/v') && (github.event_name == 'release' || github.event_name == 'push')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ARIA-*.zip
