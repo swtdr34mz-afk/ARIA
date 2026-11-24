@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define CHUNK 16                         /* frames at the output rate */
-#define MAXOS 4                          /* oversampling, at most */
+#define MAXOS 16                         /* oversampling, at most */
 #define PI_F 3.14159265358979f
 #define DL_MAX_S 2.2f                    /* the delay's longest time, seconds */
 #define NPRE 4                           /* the delay's diffusion: allpasses before the line, a side */
@@ -88,7 +88,7 @@ typedef struct {                         /* the diffusion delay */
     float lfo[6];                        /* the chorus: six LFOs, round robin over the lines */
 } delay_t;
 
-typedef struct { float x[8], y[8]; } hb_t;   /* a half-band decimator (polyphase IIR), 2 to 1 */
+typedef struct { float x[10], y[10]; } hb_t;   /* a half-band decimator (polyphase IIR), 2 to 1 */
 
 struct aria {
     float sr;
@@ -100,7 +100,7 @@ struct aria {
     float hp_s[2];                       /* the low cut */
     int os;                              /* oversampling now: 1, 2, 4 */
     float vsr;                           /* the voices' rate (sr * os) */
-    hb_t dec2[ARIA_TIMBRES][2], dec4[ARIA_TIMBRES][2];
+    hb_t dec[4][ARIA_TIMBRES][2];        /* the cascade: [0] 2x to 1x .. [3] 16x to 8x */
     uint32_t age, seed;
     int sustain;
     float bend, mw, press, bpm;
@@ -117,8 +117,18 @@ struct aria {
     long arp_slot;
     double ppq, arp_off;                 /* where the clock is (quarter notes); the playing note's end */
     int host_play;
+    int offline;                         /* the host renders (not in real time) */
+    /* LOW SPLIT (after the PROPHET 67's) and HOLD, on the keys before everything else */
+    int8_t ls_mapped[128], ls_note[128];  /* each key (by id): the note it plays (-1 none), the note it is */
+    uint8_t ls_held[128], ls_latched[128];
+    int ls_root;
+    uint8_t h_down[128], h_latched[128];  /* HOLD: keys down, keys let go but held */
+    float note_gain;                     /* the level of the notes being started (LOW SPLIT's BALANCE) */
     float obuf[2][CHUNK]; int opos;      /* the chunk rendered, and how much of it is given out */
 };
+
+static void hold_released(aria_t *a);
+static void lowhold_released(aria_t *a);
 
 /* ----------------------------------------------------------- the parameters --- */
 static int smoothed(int p)               /* knobs move smoothly; choices and switches jump */
@@ -134,7 +144,10 @@ void aria_param(aria_t *a, int p, float v)
     v = clampf(v, 0.0f, mx);
     const aria_param_t *i = aria_param_info(p);
     if (i->kind != PK_KNOB && i->kind != PK_BIPOLAR) v = floorf(v + 0.5f);
+    float was = a->p[p];
     a->p[p] = v;
+    if (p == GP_HOLD && was > 0.5f && v < 0.5f) hold_released(a);
+    if (p == GP_LS_HOLD && was > 0.5f && v < 0.5f) lowhold_released(a);
     if (!smoothed(p)) a->ps[p] = v;
 }
 float aria_get(const aria_t *a, int p) { return (p >= 0 && p < ARIA_NPARAM) ? a->p[p] : 0.0f; }
@@ -210,6 +223,7 @@ aria_t *aria_new(float sr)
     a->bpm = 120;
     a->arp_cur = -1; a->arp_slot = -1;
     a->opos = CHUNK;
+    memset(a->ls_mapped, -1, sizeof a->ls_mapped); a->ls_root = -1; a->note_gain = 1.0f;
     aria_defaults(a);
     aria_set_rate(a, sr);
     return a;
@@ -294,16 +308,25 @@ static inline float ladder_g(float oct, float sr)       /* oct: the cutoff in oc
     return 1.0f - expf(-2.0f * PI_F * clampf(hz, 5.0f, 0.45f * sr) / sr);
 }
 
-/* the half-band decimator: two in, one out (Laurent de Soras' polyphase IIR; 8 coefficients, -99 dB stopband) */
-static const float HB8[8] = { 0.040633460924f, 0.150505129023f, 0.300757055992f, 0.460774504961f,
-                              0.609524314896f, 0.738503841119f, 0.849223810392f, 0.949742783705f };
-static inline float hb_down(hb_t *h, float in0, float in1)
+/* the half-band decimators: two in, one out (Laurent de Soras' polyphase IIR), one design a stage of the cascade,
+ * each as short as its place allows while keeping 20 kHz flat and the images 100 dB down at 44.1 kHz:
+ *   2x to 1x  10 coefficients (-106 dB)    4x to 2x  5 (-100 dB)    8x to 4x  5 (-121 dB)    16x to 8x  4 (-107 dB) */
+static const float HB_2[10] = { 0.035572986325f, 0.132792135946f, 0.268223042129f, 0.415490782908f, 0.554392021337f,
+                                0.674172987728f, 0.772192382352f, 0.850958174092f, 0.915586680728f, 0.972370292771f };
+static const float HB_4[5] = { 0.043751628948f, 0.165966743828f, 0.346406252508f, 0.569034401011f, 0.837719989175f };
+static const float HB_8[5] = { 0.034100817257f, 0.133628508836f, 0.293150164894f, 0.512380466010f, 0.808321839639f };
+static const float HB_16[4] = { 0.046107119410f, 0.182583157163f, 0.410854348052f, 0.757068335712f };
+static const float *const HB_C[4] = { HB_2, HB_4, HB_8, HB_16 };
+static const int HB_N[4] = { 10, 5, 5, 4 };
+static inline float hb_down(hb_t *h, const float *c, int nc, float in0, float in1)
 {
     float a = in1, b = in0;
-    for (int i = 0; i < 8; i += 2) {
-        float t = (a - h->y[i]) * HB8[i] + h->x[i]; h->x[i] = a; h->y[i] = t; a = t;
-        t = (b - h->y[i + 1]) * HB8[i + 1] + h->x[i + 1]; h->x[i + 1] = b; h->y[i + 1] = t; b = t;
+    int i = 0;
+    for (; i + 1 < nc; i += 2) {
+        float t = (a - h->y[i]) * c[i] + h->x[i]; h->x[i] = a; h->y[i] = t; a = t;
+        t = (b - h->y[i + 1]) * c[i + 1] + h->x[i + 1]; h->x[i + 1] = b; h->y[i + 1] = t; b = t;
     }
+    if (i < nc) { float t = (a - h->y[i]) * c[i] + h->x[i]; h->x[i] = a; h->y[i] = t; a = t; }
     return 0.5f * (a + b);
 }
 
@@ -342,7 +365,7 @@ static void voice_start(aria_t *a, voice_t *v, int t, int key, int note, float v
     }
     v->active = 1; v->gate = 1; v->held = 0;
     v->key = key; v->timbre = t; v->uni = uni;
-    if (retrig) v->vel = vel;            /* (legato keeps the first note's velocity: no jump) */
+    if (retrig || fresh) { v->vel = vel; v->gain = a->note_gain; }   /* (legato keeps the first note's: no jump) */
     v->age = ++a->age;
     v->target = (float)note;
     if (fresh || P[TP_GLIDE] < 0.001f || v->note < 0) v->pitch = (float)note;
@@ -612,6 +635,7 @@ static void arp_chunk(aria_t *a, int m)
             int k = arp_next(a, L);
             int note = a->arp[idx[k % n]].note + 12 * (k / n);
             if (note <= 127) {
+                a->note_gain = 1.0f;
                 play_note(a, ARP_KEY, note, a->arp[idx[k % n]].vel);
                 a->arp_cur = note;
             }
@@ -633,10 +657,11 @@ void aria_transport(aria_t *a, float bpm, double ppq, int playing)
     a->host_play = playing;
 }
 int aria_arp_note(const aria_t *a) { return a->arp_cur; }
+void aria_offline(aria_t *a, int on) { a->offline = on; }
 int aria_arp_step(const aria_t *a) { return (a->arp_on && a->arp_n) ? a->arp_step : -1; }
 
 /* ------------------------------------------------------------------- notes --- */
-void aria_note_on(aria_t *a, int id, int note, float vel)
+static void core_note_on(aria_t *a, int id, int note, float vel)
 {
     if (note < 0 || note > 127) return;
     vel = clampf(vel, 0.0f, 1.0f);
@@ -656,11 +681,133 @@ void aria_note_on(aria_t *a, int id, int note, float vel)
     if (id >= 0 && id < 128) { a->held[id][0] = (int8_t)n; for (int i = 0; i < n; i++) a->held[id][1 + i] = (int8_t)out[i]; }
     for (int i = 0; i < n; i++) a->last[i] = (int8_t)out[i];
 }
-void aria_note_off(aria_t *a, int id)
+static void core_note_off(aria_t *a, int id)
 {
     if (id >= 0 && id < 128) a->held[id][0] = 0;
     if (a->arp_n) arp_remove(a, id);
     release_key(a, id);
+}
+
+/* ---------------------------------------------------------- LOW SPLIT, HOLD --- */
+/* LOW SPLIT (the PROPHET 67's, src/KeySplit.h there): below POINT the keys go down SPLIT octaves (and to SCALE L);
+ * above it to SCALE R, rooted on KEY, or (ROOT) on the note held on the left, or (WHITE) the scale laid on the white
+ * keys from the point up; BALANCE between the two sides; LOW HOLD keeps the left side's notes until a new one is
+ * played there. Then the chord memory, the arp and the voices as before. */
+static const struct { int n; int st[7]; } SCALES[11] = {
+    { 7, { 0, 2, 4, 5, 7, 9, 11 } }, { 7, { 0, 2, 3, 5, 7, 8, 10 } }, { 7, { 0, 2, 3, 5, 7, 9, 10 } },
+    { 7, { 0, 1, 3, 5, 7, 8, 10 } }, { 7, { 0, 2, 4, 6, 7, 9, 11 } }, { 7, { 0, 2, 4, 5, 7, 9, 10 } },
+    { 7, { 0, 2, 3, 5, 7, 8, 11 } }, { 5, { 0, 2, 4, 7, 9 } }, { 5, { 0, 3, 5, 7, 10 } }, { 6, { 0, 3, 5, 6, 7, 10 } },
+    { 7, { 0, 1, 4, 5, 7, 8, 11 } } };
+static int is_white(int n) { int c = n % 12; return c == 0 || c == 2 || c == 4 || c == 5 || c == 7 || c == 9 || c == 11; }
+static int ls_snap(int n, int root, int scale)          /* to the scale's note at or below n (scale 1..11) */
+{
+    int rel = ((n - root) % 12 + 12) % 12, best = 0;
+    for (int i = 0; i < SCALES[scale - 1].n; i++) if (SCALES[scale - 1].st[i] <= rel) best = SCALES[scale - 1].st[i];
+    return n - rel + best;
+}
+static int ls_split(const aria_t *a) { return (int)a->p[GP_LS_SPLIT]; }
+static int ls_point(const aria_t *a) { return 24 + (int)lroundf(a->p[GP_LS_POINT] * 72.0f); }
+static int ls_left(const aria_t *a, int note) { return ls_split(a) > 0 && note < ls_point(a); }
+static int ls_map(const aria_t *a, int note)
+{
+    int split = ls_split(a), sl = (int)a->p[GP_LS_SCALE_L], sr = (int)a->p[GP_LS_SCALE_R];
+    int key = (int)a->p[GP_LS_KEY], follow = (int)a->p[GP_LS_FOLLOW];
+    if (ls_left(a, note)) {
+        int n = note - 12 * split;
+        return sl ? ls_snap(n, key, sl) : n;
+    }
+    if (!sr) return note;
+    int base = split > 0 && follow != LSF_KEY && a->ls_root >= 0 ? a->ls_root : key;
+    if (split > 0 && follow == LSF_WHITE) {             /* the scale on the white keys from the split point up */
+        if (!is_white(note)) return -1;
+        int first = ls_point(a), d = 0, n = SCALES[sr - 1].n;
+        while (!is_white(first)) first++;
+        for (int j = first; j < note; j++) d += is_white(j);
+        int b0 = first - (((first - base) % 12 + 12) % 12);
+        if (first - b0 > 6) b0 += 12;
+        return b0 + 12 * (d / n) + SCALES[sr - 1].st[d % n];
+    }
+    return ls_snap(note, base, sr);
+}
+static float ls_gain(const aria_t *a, int note)
+{
+    float b = (a->p[GP_LS_BALANCE] - 0.5f) * 2.0f;
+    if (!ls_split(a)) return 1.0f;
+    return ls_left(a, note) ? (b > 0.0f ? 1.0f - b : 1.0f) : (b < 0.0f ? 1.0f + b : 1.0f);
+}
+static void ls_root_update(aria_t *a)
+{
+    for (int n = 0; n < 128; n++)
+        if (a->ls_mapped[n] >= 0 && ls_left(a, a->ls_note[n])) { a->ls_root = a->ls_mapped[n] % 12; return; }
+}
+static void ls_stop(aria_t *a, int id)
+{
+    if (a->ls_mapped[id] >= 0) core_note_off(a, id);
+    a->ls_mapped[id] = -1;
+    a->ls_latched[id] = 0;
+}
+static void ls_note_on(aria_t *a, int id, int note, float vel)   /* id: the key (0..127) */
+{
+    int lowhold = a->p[GP_LS_HOLD] > 0.5f;
+    if (lowhold && ls_left(a, note)) {                /* a new note on the left, none held there: the held ones go */
+        int any_held = 0, any_latched = 0;
+        for (int n = 0; n < 128; n++) { any_held |= a->ls_held[n] && ls_left(a, a->ls_note[n]); any_latched |= a->ls_latched[n]; }
+        if (!any_held && any_latched)
+            for (int n = 0; n < 128; n++) if (a->ls_latched[n]) ls_stop(a, n);
+    }
+    if (a->ls_mapped[id] >= 0) ls_stop(a, id);
+    a->ls_held[id] = 1;
+    a->ls_note[id] = (int8_t)note;
+    int m = ls_map(a, note);
+    if (m < 0 || m > 127) return;
+    a->ls_mapped[id] = (int8_t)m;
+    a->note_gain = ls_gain(a, note);
+    core_note_on(a, id, m, vel);
+    a->note_gain = 1.0f;
+    if (ls_left(a, note)) {
+        if (lowhold) a->ls_latched[id] = 1;
+        ls_root_update(a);
+    }
+}
+static void ls_note_off(aria_t *a, int id)
+{
+    a->ls_held[id] = 0;
+    if (a->ls_latched[id] && a->p[GP_LS_HOLD] > 0.5f) return;   /* LOW HOLD: it stays */
+    ls_stop(a, id);
+    ls_root_update(a);
+}
+
+/* HOLD: the keys let go keep sounding; once every key is up, the next key lets the held ones go first (a new chord
+ * replaces the old); HOLD off lets go of what only it held */
+void aria_note_on(aria_t *a, int id, int note, float vel)
+{
+    if (note < 0 || note > 127) return;
+    if (id < 0 || id > 127) { core_note_on(a, id, note, vel); return; }   /* (not a key: as it is) */
+    if (a->p[GP_HOLD] > 0.5f) {
+        int any_down = 0, any_held = 0;
+        for (int k = 0; k < 128; k++) { any_down |= a->h_down[k]; any_held |= a->h_latched[k]; }
+        if (!any_down && any_held)
+            for (int k = 0; k < 128; k++) if (a->h_latched[k]) { a->h_latched[k] = 0; ls_note_off(a, k); }
+        a->h_latched[id] = 0;
+    }
+    a->h_down[id] = 1;
+    ls_note_on(a, id, note, vel);
+}
+void aria_note_off(aria_t *a, int id)
+{
+    if (id < 0 || id > 127) { core_note_off(a, id); return; }
+    a->h_down[id] = 0;
+    if (a->p[GP_HOLD] > 0.5f) { a->h_latched[id] = 1; return; }
+    ls_note_off(a, id);
+}
+static void hold_released(aria_t *a)                   /* HOLD off: what only it held lets go */
+{
+    for (int k = 0; k < 128; k++) if (a->h_latched[k]) { a->h_latched[k] = 0; if (!a->h_down[k]) ls_note_off(a, k); }
+}
+static void lowhold_released(aria_t *a)                /* LOW HOLD off: likewise */
+{
+    for (int k = 0; k < 128; k++) if (a->ls_latched[k] && !a->ls_held[k]) { ls_stop(a, k); }
+    ls_root_update(a);
 }
 
 void aria_sustain(aria_t *a, int on)
@@ -679,6 +826,8 @@ void aria_tempo(aria_t *a, float bpm) { if (bpm > 10) a->bpm = bpm; }
 void aria_all_off(aria_t *a)
 {
     memset(a->held, 0, sizeof a->held);
+    memset(a->ls_mapped, -1, sizeof a->ls_mapped); memset(a->ls_held, 0, sizeof a->ls_held); memset(a->ls_latched, 0, sizeof a->ls_latched);
+    memset(a->h_down, 0, sizeof a->h_down); memset(a->h_latched, 0, sizeof a->h_latched);
     arp_clear(a);
     for (int t = 0; t < ARIA_TIMBRES; t++) a->tb[t].nstack = 0;
     for (int i = 0; i < ARIA_VOICES; i++) {
@@ -689,6 +838,8 @@ void aria_all_off(aria_t *a)
 void aria_panic(aria_t *a)
 {
     memset(a->held, 0, sizeof a->held);
+    memset(a->ls_mapped, -1, sizeof a->ls_mapped); memset(a->ls_held, 0, sizeof a->ls_held); memset(a->ls_latched, 0, sizeof a->ls_latched);
+    memset(a->h_down, 0, sizeof a->h_down); memset(a->h_latched, 0, sizeof a->h_latched); a->ls_root = -1;
     a->arp_n = a->arp_keys = 0; a->arp_cur = -1; a->arp_slot = -1;
     voices_reset(a);
     delay_clear(&a->dl);
@@ -796,11 +947,19 @@ static void timbre_control(aria_t *a, int t)
 
 static inline float osc_wave(float p, float dt, float ts, float pw, float mix)
 {
-    float saw = 2.0f * p - 1.0f - blep(p, dt);
-    float tri = 4.0f * fabsf(p - 0.5f) - 1.0f;
-    float q = p - pw; if (q < 0) q += 1.0f;
-    float pul = (p < pw ? 1.0f : -1.0f) + blep(p, dt) - blep(q, dt);
-    return (tri + (saw - tri) * ts) * (1.0f - mix) + pul * mix;
+    float ts_part = 0.0f, pul = 0.0f;
+    if (mix < 1.0f) {                    /* (only the shapes the mix hears) */
+        float tri = 4.0f * fabsf(p - 0.5f) - 1.0f;
+        if (ts > 0.0f) {
+            float saw = 2.0f * p - 1.0f - blep(p, dt);
+            ts_part = tri + (saw - tri) * ts;
+        } else ts_part = tri;
+    }
+    if (mix > 0.0f) {
+        float q = p - pw; if (q < 0) q += 1.0f;
+        pul = (p < pw ? 1.0f : -1.0f) + blep(p, dt) - blep(q, dt);
+    }
+    return ts_part * (1.0f - mix) + pul * mix;
 }
 
 /* a voice's chunk of samples, added to its timbre's bus */
@@ -831,15 +990,20 @@ static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
     int audio_f = mo_audio && mo_f > 0.0f;
     float G1 = ladder_g(v->cut1, sr), G2 = ladder_g(v->cut2, sr);
     float finc[4], ainc[4];
-    finc[0] = 1.0f / (env_time(P[TP_FE_A]) * sr); finc[1] = 1.0f / (env_time(P[TP_FE_D]) * sr); finc[3] = 1.0f / (env_time(P[TP_FE_R]) * sr);
-    ainc[0] = 1.0f / (env_time(P[TP_AE_A]) * sr); ainc[1] = 1.0f / (env_time(P[TP_AE_D]) * sr); ainc[3] = 1.0f / (env_time(P[TP_AE_R]) * sr);
+    /* the envelopes tick once a frame of the output rate (oversampled or not: the same curves, and no float
+     * precision lost to tiny steps at 16x) */
+    const float esr = a->sr;
+    const int os = a->os;
+    finc[0] = 1.0f / (env_time(P[TP_FE_A]) * esr); finc[1] = 1.0f / (env_time(P[TP_FE_D]) * esr); finc[3] = 1.0f / (env_time(P[TP_FE_R]) * esr);
+    ainc[0] = 1.0f / (env_time(P[TP_AE_A]) * esr); ainc[1] = 1.0f / (env_time(P[TP_AE_D]) * esr); ainc[3] = 1.0f / (env_time(P[TP_AE_R]) * esr);
     finc[2] = ainc[2] = 0;
     int floop = R[TP_FE_LOOP] > 0.5f, aloop = R[TP_AE_LOOP] > 0.5f;
     float velg = R[TP_AE_VEL] > 0.5f ? 0.2f + 0.8f * v->vel : 1.0f;
-    float level = P[TP_VCA_LEVEL] * P[TP_VCA_LEVEL] * 1.2f * velg * (1.0f + v->c_amp);
+    float level = P[TP_VCA_LEVEL] * P[TP_VCA_LEVEL] * 1.2f * velg * (1.0f + v->c_amp) * v->gain;
     float pan0 = (P[TP_VCA_PAN] - 0.5f) * 2.0f + v->pan + v->c_pan;
     float pw1b = P[TP_O1_PW] + v->c_pw, pw2b = P[TP_O2_PW] + v->c_pw;
     float i1b = v->inc1, i2b = v->inc2, im = v->incm;
+    float gl = 0.70710678f, gr = 0.70710678f;
 
     for (int s = 0; s < n; s++) {
         /* the mod osc */
@@ -880,7 +1044,8 @@ static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
         float o2 = osc_wave(v->p2, i2 > 1e-6f ? i2 : 1e-6f, ts2, pw2, mx2);
         v->o1 = o1; v->o2 = o2;
         /* the mixer */
-        float x = o1 * lo1 + o2 * lo2 + o1 * o2 * lr + m * lm + rndf(&v->seed) * ln;
+        float x = o1 * lo1 + o2 * lo2 + o1 * o2 * lr + m * lm;
+        if (ln > 0.0f) x += rndf(&v->seed) * ln;
         float u = x * drive + bias + v->mx_fb * ofb;
         float y = (u > 0.0f ? tanh_f(u) : 0.8f * tanh_f(u * 1.25f)) - cb;
         v->mx_fb = y;
@@ -898,12 +1063,17 @@ static void voice_render(aria_t *a, voice_t *v, float *bl, float *br, int n)
         else if (order == ORD_STEREO) { yl = ladder(&v->f1, x, g1, k1, hp1); yr = ladder(&v->f2, x, g2, k2, 0); }
         else { yl = 0.65f * (ladder(&v->f1, x, g1, k1, hp1) + ladder(&v->f2, x, g2, k2, 0)); yr = yl; }
         /* the envelopes and the VCA */
-        env_tick(&v->fe, finc, P[TP_FE_S], P[TP_FE_CURVE], floop, v->gate);
-        float ae = env_tick(&v->ae, ainc, P[TP_AE_S], P[TP_AE_CURVE], aloop, v->gate);
+        if (s % os == 0) {
+            env_tick(&v->fe, finc, P[TP_FE_S], P[TP_FE_CURVE], floop, v->gate);
+            env_tick(&v->ae, ainc, P[TP_AE_S], P[TP_AE_CURVE], aloop, v->gate);
+        }
+        float ae = v->ae.lvl;
         float amp = ae * level;
         if (mo_vca > 0.0f) amp *= 1.0f - mo_vca * (mo_uni ? 1.0f - mv : 0.5f * (1.0f - mv));
-        float pan = clampf(pan0 + mo_pan * mv, -1.0f, 1.0f);
-        float gl = sqrtf(0.5f * (1.0f - pan)), gr = sqrtf(0.5f * (1.0f + pan));
+        if (s % os == 0 && (mo_pan != 0.0f || s == 0)) {     /* (the pan: once a frame of the output rate) */
+            float pan = clampf(pan0 + mo_pan * mv, -1.0f, 1.0f);
+            gl = sqrtf(0.5f * (1.0f - pan)); gr = sqrtf(0.5f * (1.0f + pan));
+        }
         bl[s] += yl * amp * gl;
         br[s] += yr * amp * gr;
     }
@@ -996,10 +1166,12 @@ static void render_chunk(aria_t *a, float *outl, float *outr)
     {
         const int m = CHUNK;
         /* the oversampling (a change: the voices' state starts over at the new rate) */
-        int q = (int)a->p[GP_QUALITY], os = q == Q_ECO ? 1 : q == Q_ULTRA ? 4 : 2;
+        static const int OS[NQ] = { 1, 2, 4, 16, 4 };
+        int q = (int)a->p[GP_QUALITY], os = OS[q < 0 ? 0 : q >= NQ ? NQ - 1 : q];
+        if (q == Q_RENDER && a->offline) os = 16;  /* (RENDER 16X: 4x while playing, 16x when the host renders) */
         if (os != a->os) {
             a->os = os; a->vsr = a->sr * (float)os;
-            memset(a->dec2, 0, sizeof a->dec2); memset(a->dec4, 0, sizeof a->dec4);
+            memset(a->dec, 0, sizeof a->dec);
         }
         int mi = m * os;
         /* the knobs move */
@@ -1017,8 +1189,13 @@ static void render_chunk(aria_t *a, float *outl, float *outr)
         for (int t = 0; t < ARIA_TIMBRES; t++)
             for (int c = 0; c < 2; c++) {
                 float *b = bus[t][c];
-                if (os == 4) for (int s = 0; s < 2 * m; s++) b[s] = hb_down(&a->dec4[t][c], b[2 * s], b[2 * s + 1]);
-                if (os >= 2) for (int s = 0; s < m; s++) ob[t][c][s] = hb_down(&a->dec2[t][c], b[2 * s], b[2 * s + 1]);
+                int n = mi, st = 0;
+                while ((1 << st) < os) st++;           /* the stages: from the top of the cascade down */
+                for (int k = st - 1; k >= 1; k--) {
+                    n /= 2;
+                    for (int s = 0; s < n; s++) b[s] = hb_down(&a->dec[k][t][c], HB_C[k], HB_N[k], b[2 * s], b[2 * s + 1]);
+                }
+                if (os >= 2) for (int s = 0; s < m; s++) ob[t][c][s] = hb_down(&a->dec[0][t][c], HB_C[0], HB_N[0], b[2 * s], b[2 * s + 1]);
                 else memcpy(ob[t][c], b, sizeof(float) * (size_t)m);
             }
         /* the delay and the output */

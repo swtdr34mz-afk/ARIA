@@ -198,6 +198,65 @@ int main(void)
         aria_panic(a); aria_defaults(a);
     }
 
+    /* ---- LOW SPLIT (as the PROPHET 67's) ---- */
+    {
+        int8_t hn[16];
+        float b1[512], b2[512];
+        aria_panic(a); aria_defaults(a);
+        aria_param(a, GP_LS_SPLIT, 1);                       /* -1 OCT below C4 */
+        aria_note_on(a, 48, 48, 1);
+        CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 36, "LOW SPLIT -1 OCT: C3 below the point plays C2");
+        aria_note_on(a, 72, 72, 1);
+        CHECK(aria_held_notes(a, hn) == 2 && hn[1] == 72, "LOW SPLIT: C5 above the point plays as it is");
+        aria_panic(a);
+        aria_param(a, GP_LS_SCALE_R, 2); aria_param(a, GP_LS_FOLLOW, LSF_KEY); aria_param(a, GP_LS_KEY, 0);   /* MINOR on C */
+        aria_note_on(a, 64, 64, 1);
+        CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 63, "LOW SPLIT SCALE R C MINOR: E plays E flat");
+        aria_panic(a);
+        aria_param(a, GP_LS_FOLLOW, LSF_ROOT);
+        aria_note_on(a, 45, 45, 1);                          /* A2 on the left: A minor on the right */
+        aria_note_on(a, 61, 61, 1);
+        CHECK(aria_held_notes(a, hn) == 2 && hn[1] == 60, "LOW SPLIT FOLLOW ROOT: the left hand's A minor, C# plays C");
+        aria_panic(a);
+        aria_param(a, GP_LS_SCALE_R, 0); aria_param(a, GP_LS_BALANCE, 1.0f);   /* all to the right */
+        for (int i = 0; i < 40; i++) aria_render(a, b1, b2, 512);
+        aria_note_on(a, 40, 40, 1);
+        double e = 0;
+        for (int i = 0; i < 20; i++) { aria_render(a, b1, b2, 512); for (int k = 0; k < 512; k++) e += b1[k] * b1[k]; }
+        CHECK(e < 1e-6, "LOW SPLIT BALANCE all right: the left hand silent");
+        aria_panic(a); aria_param(a, GP_LS_BALANCE, 0.5f);
+        aria_param(a, GP_LS_HOLD, 1);
+        aria_note_on(a, 48, 48, 1); aria_note_off(a, 48);
+        CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 36, "LOW HOLD: the left note stays after its key");
+        aria_note_on(a, 50, 50, 1);
+        CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 38, "LOW HOLD: a new left note replaces it");
+        aria_note_off(a, 50);
+        aria_param(a, GP_LS_HOLD, 0);
+        CHECK(aria_held_notes(a, hn) == 0, "LOW HOLD off: what it held lets go");
+        aria_panic(a); aria_defaults(a);
+    }
+    /* ---- HOLD ---- */
+    {
+        int8_t hn[16];
+        float b1[512], b2[512];
+        aria_param(a, GP_HOLD, 1);
+        aria_note_on(a, 60, 60, 1); aria_note_on(a, 64, 64, 1);
+        aria_note_off(a, 60); aria_note_off(a, 64);
+        for (int i = 0; i < 20; i++) aria_render(a, b1, b2, 512);
+        CHECK(aria_held_notes(a, hn) == 2 && aria_voices_active(a) == 2, "HOLD: a chord stays after the keys let go");
+        aria_note_on(a, 67, 67, 1);
+        CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 67, "HOLD: a new key after letting go replaces the chord");
+        aria_note_on(a, 71, 71, 1);
+        CHECK(aria_held_notes(a, hn) == 2, "HOLD: keys added while one is down join it");
+        aria_note_off(a, 71);
+        aria_param(a, GP_HOLD, 0);
+        CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 67, "HOLD off: the held notes go, the key still down stays");
+        aria_note_off(a, 67);
+        for (int i = 0; i < 200; i++) aria_render(a, b1, b2, 512);
+        CHECK(aria_voices_active(a) == 0, "HOLD: no stuck notes");
+        aria_panic(a); aria_defaults(a);
+    }
+
     /* ---- voices ---- */
     for (int i = 0; i < 10; i++) aria_note_on(a, 20 + i, 48 + i, 1);
     aria_render(a, tmp, tmp2, 256);

@@ -52,6 +52,7 @@ public:
     /* from the editor (the audio thread picks them up) */
     std::atomic<int> learnRequest{0};         /* LEARN pressed */
     std::atomic<int> cancelRequest{0};
+    std::atomic<int> panicRequest{0};         /* ALL OFF */
     std::atomic<int> learning{0};             /* the chord memory's state, for the editor */
     std::atomic<int> editTimbre{0};           /* the panel shows timbre A (0) or B (1) */
     std::atomic<float> uiScale{0.8f};

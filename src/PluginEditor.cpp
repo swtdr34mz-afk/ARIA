@@ -135,7 +135,7 @@ void Button::paint(juce::Graphics &g)
 {
     bool on = isLit();
     if (blink && blink()) on = (panel.blinkPhase / 8) % 2 == 0;
-    auto ac = panel.accent;
+    auto ac = role;
     juce::Rectangle<float> b = small ? juce::Rectangle<float>(((float)getWidth() - 16.0f) * 0.5f, 2.0f, 16.0f, 16.0f)
                                      : juce::Rectangle<float>(((float)getWidth() - 34.0f) * 0.5f, 6.0f, 34.0f, 16.0f);
     float rad = small ? 8.0f : 3.5f;
@@ -153,7 +153,8 @@ void Button::paint(juce::Graphics &g)
         g.fillRoundedRectangle(b, rad);
         g.setColour(Colour(0x80ffffff)); g.drawLine(b.getX() + 2, b.getY() + 1.0f, b.getRight() - 2, b.getY() + 1.0f, 0.8f);
     } else {
-        juce::ColourGradient body(Colour(0xff3a3b3f), 0, b.getY(), Colour(0xff1e1f22), 0, b.getBottom(), false);
+        /* unlit: a cap of its colour, dark (as coloured switch caps look with their light off) */
+        juce::ColourGradient body(Colour(0xff3a3b3f).interpolatedWith(ac, 0.22f), 0, b.getY(), Colour(0xff1c1d20).interpolatedWith(ac, 0.16f), 0, b.getBottom(), false);
         g.setGradientFill(body);
         g.fillRoundedRectangle(b, rad);
         juce::ColourGradient sheen(Colour(0x1effffff), 0, b.getY(), Colour(0x00ffffff), 0, b.getCentreY(), false);
@@ -199,7 +200,7 @@ void StepKey::paint(juce::Graphics &g)
     auto &P = panel.proc;
     int len = (int)std::lround(P.param(GP_ARP_LEN)->convertFrom0to1(P.param(GP_ARP_LEN)->getValue())) + 1;
     bool on = value() > 0.5f, inLen = step < len, now = panel.arpStep == step;
-    auto ac = panel.accent;
+    auto ac = Colour(0xff3ddc84), now_c = Colour(0xffff4a3d);   /* green LEDs; the step playing lit red */
     /* the LED above */
     juce::Rectangle<float> led((float)getWidth() * 0.5f - 6.0f, 2.0f, 12.0f, 4.0f);
     if (on && inLen) {
@@ -217,8 +218,8 @@ void StepKey::paint(juce::Graphics &g)
     juce::ColourGradient sheen(Colour(0x60ffffff), 0, k.getY(), Colour(0x00ffffff), 0, k.getY() + 10.0f, false);
     g.setGradientFill(sheen); g.fillRoundedRectangle(k.reduced(1.5f, 1.0f).withHeight(12.0f), 2.0f);
     if (now) {                                       /* the arp is on this step */
-        g.setColour(ac.withAlpha(0.55f)); g.fillPath(cap);
-        g.setColour(ac.brighter(0.5f)); g.strokePath(cap, juce::PathStrokeType(1.4f));
+        g.setColour(now_c.withAlpha(0.55f)); g.fillPath(cap);
+        g.setColour(now_c.brighter(0.4f)); g.strokePath(cap, juce::PathStrokeType(1.4f));
     }
     g.setColour(Colour(0xff1a1a1a)); g.strokePath(cap, juce::PathStrokeType(0.8f));
     g.setColour(inLen ? Colour(0xff3a3a3a) : Colour(0xff3c3c3a));
@@ -410,17 +411,6 @@ Panel::Panel(AriaProcessor &p) : proc(p)
 {
     setSize(W, H);
     build();
-    addAndMakeVisible(display);
-    display.setBounds(W - 34 - 30 - 300 - 84, 22, 300, 48);
-    for (int i = 0; i < 2; i++) {                /* the patch: back, on */
-        auto *b = new Button(*this, Button::ACTION, 0, false, i ? "NEXT" : "PREV");
-        b->onPress = [this, i] {
-            { int n = proc.getNumPrograms(); proc.setCurrentProgram((proc.getCurrentProgram() + (i ? 1 : n - 1)) % n); }
-            lastTouched = -1;
-        };
-        controls.emplace_back(b); addAndMakeVisible(b);
-        b->setBounds(W - 34 - 30 - 84 + i * 42, 28, 42, 38);
-    }
     tag = juce::ImageCache::getFromMemory(BinaryData::swtdr34mztag_png, BinaryData::swtdr34mztag_pngSize);
     startTimerHz(30);
 }
@@ -442,8 +432,20 @@ Fader *Panel::fader(Module &m, int param, bool timbre, const char *label)
 Button *Panel::button(Module &m, Button::Kind k, int param, bool timbre, const char *label, int radio)
 {
     auto *b = new Button(*this, k, param, timbre, label, radio);
+    b->role = m.col;
     controls.emplace_back(b); addAndMakeVisible(b); m.buttons.push_back(b);
     return b;
+}
+
+/* the sections' colours, as a hardware panel codes them: red the filters, envelopes and VCA; green the modulation and
+ * the arpeggiator; amber the sources, the voices and the keys; ice white the effects and the output */
+juce::Colour aria_ui::sectionColour(const juce::String &t)
+{
+    const Colour RED(0xffff4a3d), GREEN(0xff3ddc84), AMBER(0xffffb02e), ICE(0xffd6e6f5);
+    if (t == "LADDER FILTERS" || t == "FILTER ENV" || t == "AMP ENV" || t == "VCA") return RED;
+    if (t == "MOD OSC" || t.startsWith("LFO") || t == "PITCH LFO" || t == "ARPEGGIATOR" || t == "ARP PATTERN" || t == "PLAY") return GREEN;
+    if (t == "DIFFUSION DELAY" || t == "OUTPUT" || t == "PRESET") return ICE;
+    return AMBER;
 }
 
 void Panel::build()
@@ -451,10 +453,10 @@ void Panel::build()
     using B = Button;
     const int X0 = 64, ROW1 = 104, H1 = 300, ROW2 = 420, H2 = 232;
     auto add = [&](const char *title, int x, int y, int w, int h) -> Module & {
-        modules.push_back(Module{ title, x, y, w, h, {}, {}, {}, false });
+        modules.push_back(Module{ title, x, y, w, h, {}, {}, {}, false, sectionColour(title) });
         return modules.back();
     };
-    modules.reserve(20);
+    modules.reserve(32);                     /* (the references below stay good) */
     int x = X0;
     { auto &m = add("MOD OSC", x, ROW1, 230, H1); x += 230;
       knob(m, TP_MO_FREQ, true, "FREQ"); knob(m, TP_MO_PITCH, true, "PITCH"); knob(m, TP_MO_FILTER, true, "FILTER");
@@ -538,45 +540,76 @@ void Panel::build()
     { auto &m = add("OUTPUT", x, ROW2, 120, H2);
       knob(m, GP_OUT_VOL, false, "VOLUME", true); knob(m, GP_OUT_LOWCUT, false, "LOW CUT"); }
     for (auto &m : modules) layoutModule(m);
-    {   /* SAVE: the sound as a preset of the user's own */
-        auto *sv = new Button(*this, Button::ACTION, 0, false, "SAVE");
-        sv->onPress = [this] {
-            auto *w = new juce::AlertWindow("SAVE PRESET", "A name for this sound:", juce::MessageBoxIconType::NoIcon, this);
-            w->addTextEditor("name", proc.getProgramName(proc.getCurrentProgram()));
-            w->addButton("SAVE", 1, juce::KeyPress(juce::KeyPress::returnKey));
-            w->addButton("CANCEL", 0, juce::KeyPress(juce::KeyPress::escapeKey));
-            w->enterModalState(true, juce::ModalCallbackFunction::create([this, w](int r) {
-                if (r == 1 && proc.savePreset(w->getTextEditorContents("name")) < 0)
-                    juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, "SAVE PRESET", "Could not save it.");
-                lastTouched = -1;
-            }), true);
-        };
-        controls.emplace_back(sv); addAndMakeVisible(sv);
-        sv->setBounds(W - 34 - 30 - 300 - 84 - 84 - 72, 28, 64, 38);
-    }
-    {   /* QUALITY: the oversampling, by the display */
-        auto *q = new Button(*this, Button::CYCLE, GP_QUALITY, false, "");
-        controls.emplace_back(q); addAndMakeVisible(q);
-        q->setBounds(W - 34 - 30 - 300 - 84 - 84, 28, 64, 38);
-    }
-    {   /* the ARP PATTERN: 16 steps in four groups, its LENGTH and ALL ON either side */
-        const int kw = 40, gap = 3, group = 12, total = 16 * kw + 15 * gap + 3 * group;
-        int x0 = (W - total) / 2, y0 = 680;
-        for (int i = 0; i < 16; i++) {
-            auto *k = new StepKey(*this, i);
-            controls.emplace_back(k); addAndMakeVisible(k); steps.push_back(k);
-            k->setBounds(x0 + i * (kw + gap) + (i / 4) * group, y0, kw, 58);
+    /* the bottom band: LOW SPLIT, PLAY (HOLD), the ARP PATTERN's 16 steps, PRESET (the display and its keys) */
+    {
+        const int Y = BAND_Y, HB = BAND_H;
+        int bx = X0;
+        { auto &m = add("LOW SPLIT", bx, Y, 372, HB); bx += 372;
+          knob(m, GP_LS_POINT, false, "POINT"); knob(m, GP_LS_BALANCE, false, "BALANCE");
+          button(m, B::CYCLE, GP_LS_SPLIT, false, ""); button(m, B::SWITCH, GP_LS_HOLD, false, "LOW HOLD");
+          button(m, B::CYCLE, GP_LS_SCALE_L, false, "L"); button(m, B::CYCLE, GP_LS_SCALE_R, false, "R");
+          button(m, B::CYCLE, GP_LS_KEY, false, "KEY"); button(m, B::CYCLE, GP_LS_FOLLOW, false, "");
+          layoutModule(m); }
+        { auto &m = add("PLAY", bx, Y, 120, HB); bx += 120;
+          button(m, B::SWITCH, GP_HOLD, false, "HOLD");
+          auto *off = button(m, B::ACTION, 0, false, "ALL OFF");
+          off->onPress = [this] { proc.panicRequest.store(1); };
+          off->role = Colour(0xffff4a3d);
+          layoutModule(m); }
+        int px = bx;
+        { auto &m = add("ARP PATTERN", bx, Y, 820, HB); bx += 820; (void)m; }
+        {   /* the steps in four groups, LENGTH before them and ALL ON after */
+            const int kw = 36, gap = 3, group = 10, total = 16 * kw + 15 * gap + 3 * group;
+            int x0 = px + (820 - total) / 2, y0 = Y + 40;
+            for (int i = 0; i < 16; i++) {
+                auto *k = new StepKey(*this, i);
+                controls.emplace_back(k); addAndMakeVisible(k); steps.push_back(k);
+                k->setBounds(x0 + i * (kw + gap) + (i / 4) * group, y0, kw, 62);
+            }
+            auto *len = new Button(*this, Button::CYCLE, GP_ARP_LEN, false, "LENGTH");
+            len->role = Colour(0xff3ddc84);
+            controls.emplace_back(len); addAndMakeVisible(len);
+            len->setBounds(x0 - 84, y0 + 14, 76, 38);
+            auto *all = new Button(*this, Button::ACTION, 0, false, "ALL ON");
+            all->role = Colour(0xff3ddc84);
+            all->onPress = [this] {
+                for (int i = 0; i < 16; i++) { auto *p = proc.param(GP_ARP_STEP1 + i); p->beginChangeGesture(); p->setValueNotifyingHost(1.0f); p->endChangeGesture(); }
+            };
+            controls.emplace_back(all); addAndMakeVisible(all);
+            all->setBounds(x0 + total + 12, y0 + 14, 60, 38);
         }
-        auto *len = new Button(*this, Button::CYCLE, GP_ARP_LEN, false, "LENGTH");
-        controls.emplace_back(len); addAndMakeVisible(len);
-        len->setBounds(x0 - 96, y0 + 12, 76, 38);
-        auto *all = new Button(*this, Button::ACTION, 0, false, "ALL ON");
-        all->onPress = [this] {
-            for (int i = 0; i < 16; i++) { auto *p = proc.param(GP_ARP_STEP1 + i); p->beginChangeGesture(); p->setValueNotifyingHost(1.0f); p->endChangeGesture(); }
-        };
-        controls.emplace_back(all); addAndMakeVisible(all);
-        all->setBounds(x0 + total + 20, y0 + 12, 60, 38);
-        patternX = x0 - 110; patternW = total + 220;
+        { auto &m = add("PRESET", bx, Y, 360, HB);
+          addAndMakeVisible(display);
+          display.setBounds(m.x + 12, Y + 26, m.w - 24, 58);
+          auto *sv = button(m, B::ACTION, 0, false, "SAVE");
+          sv->role = Colour(0xffff4a3d);
+          sv->onPress = [this] {
+              auto *w = new juce::AlertWindow("SAVE PRESET", "A name for this sound:", juce::MessageBoxIconType::NoIcon, this);
+              w->addTextEditor("name", proc.getProgramName(proc.getCurrentProgram()));
+              w->addButton("SAVE", 1, juce::KeyPress(juce::KeyPress::returnKey));
+              w->addButton("CANCEL", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+              w->enterModalState(true, juce::ModalCallbackFunction::create([this, w](int r) {
+                  if (r == 1 && proc.savePreset(w->getTextEditorContents("name")) < 0)
+                      juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, "SAVE PRESET", "Could not save it.");
+                  lastTouched = -1;
+              }), true);
+          };
+          button(m, B::CYCLE, GP_QUALITY, false, "");
+          for (int i = 0; i < 2; i++) {          /* the sound: back, on */
+              auto *b = button(m, B::ACTION, 0, false, i ? "NEXT" : "PREV");
+              b->role = Colour(0xffe8eef5);
+              b->onPress = [this, i] {
+                  int n = proc.getNumPrograms();
+                  proc.setCurrentProgram((proc.getCurrentProgram() + (i ? 1 : n - 1)) % n);
+                  lastTouched = -1;
+              };
+          }
+          int bxx = m.x + 12;                    /* the keys under the display */
+          for (auto *b : m.buttons) {
+              int w = b->kind == Button::CYCLE ? 86 : 58;
+              b->setBounds(bxx, Y + 96, w, 38);
+              bxx += w + 8;
+          } }
     }
     for (auto &m : modules) {
         if (m.title == "MIXER") { addAndMakeVisible(scope); scope.setBounds(m.x + 10, m.y + 182, m.w - 20, m.h - 188); }
@@ -711,12 +744,17 @@ void Panel::paint(juce::Graphics &g)
             g.setColour(Colour(0x14ffffff)); g.drawLine((float)m.x + 1, (float)m.y + 2, (float)m.x + 1, (float)(m.y + m.h), 1.0f);
         }
         lastRowY = m.y;
+        /* the section's plate: a slightly sunk field, lit at its top edge */
+        juce::Rectangle<float> plate((float)m.x + 5.0f, (float)m.y + 20.0f, (float)m.w - 10.0f, (float)m.h - 18.0f);
+        g.setColour(Colour(0x2a000000)); g.fillRoundedRectangle(plate, 4.0f);
+        g.setColour(Colour(0x40000000)); g.drawRoundedRectangle(plate, 4.0f, 1.0f);
+        g.setColour(Colour(0x12ffffff)); g.drawLine(plate.getX() + 4, plate.getBottom() + 0.5f, plate.getRight() - 4, plate.getBottom() + 0.5f, 1.0f);
         auto hf = F.heading(11.5f);
         float tw = juce::GlyphArrangement::getStringWidth(hf, m.title);
         float cx = (float)m.x + (float)m.w * 0.5f, hy = (float)m.y + 9.0f;
-        g.setColour(Colour(0xff4a4c50));
-        g.drawLine((float)m.x + 12, hy, cx - tw * 0.5f - 8, hy, 1.0f);
-        g.drawLine(cx + tw * 0.5f + 8, hy, (float)(m.x + m.w) - 12, hy, 1.0f);
+        g.setColour(m.col.withAlpha(0.55f));          /* the heading's rules in the section's colour */
+        g.drawLine((float)m.x + 12, hy, cx - tw * 0.5f - 8, hy, 1.2f);
+        g.drawLine(cx + tw * 0.5f + 8, hy, (float)(m.x + m.w) - 12, hy, 1.2f);
         g.setColour(m.accent ? accent : Colour(0xffeceded));
         g.setFont(hf);
         g.drawText(m.title, juce::Rectangle<float>(cx - tw * 0.5f - 4, hy - 8, tw + 8, 16), juce::Justification::centred);
@@ -727,16 +765,6 @@ void Panel::paint(juce::Graphics &g)
         }
         for (auto *f : m.faders) paintFader(g, *f);
         for (auto *k : m.knobs) paintKnob(g, *k);
-    }
-    {   /* the ARP PATTERN strip's heading */
-        auto hf = F.heading(11.5f);
-        juce::String t("ARP PATTERN");
-        float tw = juce::GlyphArrangement::getStringWidth(hf, t), cx = (float)W * 0.5f, hy = 672.0f;
-        g.setColour(Colour(0xff4a4c50));
-        g.drawLine((float)patternX, hy, cx - tw * 0.5f - 8, hy, 1.0f);
-        g.drawLine(cx + tw * 0.5f + 8, hy, (float)(patternX + patternW), hy, 1.0f);
-        g.setColour(Colour(0xffeceded)); g.setFont(hf);
-        g.drawText(t, juce::Rectangle<float>(cx - tw * 0.5f - 4, hy - 8, tw + 8, 16), juce::Justification::centred);
     }
     groove((float)H - 46.0f);
     g.setColour(Colour(0xff7c7e82));

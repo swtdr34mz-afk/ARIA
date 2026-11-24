@@ -77,6 +77,7 @@ public:
     std::function<void()> onPress;           /* ACTION */
     std::function<bool()> lit;               /* ACTION: lit? */
     std::function<bool()> blink;             /* any kind: blinking (LEARN) */
+    juce::Colour role{ 0xffffb02e };         /* the colour it lights in (its section's) */
     void paint(juce::Graphics &) override;
     void mouseDown(const juce::MouseEvent &) override;
     bool isLit() const;
@@ -134,7 +135,9 @@ struct Module {
     std::vector<Fader *> faders;
     std::vector<Button *> buttons;
     bool accent = false;
+    juce::Colour col;                        /* the section's colour (its buttons, its heading's rule) */
 };
+juce::Colour sectionColour(const juce::String &title);
 
 class Panel : public juce::Component, private juce::Timer
 {
@@ -148,7 +151,7 @@ public:
     juce::uint32 touchedAt = 0;
     int learning = 0;
     juce::uint32 blinkPhase = 0;
-    static constexpr int W = 1800, H = 790;
+    static constexpr int W = 1800, H = 900, BAND_Y = 668, BAND_H = 176;
 private:
     void timerCallback() override;
     std::vector<std::unique_ptr<Control>> controls;
@@ -160,7 +163,7 @@ private:
     void paintKnob(juce::Graphics &, Knob &);
     void paintFader(juce::Graphics &, Fader &);
     std::vector<StepKey *> steps;
-    int shownStep = -2, patternX = 0, patternW = 0;
+    int shownStep = -2;
     float shownLen = -1.0f;
 public:
     int arpStep = -1;

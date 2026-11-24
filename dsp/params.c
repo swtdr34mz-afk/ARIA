@@ -39,6 +39,8 @@ void aria_value_text(int i, float v, char *out, int len)
         switch (i) {
         case GP_VC_SPLIT: note_name((int)lroundf(v * 127.0f), out, len); return;
         case GP_TEMPO: snprintf(out, (size_t)len, "%d BPM", (int)lroundf(60.0f + 140.0f * v)); return;
+        case GP_LS_POINT: note_name(24 + (int)lroundf(v * 72.0f), out, len); return;
+        case GP_LS_BALANCE: snprintf(out, (size_t)len, "%+d", (int)lroundf((v - 0.5f) * 100.0f)); return;
         case GP_DL_TIME_L: case GP_DL_TIME_R: {
             float ms = powf(2000.0f, v);
             if (ms < 1000.0f) snprintf(out, (size_t)len, "%.0f ms", ms);

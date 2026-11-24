@@ -19,10 +19,15 @@ static const char *const C_LD[] = { "OFF", "PITCH", "OSC 1", "OSC 2", "FILTER 1"
 static const char *const C_VC[] = { "SINGLE", "SPLIT", "STACK" };
 static const char *const C_MAP[] = { "1", "2", "3", "4", "5", "6", "7", "8" };
 static const char *const C_VA[] = { "1", "2", "3", "4", "5", "6", "7" };
-static const char *const C_Q[] = { "ECO 1X", "HIGH 2X", "ULTRA 4X" };
+static const char *const C_Q[] = { "ECO 1X", "HIGH 2X", "ULTRA 4X", "MAX 16X", "RENDER 16X" };
 static const char *const C_ARP[] = { "UP", "DOWN", "UP-DN", "ORDER", "RANDOM" };
 static const char *const C_AOCT[] = { "1 OCT", "2 OCT", "3 OCT", "4 OCT" };
 static const char *const C_LEN[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16" };
+static const char *const C_LSPLIT[] = { "OFF", "-1 OCT", "-2 OCT", "-3 OCT" };
+static const char *const C_SCALE[] = { "CHROMA", "MAJOR", "MINOR", "DORIAN", "PHRYGIAN", "LYDIAN", "MIXOLYD", "HARM MIN",
+                                       "PENTA MAJ", "PENTA MIN", "BLUES", "ARABIC" };
+static const char *const C_KEY[] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+static const char *const C_FOLLOW[] = { "KEY", "ROOT", "WHITE" };
 static const char *const C_DIV[] = { "1/4", "1/8", "1/8T", "1/16", "1/16T", "1/32" };
 
 #define K(n, d) { n, PK_KNOB, 0, d, 0 }
@@ -139,6 +144,15 @@ const aria_param_t ARIA_GPARAMS[ARIA_NPARAM - GP_FIRST] = {
     [GP_ARP_LATCH - GP_FIRST] = S("ARP LATCH", 0),
     [GP_ARP_LEN - GP_FIRST] = C("ARP PATTERN LENGTH", C_LEN, 15),
     [GP_TEMPO - GP_FIRST] = K("TEMPO", 60.0f / 140.0f),
+    [GP_LS_SPLIT - GP_FIRST] = C("LOW SPLIT", C_LSPLIT, 0),
+    [GP_LS_POINT - GP_FIRST] = K("LOW SPLIT POINT", 36.0f / 72.0f),
+    [GP_LS_SCALE_L - GP_FIRST] = C("LOW SPLIT SCALE L", C_SCALE, 0),
+    [GP_LS_SCALE_R - GP_FIRST] = C("LOW SPLIT SCALE R", C_SCALE, 0),
+    [GP_LS_KEY - GP_FIRST] = C("LOW SPLIT KEY", C_KEY, 0),
+    [GP_LS_FOLLOW - GP_FIRST] = C("LOW SPLIT FOLLOW", C_FOLLOW, LSF_ROOT),
+    [GP_LS_HOLD - GP_FIRST] = S("LOW HOLD", 0),
+    [GP_LS_BALANCE - GP_FIRST] = B("LOW SPLIT BALANCE", 0.5f),
+    [GP_HOLD - GP_FIRST] = S("HOLD", 0),
     [GP_ARP_STEP1 + 0 - GP_FIRST] = S("ARP STEP 1", 1), [GP_ARP_STEP1 + 1 - GP_FIRST] = S("ARP STEP 2", 1),
     [GP_ARP_STEP1 + 2 - GP_FIRST] = S("ARP STEP 3", 1), [GP_ARP_STEP1 + 3 - GP_FIRST] = S("ARP STEP 4", 1),
     [GP_ARP_STEP1 + 4 - GP_FIRST] = S("ARP STEP 5", 1), [GP_ARP_STEP1 + 5 - GP_FIRST] = S("ARP STEP 6", 1),
@@ -194,4 +208,7 @@ const char *const ARIA_GSHORT[ARIA_NPARAM - GP_FIRST] = {
     [GP_ARP_STEP1 + 9 - GP_FIRST] = "Step 10", [GP_ARP_STEP1 + 10 - GP_FIRST] = "Step 11", [GP_ARP_STEP1 + 11 - GP_FIRST] = "Step 12",
     [GP_ARP_STEP1 + 12 - GP_FIRST] = "Step 13", [GP_ARP_STEP1 + 13 - GP_FIRST] = "Step 14", [GP_ARP_STEP1 + 14 - GP_FIRST] = "Step 15",
     [GP_ARP_STEP1 + 15 - GP_FIRST] = "Step 16", [GP_TEMPO - GP_FIRST] = "Tempo",
+    [GP_LS_SPLIT - GP_FIRST] = "Low Split", [GP_LS_POINT - GP_FIRST] = "LS Point", [GP_LS_SCALE_L - GP_FIRST] = "LS Scale L",
+    [GP_LS_SCALE_R - GP_FIRST] = "LS Scale R", [GP_LS_KEY - GP_FIRST] = "LS Key", [GP_LS_FOLLOW - GP_FIRST] = "LS Follow",
+    [GP_LS_HOLD - GP_FIRST] = "Low Hold", [GP_LS_BALANCE - GP_FIRST] = "LS Balance", [GP_HOLD - GP_FIRST] = "Hold",
 };

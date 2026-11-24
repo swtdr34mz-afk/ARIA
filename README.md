@@ -42,8 +42,15 @@ Preferences → Enhancements (Beta) → Enable Enhancements and External Plugin 
   auch triolisch), Richtung (UP, DOWN, UP-DN, ORDER = wie gespielt, RANDOM), 1–4 Oktaven, GATE (Notenlänge), SWING.
   Läuft im Takt von Cubase bzw. der MPC, sobald der Host spielt; sonst ab der ersten Taste. Mit der Chord Memory
   zusammen wird jeder Akkord einer Taste arpeggiert (Preset ARP CHORDS).
-- **QUALITY** (neben dem Display): ECO 1X, HIGH 2X (Standard), ULTRA 4X – das Oversampling der Stimmen.
-- **Patches:** PREV / NEXT neben dem Display (oder die Programme des Hosts): 40 Werkssounds in Kategorien (PAD, BASS,
+- **QUALITY** (PRESET-Feld unten rechts): ECO 1X, HIGH 2X (Standard), ULTRA 4X, MAX 16X, RENDER 16X – das Oversampling
+  der Stimmen. RENDER 16X spielt live mit 4X und rechnet beim Exportieren/Bouncen mit 16X. CPU (8 Stimmen, ein Kern,
+  44,1 kHz): ECO ~3 %, HIGH ~5 %, ULTRA ~9 %, MAX 16X ~33 %. Aliasing bei hohen Tönen: ULTRA −51 dB, 16X −59 dB.
+- **LOW SPLIT:** SPLIT (-1, -2 oder -3 OCT) spielt alles links vom Punkt (POINT) so viele Oktaven tiefer. SCALE L / SCALE R legen die
+  Hälften auf eine Tonleiter (KEY = Grundton), FOLLOW (KEY, ROOT, WHITE) legt fest, wie die linke Hand folgt, BALANCE regelt die
+  Lautstärke links gegen rechts, LOW HOLD hält die linke Hand nach dem Loslassen.
+- **PLAY:** HOLD hält die Noten nach dem Loslassen; ein neuer Akkord ersetzt den alten, HOLD aus lässt alles los.
+  **ALL OFF** beendet alle Noten sofort.
+- **Patches:** PREV / NEXT unter dem Display (oder die Programme des Hosts): 40 Werkssounds in Kategorien (PAD, BASS,
   KEYS, LEAD, BRASS, PLUCK, ARP, FX, SPLIT). **SAVE** speichert den Sound unter einem Namen als eigenes Preset
   (Datei in `Dokumente/ARIA/Presets`, eine `.aria` je Sound); eigene Presets kommen nach den Werkssounds.
 - **TEMPO** (im ARPEGGIATOR): das Tempo, wenn kein Host eins vorgibt (Standalone-App).

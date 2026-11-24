@@ -109,6 +109,7 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
     if (!sl.isLocked()) { buffer.clear(); return; }      /* (the state is being loaded) */
     keyboardState.processNextMidiBuffer(midi, 0, n, true);
     sendParams(false);
+    aria_offline(engine, isNonRealtime() ? 1 : 0);   /* (QUALITY RENDER 16X: 16x when the host renders) */
     {   /* the host's tempo and position: the arpeggiator's grid */
         float bpm = 60.0f + 140.0f * raw[GP_TEMPO]->load(); double ppq = 0.0; bool playing = false;   /* (TEMPO: without a host) */
         if (auto *ph = getPlayHead())
@@ -121,6 +122,7 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
     }
     if (learnRequest.exchange(0)) aria_chord_learn(engine);
     if (cancelRequest.exchange(0)) aria_chord_cancel(engine);
+    if (panicRequest.exchange(0)) aria_all_off(engine);
 
     float *l = buffer.getWritePointer(0);
     float *r = buffer.getNumChannels() > 1 ? buffer.getWritePointer(1) : nullptr;

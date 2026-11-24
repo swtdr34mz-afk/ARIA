@@ -55,6 +55,8 @@ enum {
     GP_ARP_ON, GP_ARP_MODE, GP_ARP_OCT, GP_ARP_DIV, GP_ARP_GATE, GP_ARP_SWING, GP_ARP_LATCH,   /* ARPEGGIATOR */
     GP_ARP_LEN, GP_ARP_STEP1, GP_ARP_STEP16 = GP_ARP_STEP1 + 15,      /* ARP PATTERN: its length, each step on or a rest */
     GP_TEMPO,                                                          /* the tempo without a host (60..200 BPM) */
+    GP_LS_SPLIT, GP_LS_POINT, GP_LS_SCALE_L, GP_LS_SCALE_R, GP_LS_KEY, GP_LS_FOLLOW, GP_LS_HOLD, GP_LS_BALANCE,   /* LOW SPLIT */
+    GP_HOLD,                                                           /* HOLD: notes stay after the keys let go */
     ARIA_NPARAM
 };
 
@@ -84,8 +86,9 @@ enum { ORD_SERIAL, ORD_STEREO, ORD_PARALLEL };
 enum { LW_SINE, LW_TRI, LW_SAW, LW_RAMP, LW_SQUARE, LW_SH, NLW };
 enum { LD_OFF, LD_PITCH, LD_OSC1, LD_OSC2, LD_F1, LD_F2, LD_FILTERS, LD_PW, LD_AMP, LD_PAN, LD_MOFREQ, LD_FM, NLD };
 enum { VC_SINGLE, VC_SPLIT, VC_STACK };
-enum { Q_ECO, Q_HIGH, Q_ULTRA };                          /* the voices at 1x, 2x, 4x the rate */
+enum { Q_ECO, Q_HIGH, Q_ULTRA, Q_MAX, Q_RENDER, NQ };    /* the voices at 1x, 2x, 4x, 16x; RENDER: 4x, 16x offline */
 enum { ARP_UP, ARP_DOWN, ARP_UPDOWN, ARP_ORDER, ARP_RANDOM };
+enum { LSF_KEY, LSF_ROOT, LSF_WHITE };                    /* LOW SPLIT's FOLLOW */
 enum { DIV_4, DIV_8, DIV_8T, DIV_16, DIV_16T, DIV_32 };
 
 /* ----------------------------------------------------------------- the engine --- */
@@ -109,6 +112,7 @@ void aria_tempo(aria_t *a, float bpm);
  * while it plays, the arpeggiator follows its grid, else it runs on its own from the first key */
 void aria_transport(aria_t *a, float bpm, double ppq, int playing);
 int aria_arp_note(const aria_t *a);              /* the note the arpeggiator plays now (-1: none) */
+void aria_offline(aria_t *a, int on);            /* the host renders offline (QUALITY RENDER 16X: 16x then) */
 int aria_arp_step(const aria_t *a);              /* the pattern's step now, 0..15 (-1: not running) */
 void aria_all_off(aria_t *a);
 void aria_panic(aria_t *a);
