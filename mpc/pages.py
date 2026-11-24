@@ -13,15 +13,20 @@ import sys
 
 K, B, F, S, M = "knob", "bipolar", "fader", "switch", "menu"   # (M: a knob whose double tap lists the choices)
 E = "empty"
-PAGES = [   # (six: the MPC's function keys; the rest is in the parameter list)
-    ("FILTER", [[("Cutoff 1", K), ("Reso 1", K), ("Env Amt 1", B), ("KB Trk 1", S)],
-                [("Cutoff 2", K), ("Reso 2", K), ("Env Amt 2", B), ("KB Trk 2", S)],
-                [("HP 1", S), ("Flt Link", S), ("Flt Order", S), ("Overload", K)],
-                [("Level", F), ("Pan Spread", K), ("Detune", K), ("Glide", K)]]),
+PAGES = [   # (six: the MPC's function keys; the rest, the arp's 16 steps too, is in the parameter list)
+    # QUICK first, as the PROPHET 67's HOME: the knobs a sound is played with, LOW SPLIT and HOLD on it
+    ("QUICK", [[("Cutoff 1", K), ("Reso 1", K), ("Env Amt 1", B), ("Overload", K)],
+               [("F Attack", F), ("F Decay", F), ("A Attack", F), ("A Release", F)],
+               [("Low Split", S), ("LS Point", K), ("Low Hold", S), ("Hold", S)],
+               [("Vib Amt", K), ("Glide", K), ("Dly Mix", F), ("Level", F)]]),
     ("OSC", [[("O1 Octave", S), ("O1 TriSaw", K), ("O1 Width", K), ("O1 WaveMix", K)],
              [("O2 Octave", S), ("O2 TriSaw", K), ("O2 Width", K), ("O2 WaveMix", K)],
              [("O1 Freq", B), ("O2 Freq", B), ("FM Amount", K), ("O2 Sync", S)],
              [("Mix Osc1", F), ("Mix Osc2", F), ("Mix Ring", F), ("Mix Noise", F)]]),
+    ("FILTER", [[("Cutoff 1", K), ("Reso 1", K), ("Env Amt 1", B), ("KB Trk 1", S)],
+                [("Cutoff 2", K), ("Reso 2", K), ("Env Amt 2", B), ("KB Trk 2", S)],
+                [("HP 1", S), ("Flt Link", S), ("Flt Order", S), ("Overload", K)],
+                [("Level", F), ("Pan Spread", K), ("Detune", K), ("Glide", K)]]),
     ("ENV", [[("F Attack", F), ("F Decay", F), ("F Sustain", F), ("F Release", F)],
              [("A Attack", F), ("A Decay", F), ("A Sustain", F), ("A Release", F)],
              [("F Curve", K), ("F Velo", S), ("A Curve", K), ("A Velo", S)],
@@ -34,7 +39,6 @@ PAGES = [   # (six: the MPC's function keys; the rest is in the parameter list)
                 [("Arp Gate", K), ("Arp Swing", K), ("Arp Latch", S), ("Arp Length", M)],
                 [("Chord On", S), ("Chord Key", S), ("Key Map", M), ("Chord Learn", S)],
                 [("Dly Time L", K), ("Dly Fdbk", K), ("Dly Diff", K), ("Dly Mix", F)]]),
-    ("STEPS", [[("Step %d" % (r * 4 + c + 1), S) for c in range(4)] for r in range(4)]),
 ]
 EXTRA = {"Init": "switch", "Chord Learn": "switch"}     # (the MPC plugin's own: not in params.json)
 

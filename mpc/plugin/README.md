@@ -14,19 +14,20 @@ An 8-voice, bi-timbral analogue-modelling polysynth by **swtdr34mz**, the same e
 
 | Seite | Inhalt |
 |---|---|
+| QUICK | die Regler zum Spielen: Cutoff, Resonanz, Hüllkurve, Overload, Attack/Decay, LOW SPLIT (Oktave, Punkt, LOW HOLD), HOLD, Vibrato, Glide, Delay, Level |
 | FILTER | Filter 1 und 2 (Cutoff, Resonanz, Hüllkurve, Keytracking), HP, LINK, Reihenfolge, Overload, Level, Spread, Detune, Glide |
 | OSC | beide Oszillatoren (Oktave, Dreieck–Säge, Pulsbreite, Wave Mix), Stimmung, FM, Sync, Mixer |
 | ENV | Filter- und Amp-Hüllkurve, Kurven, Velocity, Unison, Mono, Stimmen-Modus (Single/Split/Stack), Splitpunkt |
 | MOD | LFO 1 und 2, Mod-Oszillator, Vibrato |
 | ARP/FX | Arpeggiator, Chord Memory (ON, KEY, Key Map, LEARN), Diffusion Delay |
-| STEPS | das Arp-Pattern: 16 Schritte an oder Pause |
 
-Alles Weitere (Timbre B, die übrigen Delay-, LFO- und Mod-Osc-Regler, QUALITY, INIT) steht in der Parameterliste
+Alles Weitere (Timbre B, die 16 Schritte des Arp-Patterns, die übrigen Delay-, LFO- und Mod-Osc-Regler, LS Balance, QUALITY, INIT) steht in der Parameterliste
 des Plugins.
 
 Die Q-Links drehen auf jeder Seite die vier Reihen (oben die erste). Der Arp läuft im Tempo der MPC und rastet im
 Takt ein, wenn sie spielt. **QUALITY**: HIGH (2x Oversampling, Standard auf MPC XL / Live III) oder ECO (weniger
-CPU, Standard auf den 32-Bit-MPCs); ULTRA nur, wenn die CPU-Anzeige viel Luft hat.
+CPU, Standard auf den 32-Bit-MPCs); ULTRA nur, wenn die CPU-Anzeige viel Luft hat. MAX 16X ist für den Rechner
+gedacht und auf der MPC meist zu schwer; RENDER 16X spielt auf der MPC wie ULTRA (sie rendert nicht offline).
 
 **LEARN** (Seite ARP): tippen, Akkord spielen, wieder tippen. Ohne KEY ist das der Akkord für jede Taste, mit KEY
 danach die Taste spielen, auf der er liegen soll. Key Maps 1–4 sind ab Werk mit Akkorden in C-Dur und c-Moll belegt.

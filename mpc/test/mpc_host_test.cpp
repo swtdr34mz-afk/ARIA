@@ -362,18 +362,50 @@ int main(int argc, char **argv)
         check(rms(tail, 44100 * 9, 44100 * 10) < 1e-5, "every voice ends after ALL NOTES OFF");
     }
 
-    /* QUALITY: ECO, HIGH and ULTRA all play */
+    /* QUALITY: ECO, HIGH, ULTRA, MAX 16X and RENDER 16X all play (five choices: 0, 1/4 .. 1) */
     {
         int qi = param(p, "Quality");
         bool ok = true;
-        for (float q : {0.0f, 0.5f, 1.0f}) {
+        for (float q : {0.0f, 0.25f, 0.5f, 0.75f, 1.0f}) {
             p.e->setParameter(p.e, qi, q);
             auto s = render(p, 44100, {{0, 0x90, 60, 100}, {22050, 0x80, 60, 0}}, {128});
             ok &= finite(s) && rms(s, 2205, 22050) > 1e-3;
         }
-        p.e->setParameter(p.e, qi, 0.5f);
+        p.e->setParameter(p.e, qi, 0.25f);
         render(p, 44100 * 3, {}, {128});
-        check(ok, "QUALITY ECO, HIGH and ULTRA all play");
+        check(ok, "QUALITY ECO, HIGH, ULTRA, MAX 16X and RENDER 16X all play");
+    }
+
+    /* HOLD: the notes stay after the keys go, and go when HOLD does */
+    {
+        int hold = param(p, "Hold");
+        p.d(effSetProgram, 0, 0);
+        p.e->setParameter(p.e, hold, 1.0f);
+        auto s = render(p, 44100 * 2, {{0, 0x90, 60, 100}, {0, 0x90, 64, 100}, {4410, 0x80, 60, 0}, {4410, 0x80, 64, 0}}, {256});
+        p.e->setParameter(p.e, hold, 0.0f);
+        auto t = render(p, 44100 * 2, {}, {256});
+        check(rms(s, 44100, 44100 * 2) > 1e-2 && rms(t, 44100, 44100 * 2) < 1e-5, "HOLD keeps the notes, HOLD off lets them go");
+    }
+
+    /* LOW SPLIT: below the point an octave down */
+    {
+        auto crossings = [](const std::vector<float> &s, int a, int b) {
+            int n = 0;
+            for (int i = a + 1; i < b; i++)
+                n += (s[2 * i - 2] < 0.0f) != (s[2 * i] < 0.0f);
+            return n;
+        };
+        int ls = param(p, "Low Split"), pt = param(p, "LS Point");
+        p.d(effSetProgram, 0, 0);
+        p.e->setParameter(p.e, pt, 24.0f / 72.0f);            /* (C3) */
+        auto a = render(p, 44100, {{0, 0x90, 45, 100}, {30000, 0x80, 45, 0}}, {256});
+        render(p, 44100 * 2, {}, {256});
+        p.e->setParameter(p.e, ls, 1.0f / 3.0f);              /* (-1 OCT) */
+        auto b = render(p, 44100, {{0, 0x90, 45, 100}, {30000, 0x80, 45, 0}}, {256});
+        p.e->setParameter(p.e, ls, 0.0f);
+        render(p, 44100 * 2, {}, {256});
+        double r = (double)crossings(b, 4410, 26460) / std::max(1, crossings(a, 4410, 26460));
+        check(r > 0.4 && r < 0.6, "LOW SPLIT -1 OCT: a key below the point an octave down (" + std::to_string(r) + ")");
     }
 
     /* INIT: a press gives the INIT sound (CUTOFF 1 open), the host told, and INIT is off again */
@@ -426,16 +458,16 @@ int main(int argc, char **argv)
         for (int k : {36, 43, 48, 55, 60, 64, 67, 71})
             e.push_back({0, 0x90, (uint8_t)k, 100});
         int qi = param(p, "Quality");
-        double c[3];
-        for (int q = 0; q < 3; q++) {
+        double c[4];
+        for (int q = 0; q < 4; q++) {
             p.d(effSetProgram, 0, 2);
-            p.e->setParameter(p.e, qi, 0.5f * (float)q);
+            p.e->setParameter(p.e, qi, 0.25f * (float)q);
             render(p, 44100 * 4, e, {256}, &c[q]);
             render(p, 44100 * 3, {{0, 0xB0, 123, 0}}, {256});
         }
-        p.e->setParameter(p.e, qi, 0.5f);
-        std::printf("  CPU, 8 voices of GLASS PAD (this computer): ECO %.2f %%, HIGH %.2f %%, ULTRA %.2f %% of a core; the programs' worst: %.2f %%\n",
-                    c[0], c[1], c[2], worstCpu);
+        p.e->setParameter(p.e, qi, 0.25f);
+        std::printf("  CPU, 8 voices of GLASS PAD (this computer): ECO %.2f %%, HIGH %.2f %%, ULTRA %.2f %%, MAX 16X %.2f %% of a core; the programs' worst: %.2f %%\n",
+                    c[0], c[1], c[2], c[3], worstCpu);
     }
 
     p.d(effMainsChanged, 0, 0);
