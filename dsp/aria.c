@@ -95,7 +95,7 @@ struct aria {
     int8_t chord[8]; int chord_n;
     int8_t map[8][128][8]; uint8_t map_n[8][128];
     int learning; int8_t learn[8]; int learn_n;
-    int keys_down[128];                  /* (learning: which notes are held) */
+    int8_t last[8]; int last_n, last_key;   /* the last key and the notes it played (the screen) */
 };
 
 /* ----------------------------------------------------------- the parameters --- */
@@ -477,6 +477,8 @@ void aria_note_on(aria_t *a, int id, int note, float vel)
     release_key(a, id);                      /* (the same key again) */
     int out[8], n = expand(a, note, out);
     for (int i = 0; i < n; i++) play_note(a, id, out[i], vel);
+    a->last_n = n; a->last_key = note;
+    for (int i = 0; i < n; i++) a->last[i] = (int8_t)out[i];
 }
 void aria_note_off(aria_t *a, int id) { release_key(a, id); }
 
@@ -809,4 +811,24 @@ void aria_render(aria_t *a, float *outl, float *outr, int n)
         }
         outl += m; outr += m; n -= m;
     }
+}
+
+int aria_chord_get_key(const aria_t *a, int m, int key, int8_t out[8])
+{
+    if (m < 0 || m > 7 || key < 0 || key > 127) return 0;
+    int n = a->map_n[m][key];
+    for (int i = 0; i < n; i++) out[i] = a->map[m][key][i];
+    return n;
+}
+int aria_last_played(const aria_t *a, int8_t out[8], int *key)
+{
+    for (int i = 0; i < a->last_n; i++) out[i] = a->last[i];
+    if (key) *key = a->last_n ? a->last_key : -1;
+    return a->last_n;
+}
+int aria_chord_learned(const aria_t *a, int8_t out[8])
+{
+    if (a->learning) { for (int i = 0; i < a->learn_n; i++) out[i] = a->learn[i]; return a->learn_n; }
+    for (int i = 0; i < a->chord_n; i++) out[i] = (int8_t)(60 + a->chord[i]);
+    return a->chord_n;
 }

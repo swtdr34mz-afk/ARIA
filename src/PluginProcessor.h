@@ -51,6 +51,15 @@ public:
     std::atomic<int> activeVoices{0};
     juce::MidiKeyboardState keyboardState;    /* (the standalone's keys, from the computer keyboard) */
 
+    /* for the panel's screens (written each block): the chord memory's keys and notes, the scope */
+    std::atomic<uint64_t> keyMask[2]{};       /* the keys with a chord in the key map shown */
+    std::atomic<uint64_t> lastNotes{0}, learnNotes{0};   /* up to 8 notes, a byte each (0: none) */
+    std::atomic<int> lastKey{-1};
+    static constexpr int SCOPE = 4096;
+    float scope[SCOPE] = {};
+    std::atomic<int> scopeW{0};
+    static int unpack(uint64_t v, int out[8]);
+
 private:
     aria_t *engine = nullptr;
     std::vector<juce::RangedAudioParameter *> params;

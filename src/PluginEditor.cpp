@@ -242,16 +242,21 @@ void Button::mouseDown(const juce::MouseEvent &e)
 }
 
 /* ---------------------------------------------------------------------------------- display --- */
-void Display::paint(juce::Graphics &g)
+void aria_ui::paintOled(juce::Graphics &g, juce::Rectangle<float> r)
 {
-    auto r = getLocalBounds().toFloat();
     juce::ColourGradient bg(Colour(0xff050607), r.getX(), r.getY(), Colour(0xff121518), r.getRight(), r.getBottom(), false);
     g.setGradientFill(bg);
     g.fillRoundedRectangle(r, 5.0f);
     g.setColour(juce::Colours::black);
     g.drawRoundedRectangle(r.reduced(0.5f), 5.0f, 1.0f);
     g.setColour(Colour(0xff34363a));
-    g.drawLine(r.getX() + 4, r.getBottom() + 0.5f, r.getRight() - 4, r.getBottom() + 0.5f, 1.0f);
+    g.drawLine(r.getX() + 4, r.getBottom() - 0.5f, r.getRight() - 4, r.getBottom() - 0.5f, 1.0f);
+}
+
+void Display::paint(juce::Graphics &g)
+{
+    auto r = getLocalBounds().toFloat();
+    paintOled(g, r);
 
     auto &P = panel.proc;
     int prog = P.getCurrentProgram();
@@ -274,6 +279,139 @@ void Display::paint(juce::Graphics &g)
     g.drawFittedText(line.toUpperCase(), lr.translated(0, 0.6f).toNearestInt(), juce::Justification::left, 1, 0.7f);
     g.setColour(C_OLED);
     g.drawFittedText(line.toUpperCase(), lr.toNearestInt(), juce::Justification::left, 1, 0.7f);
+}
+
+/* ----------------------------------------------------------------------------- chord screen --- */
+static juce::String noteName(int n)
+{
+    static const char *const N[12] = { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" };
+    return juce::String(N[((n % 12) + 12) % 12]) + juce::String(n / 12 - 1);
+}
+static const char *const PC[12] = { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" };
+
+juce::String aria_ui::chordName(const int *notes, int n)
+{
+    if (n <= 0) return {};
+    int lo = 127, set = 0;
+    for (int i = 0; i < n; i++) lo = std::min(lo, notes[i]);
+    for (int i = 0; i < n; i++) set |= 1 << (notes[i] % 12);
+    if (n == 1) return PC[notes[0] % 12];
+    static const struct { int mask; const char *name; } T[] = {
+        { 0x091, "" }, { 0x089, "m" }, { 0x049, "dim" }, { 0x111, "+" }, { 0x085, "sus2" }, { 0x0A1, "sus4" },
+        { 0x291, "6" }, { 0x289, "m6" }, { 0x491, "7" }, { 0x891, "maj7" }, { 0x489, "m7" }, { 0x449, "m7b5" },
+        { 0x249, "dim7" }, { 0x889, "mMaj7" }, { 0x095, "add9" }, { 0x08D, "madd9" }, { 0x495, "9" }, { 0x895, "maj9" },
+        { 0x48D, "m9" }, { 0x4A1, "7sus4" }, { 0x081, "5" }, { 0x011, "(no5)" }, { 0x411, "7" }, { 0x811, "maj7" },
+        { 0x409, "m7" }, { 0x00D, "m(add9)" } };
+    int order[12], no = 0;                            /* the bass as the root first, then the others */
+    order[no++] = lo % 12;
+    for (int pc = 0; pc < 12; pc++) if (((set >> pc) & 1) && pc != lo % 12) order[no++] = pc;
+    for (int o = 0; o < no; o++) {
+        int root = order[o], rel = 0;
+        for (int pc = 0; pc < 12; pc++) if ((set >> pc) & 1) rel |= 1 << ((pc - root + 12) % 12);
+        for (auto &t : T)
+            if (t.mask == rel) {
+                juce::String s = juce::String(PC[root]) + t.name;
+                if (root != lo % 12) s += juce::String("/") + PC[lo % 12];
+                return s;
+            }
+    }
+    return juce::String(PC[lo % 12]) + "?";
+}
+
+void ChordScreen::paint(juce::Graphics &g)
+{
+    auto r = getLocalBounds().toFloat();
+    paintOled(g, r);
+    auto &P = panel.proc;
+    auto &F = Fonts::get();
+    auto par = [&](int i) { return P.param(i)->convertFrom0to1(P.param(i)->getValue()); };
+    bool on = par(GP_CH_ON) > 0.5f, keyMode = par(GP_CH_KEY) > 0.5f;
+    int map = (int)std::lround(par(GP_CH_MAP));
+    int notes[8], n;
+    juce::String top, big, small;
+    if (panel.learning) {
+        n = AriaProcessor::unpack(P.learnNotes.load(), notes);
+        top = panel.learning == 1 ? "LEARN: PLAY THE CHORD" : "LEARN: PRESS ITS KEY";
+    } else {
+        n = AriaProcessor::unpack(P.lastNotes.load(), notes);
+        top = !on ? juce::String("OFF") : keyMode ? "KEY MAP " + juce::String(map + 1) : juce::String("CHORD");
+        if (on && !keyMode && n <= 1) { n = AriaProcessor::unpack(P.learnNotes.load(), notes); }
+    }
+    big = n ? chordName(notes, n) : juce::String("-");
+    for (int i = 0; i < n; i++) small += (i ? " " : "") + noteName(notes[i]);
+    auto in = r.reduced(10, 6);
+    g.setFont(F.oled(10.0f));
+    g.setColour(Colour(0xff6f7a80));
+    g.drawText(top, in.removeFromTop(12), juce::Justification::left);
+    g.setColour(on || panel.learning ? C_OLED : C_OLED.withAlpha(0.35f));
+    g.setFont(F.oled(22.0f));
+    g.drawFittedText(big, in.removeFromTop(26).toNearestInt(), juce::Justification::left, 1, 0.6f);
+    g.setFont(F.oled(10.0f));
+    g.setColour(C_OLED.withAlpha(0.7f));
+    g.drawFittedText(small, in.removeFromTop(14).toNearestInt(), juce::Justification::left, 1, 0.6f);
+    /* the keyboard: C2..B5; keys with a chord in this map a dot, the notes sounding lit */
+    auto kb = in.withTrimmedTop(4);
+    const int first = 36, octaves = 4, whites = octaves * 7;
+    float ww = kb.getWidth() / (float)whites;
+    uint64_t m0 = P.keyMask[0].load(), m1 = P.keyMask[1].load();
+    auto has = [&](int k) { return keyMode && (((k < 64 ? m0 >> k : m1 >> (k - 64)) & 1ull) != 0); };
+    auto lit = [&](int k) { for (int i = 0; i < n; i++) if (notes[i] == k) return true; return false; };
+    static const int WO[7] = { 0, 2, 4, 5, 7, 9, 11 };
+    auto ac = panel.accent;
+    for (int w = 0; w < whites; w++) {
+        int k = first + (w / 7) * 12 + WO[w % 7];
+        juce::Rectangle<float> key(kb.getX() + (float)w * ww + 0.5f, kb.getY(), ww - 1.0f, kb.getHeight());
+        g.setColour(lit(k) ? ac : C_OLED.withAlpha(0.16f));
+        g.fillRect(key);
+        if (has(k)) { g.setColour(lit(k) ? Colour(0xff111111) : C_OLED); g.fillEllipse(key.getCentreX() - 1.5f, key.getBottom() - 5.0f, 3.0f, 3.0f); }
+    }
+    for (int w = 0; w < whites; w++) {
+        int d = w % 7;
+        if (d == 2 || d == 6) continue;
+        int k = first + (w / 7) * 12 + WO[d] + 1;
+        juce::Rectangle<float> key(kb.getX() + (float)(w + 1) * ww - ww * 0.32f, kb.getY(), ww * 0.64f, kb.getHeight() * 0.58f);
+        g.setColour(Colour(0xff07090a));
+        g.fillRect(key.expanded(0.8f, 0));
+        g.setColour(lit(k) ? ac : C_OLED.withAlpha(0.32f));
+        g.fillRect(key);
+        if (has(k)) { g.setColour(C_OLED); g.fillEllipse(key.getCentreX() - 1.5f, key.getBottom() - 5.0f, 3.0f, 3.0f); }
+    }
+}
+
+/* ------------------------------------------------------------------------------------ scope --- */
+void Scope::paint(juce::Graphics &g)
+{
+    auto r = getLocalBounds().toFloat();
+    paintOled(g, r);
+    auto in = r.reduced(8, 8);
+    g.setColour(C_OLED.withAlpha(0.07f));
+    for (int i = 1; i < 4; i++) g.drawHorizontalLine((int)(in.getY() + in.getHeight() * (float)i / 4.0f), in.getX(), in.getRight());
+    for (int i = 1; i < 8; i++) g.drawVerticalLine((int)(in.getX() + in.getWidth() * (float)i / 8.0f), in.getY(), in.getBottom());
+    g.setFont(Fonts::get().oled(9.0f));
+    g.setColour(Colour(0xff6f7a80));
+    g.drawText("OUT", in.removeFromTop(10).toNearestInt(), juce::Justification::left);
+    auto &P = panel.proc;
+    const int S = AriaProcessor::SCOPE, len = 640;
+    int w = P.scopeW.load();
+    /* a rising zero crossing, so the wave stands still */
+    int start = (w - len - 1 + S) & (S - 1);
+    for (int back = 0; back < 1200; back++) {
+        int i = (w - len - 2 - back + 2 * S) & (S - 1), j = (i + 1) & (S - 1);
+        if (P.scope[i] <= 0.0f && P.scope[j] > 0.0f) { start = j; break; }
+    }
+    float peak = 0.05f;
+    for (int k = 0; k < len; k++) peak = std::max(peak, std::abs(P.scope[(start + k) & (S - 1)]));
+    float gain = 0.9f / std::max(peak, 0.25f);
+    juce::Path p;
+    for (int k = 0; k < len; k++) {
+        float x = in.getX() + in.getWidth() * (float)k / (float)(len - 1);
+        float y = in.getCentreY() - juce::jlimit(-1.0f, 1.0f, P.scope[(start + k) & (S - 1)] * gain) * in.getHeight() * 0.5f;
+        if (k == 0) p.startNewSubPath(x, y); else p.lineTo(x, y);
+    }
+    g.setColour(C_OLED.withAlpha(0.15f));
+    g.strokePath(p, juce::PathStrokeType(3.5f));
+    g.setColour(C_OLED);
+    g.strokePath(p, juce::PathStrokeType(1.3f));
 }
 
 /* ------------------------------------------------------------------------------------ panel --- */
@@ -404,6 +542,10 @@ void Panel::build()
     { auto &m = add("OUTPUT", x, ROW2, 120, H2);
       knob(m, GP_OUT_VOL, false, "VOLUME", true); knob(m, GP_OUT_LOWCUT, false, "LOW CUT"); }
     for (auto &m : modules) layoutModule(m);
+    for (auto &m : modules) {
+        if (m.title == "MIXER") { addAndMakeVisible(scope); scope.setBounds(m.x + 10, m.y + 182, m.w - 20, m.h - 188); }
+        if (m.title == "CHORD MEMORY") { addAndMakeVisible(chordScreen); chordScreen.setBounds(m.x + 10, m.y + 26, m.w - 20, 116); }
+    }
 }
 
 /* knobs flow from the top, faders under them, buttons from the bottom; each row centred */
@@ -528,6 +670,8 @@ void Panel::timerCallback()
     for (auto &c : controls)
         if (c->changed() || all || (learning && dynamic_cast<Button *>(c.get()))) c->repaint();
     display.repaint();
+    chordScreen.repaint();
+    scope.repaint();
 }
 
 /* ----------------------------------------------------------------------------------- editor --- */

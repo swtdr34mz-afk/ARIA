@@ -93,6 +93,29 @@ private:
     Panel &panel;
 };
 
+/* the chord memory's screen: the chord the last key played (its name and notes), the key map's keys on a keyboard */
+class ChordScreen : public juce::Component
+{
+public:
+    explicit ChordScreen(Panel &p) : panel(p) {}
+    void paint(juce::Graphics &) override;
+private:
+    Panel &panel;
+};
+
+/* the mixer's screen: the sound's waveform, live */
+class Scope : public juce::Component
+{
+public:
+    explicit Scope(Panel &p) : panel(p) {}
+    void paint(juce::Graphics &) override;
+private:
+    Panel &panel;
+};
+
+juce::String chordName(const int *notes, int n);
+void paintOled(juce::Graphics &g, juce::Rectangle<float> r);
+
 struct Module {
     juce::String title;
     int x, y, w, h;
@@ -120,6 +143,8 @@ private:
     std::vector<std::unique_ptr<Control>> controls;
     std::vector<Module> modules;
     Display display{ *this };
+    ChordScreen chordScreen{ *this };
+    Scope scope{ *this };
     juce::TextButton prev, next;
     juce::Image tag;
     Knob *knob(Module &m, int param, bool timbre, const char *label, bool big = false);

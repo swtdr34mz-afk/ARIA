@@ -168,6 +168,31 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
     for (int c = 2; c < buffer.getNumChannels(); c++) buffer.clear(c, 0, n);
     learning.store(aria_chord_learning(engine));
     activeVoices.store(aria_voices_active(engine));
+    /* the screens */
+    auto pack = [](const int8_t *n, int c) {
+        uint64_t v = 0;
+        for (int i = 0; i < c && i < 8; i++) v |= (uint64_t)(uint8_t)(n[i] + 1) << (8 * i);   /* (+1: 0 is none) */
+        return v;
+    };
+    int8_t notes[8];
+    int key = -1, c = aria_last_played(engine, notes, &key);
+    lastNotes.store(pack(notes, c)); lastKey.store(key);
+    c = aria_chord_learned(engine, notes);
+    learnNotes.store(pack(notes, c));
+    int map = (int)std::lround(raw[GP_CH_MAP]->load());
+    uint64_t m[2] = { 0, 0 };
+    for (int k = 0; k < 128; k++) if (aria_chord_get_key(engine, map, k, notes)) m[k >> 6] |= 1ull << (k & 63);
+    keyMask[0].store(m[0]); keyMask[1].store(m[1]);
+    int w = scopeW.load();
+    for (int i = 0; i < n; i++) { scope[w] = 0.5f * (l[i] + (buffer.getNumChannels() > 1 ? r[i] : l[i])); w = (w + 1) & (SCOPE - 1); }
+    scopeW.store(w);
+}
+
+int AriaProcessor::unpack(uint64_t v, int out[8])
+{
+    int c = 0;
+    for (int i = 0; i < 8; i++) { int b = (int)((v >> (8 * i)) & 0xff); if (b) out[c++] = b - 1; }
+    return c;
 }
 
 /* -------------------------------------------------------------------------------- programs --- */

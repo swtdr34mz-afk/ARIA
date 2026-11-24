@@ -112,6 +112,12 @@ int aria_chord_load(aria_t *a, const uint8_t *in, int size);   /* 0: not ours */
 /* a key map set from outside (factory maps): map, key, notes */
 void aria_chord_set_key(aria_t *a, int map, int key, const int8_t *notes, int count);
 
+/* for the chord memory's screen: a key's chord in a key map, the notes the last key played (with the key) and the
+ * notes LEARN has collected so far; each returns the count */
+int aria_chord_get_key(const aria_t *a, int map, int key, int8_t out[8]);
+int aria_last_played(const aria_t *a, int8_t out[8], int *key);
+int aria_chord_learned(const aria_t *a, int8_t out[8]);   /* LEARN's notes, or the chord (without KEY) */
+
 /* for the screen and the tests */
 int aria_voices_active(const aria_t *a);
 float aria_voice_env(const aria_t *a, int v);
