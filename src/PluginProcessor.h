@@ -53,7 +53,7 @@ public:
 
     /* for the panel's screens (written each block): the chord memory's keys and notes, the scope */
     std::atomic<uint64_t> keyMask[2]{};       /* the keys with a chord in the key map shown */
-    std::atomic<uint64_t> lastNotes{0}, learnNotes{0};   /* up to 8 notes, a byte each (0: none) */
+    std::atomic<uint64_t> lastNotes{0}, lastNotes2{0}, learnNotes{0};   /* 8 notes each, a byte a note (0: none); lastNotes2: 9-16 */
     std::atomic<int> lastKey{-1};
     static constexpr int SCOPE = 4096;
     float scope[SCOPE] = {};

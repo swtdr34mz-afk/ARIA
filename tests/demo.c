@@ -108,6 +108,20 @@ int main(void)
     }
     aria_panic(a); aria_defaults(a);
 
+    /* ---- the keys held, for the chord screen ---- */
+    {
+        int8_t hn[16];
+        aria_note_on(a, 60, 60, 1); aria_note_on(a, 64, 64, 1); aria_note_on(a, 67, 67, 1);
+        CHECK(aria_held_notes(a, hn) == 3 && hn[0] == 60 && hn[2] == 67, "held: three keys, three notes");
+        aria_note_off(a, 64);
+        CHECK(aria_held_notes(a, hn) == 2, "held: one let go, two left");
+        aria_panic(a);
+        aria_param(a, GP_CH_ON, 1); aria_param(a, GP_CH_KEY, 1); aria_param(a, GP_CH_MAP, 2);
+        aria_note_on(a, 48, 48, 1); aria_note_on(a, 30, 30, 1);
+        CHECK(aria_held_notes(a, hn) == 5, "held: a key's chord (4) and a plain key (1)");
+        aria_panic(a); aria_defaults(a);
+    }
+
     /* ---- voices ---- */
     for (int i = 0; i < 10; i++) aria_note_on(a, 20 + i, 48 + i, 1);
     aria_render(a, tmp, tmp2, 256);

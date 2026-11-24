@@ -327,14 +327,15 @@ void ChordScreen::paint(juce::Graphics &g)
     auto par = [&](int i) { return P.param(i)->convertFrom0to1(P.param(i)->getValue()); };
     bool on = par(GP_CH_ON) > 0.5f, keyMode = par(GP_CH_KEY) > 0.5f;
     int map = (int)std::lround(par(GP_CH_MAP));
-    int notes[8], n;
+    int notes[16], n;
     juce::String top, big, small;
     if (panel.learning) {
         n = AriaProcessor::unpack(P.learnNotes.load(), notes);
         top = panel.learning == 1 ? "LEARN: PLAY THE CHORD" : "LEARN: PRESS ITS KEY";
     } else {
         n = AriaProcessor::unpack(P.lastNotes.load(), notes);
-        top = !on ? juce::String("OFF") : keyMode ? "KEY MAP " + juce::String(map + 1) : juce::String("CHORD");
+        n += AriaProcessor::unpack(P.lastNotes2.load(), notes + n);
+        top = !on ? juce::String("PLAYED (MEMORY OFF)") : keyMode ? "KEY MAP " + juce::String(map + 1) : juce::String("CHORD");
         if (on && !keyMode && n <= 1) { n = AriaProcessor::unpack(P.learnNotes.load(), notes); }
     }
     big = n ? chordName(notes, n) : juce::String("-");
@@ -343,7 +344,7 @@ void ChordScreen::paint(juce::Graphics &g)
     g.setFont(F.oled(10.0f));
     g.setColour(Colour(0xff6f7a80));
     g.drawText(top, in.removeFromTop(12), juce::Justification::left);
-    g.setColour(on || panel.learning ? C_OLED : C_OLED.withAlpha(0.35f));
+    g.setColour(C_OLED);
     g.setFont(F.oled(22.0f));
     g.drawFittedText(big, in.removeFromTop(26).toNearestInt(), juce::Justification::left, 1, 0.6f);
     g.setFont(F.oled(10.0f));

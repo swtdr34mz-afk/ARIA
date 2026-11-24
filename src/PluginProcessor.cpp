@@ -174,9 +174,9 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
         for (int i = 0; i < c && i < 8; i++) v |= (uint64_t)(uint8_t)(n[i] + 1) << (8 * i);   /* (+1: 0 is none) */
         return v;
     };
-    int8_t notes[8];
-    int key = -1, c = aria_last_played(engine, notes, &key);
-    lastNotes.store(pack(notes, c)); lastKey.store(key);
+    int8_t notes[16];
+    int c = aria_held_notes(engine, notes);          /* every key held; with none, the last held stay shown */
+    if (c) { lastNotes.store(pack(notes, c)); lastNotes2.store(c > 8 ? pack(notes + 8, c - 8) : 0); }
     c = aria_chord_learned(engine, notes);
     learnNotes.store(pack(notes, c));
     int map = (int)std::lround(raw[GP_CH_MAP]->load());

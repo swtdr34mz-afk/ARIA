@@ -96,6 +96,7 @@ struct aria {
     int8_t map[8][128][8]; uint8_t map_n[8][128];
     int learning; int8_t learn[8]; int learn_n;
     int8_t last[8]; int last_n, last_key;   /* the last key and the notes it played (the screen) */
+    int8_t held[128][9];                 /* each key held (id < 128): its count and the notes it plays */
 };
 
 /* ----------------------------------------------------------- the parameters --- */
@@ -478,9 +479,14 @@ void aria_note_on(aria_t *a, int id, int note, float vel)
     int out[8], n = expand(a, note, out);
     for (int i = 0; i < n; i++) play_note(a, id, out[i], vel);
     a->last_n = n; a->last_key = note;
+    if (id >= 0 && id < 128) { a->held[id][0] = (int8_t)n; for (int i = 0; i < n; i++) a->held[id][1 + i] = (int8_t)out[i]; }
     for (int i = 0; i < n; i++) a->last[i] = (int8_t)out[i];
 }
-void aria_note_off(aria_t *a, int id) { release_key(a, id); }
+void aria_note_off(aria_t *a, int id)
+{
+    if (id >= 0 && id < 128) a->held[id][0] = 0;
+    release_key(a, id);
+}
 
 void aria_sustain(aria_t *a, int on)
 {
@@ -497,6 +503,7 @@ void aria_pressure(aria_t *a, float v) { a->press = clampf(v, 0, 1); }
 void aria_tempo(aria_t *a, float bpm) { if (bpm > 10) a->bpm = bpm; }
 void aria_all_off(aria_t *a)
 {
+    memset(a->held, 0, sizeof a->held);
     for (int t = 0; t < ARIA_TIMBRES; t++) a->tb[t].nstack = 0;
     for (int i = 0; i < ARIA_VOICES; i++) {
         voice_t *v = &a->v[i];
@@ -505,6 +512,7 @@ void aria_all_off(aria_t *a)
 }
 void aria_panic(aria_t *a)
 {
+    memset(a->held, 0, sizeof a->held);
     voices_reset(a);
     delay_clear(&a->dl);
     a->sustain = 0;
@@ -831,4 +839,16 @@ int aria_chord_learned(const aria_t *a, int8_t out[8])
     if (a->learning) { for (int i = 0; i < a->learn_n; i++) out[i] = a->learn[i]; return a->learn_n; }
     for (int i = 0; i < a->chord_n; i++) out[i] = (int8_t)(60 + a->chord[i]);
     return a->chord_n;
+}
+
+int aria_held_notes(const aria_t *a, int8_t out[16])
+{
+    int n = 0;
+    for (int note = 0; note < 128 && n < 16; note++)
+        for (int k = 0; k < 128; k++) {
+            int c = a->held[k][0], hit = 0;
+            for (int i = 0; i < c; i++) if (a->held[k][1 + i] == note) { hit = 1; break; }
+            if (hit) { out[n++] = (int8_t)note; break; }
+        }
+    return n;
 }

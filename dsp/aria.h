@@ -117,6 +117,7 @@ void aria_chord_set_key(aria_t *a, int map, int key, const int8_t *notes, int co
 int aria_chord_get_key(const aria_t *a, int map, int key, int8_t out[8]);
 int aria_last_played(const aria_t *a, int8_t out[8], int *key);
 int aria_chord_learned(const aria_t *a, int8_t out[8]);   /* LEARN's notes, or the chord (without KEY) */
+int aria_held_notes(const aria_t *a, int8_t out[16]);    /* every note the keys held now play, low to high */
 
 /* for the screen and the tests */
 int aria_voices_active(const aria_t *a);
