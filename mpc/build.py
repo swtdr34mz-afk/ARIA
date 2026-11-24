@@ -10,7 +10,7 @@ plugin always has the same engine as the VST3 (nothing copied by hand):
                               engine (dsp/aria.c, params.c, presets.c as .cpp: C that is C++ too, and their headers)
   2. params_data.cpp          the parameter tables, written out by mpc/gen/gen_params.c (built here as C with the
                               computer's own compiler: dsp/params_data.c uses C's designated initialisers)
-  3. ui.json                  the screen's pages, by mpc/pages.py
+  3. skins/                   the screen: the VST3's panel as the MPC's pages (mpc/skin/, kept in mpc/plugin/skins/)
   4. the SDK's tools/build.py native build + host simulator, arm32 and arm64, the skins, version.xml, validation
 
     python3 mpc/build.py --sdk /path/to/mpc-plugin-builder-sdk [--target native|arm32|arm64|all] [--toolchain zig|gcc]
@@ -77,7 +77,13 @@ def main():
          os.path.join(ROOT, "dsp", "params.c"), os.path.join(ROOT, "dsp", "params_data.c"), "-lm", "-o", exe])
     pj = os.path.join(gen, "params.json")
     run([exe, os.path.join(src, "params_data.cpp"), pj])
-    run([sys.executable, os.path.join(HERE, "pages.py"), pj, os.path.join(proj, "ui.json")])
+    skins = os.path.join(proj, "skins")  # (the SDK copies a project's skins/ as they are, as "Plugin Skins")
+    if os.path.isdir(skins):
+        shutil.rmtree(skins)
+    shutil.copytree(os.path.join(HERE, "plugin", "skins"), skins)
+    stale = os.path.join(proj, "ui.json")   # (the generated pages of before: the skin replaces them)
+    if os.path.isfile(stale):
+        os.remove(stale)
 
     argv = [sys.executable, sdk_build, proj, "--target", a.target]
     if a.toolchain:

@@ -12,24 +12,27 @@ An 8-voice, bi-timbral analogue-modelling polysynth by **swtdr34mz**, the same e
 
 ## Seiten (Funktionstasten)
 
-| Seite | Inhalt |
-|---|---|
-| QUICK | die Regler zum Spielen: Cutoff, Resonanz, Hüllkurve, Overload, Attack/Decay, LOW SPLIT (Oktave, Punkt, LOW HOLD), HOLD, Vibrato, Glide, Delay, Level |
-| FILTER | Filter 1 und 2 (Cutoff, Resonanz, Hüllkurve, Keytracking), HP, LINK, Reihenfolge, Overload, Level, Spread, Detune, Glide |
-| OSC | beide Oszillatoren (Oktave, Dreieck–Säge, Pulsbreite, Wave Mix), Stimmung, FM, Sync, Mixer |
-| ENV | Filter- und Amp-Hüllkurve, Kurven, Velocity, Unison, Mono, Stimmen-Modus (Single/Split/Stack), Splitpunkt |
-| MOD | LFO 1 und 2, Mod-Oszillator, Vibrato |
-| ARP/FX | Arpeggiator, Chord Memory (ON, KEY, Key Map, LEARN), Diffusion Delay |
+Die Oberfläche ist das Panel des VST, Sektion für Sektion: dieselben Regler, Taster und Farben, nur größer. Ein
+zweiter Druck auf dieselbe Funktionstaste öffnet deren zweite Seite.
 
-Alles Weitere (Timbre B, die 16 Schritte des Arp-Patterns, die übrigen Delay-, LFO- und Mod-Osc-Regler, LS Balance, QUALITY, INIT) steht in der Parameterliste
-des Plugins.
+| Taste | Seite | 2× gedrückt |
+|---|---|---|
+| 1 | **OSC**: Oszillator 1, Oszillator 2, Mod-Osc | – |
+| 2 | **MIXER**: Mixer (Fader), VCA, Output (Volume, Low Cut, QUALITY, INIT) | – |
+| 3 | **FILTER**: beide Ladder-Filter (HP, LINK, Reihenfolge, Keytracking) | **VOICES**: Detune, Splitpunkt, Stimmen für A, Single/Split/Stack, Unison, Mono |
+| 4 | **ENV**: Filter- und Amp-Hüllkurve (Fader), Kurve, Loop, Velocity | – |
+| 5 | **LFO**: LFO 1, LFO 2, Pitch-LFO | **FX**: Diffusion Delay |
+| 6 | **DIV**: LOW SPLIT, Chord Memory (ON, KEY, Key Map, LEARN) | **ARP**: Arpeggiator mit den 16 Pattern-Schritten, Perform (Glide, Bend, HOLD) |
 
-Die Q-Links drehen auf jeder Seite die vier Reihen (oben die erste). Der Arp läuft im Tempo der MPC und rastet im
+Regler: ziehen oder mit dem Q-Link drehen; Doppeltipp öffnet das große Werte-Fenster (bei Auswahlen die Liste).
+Taster: antippen. Timbre B steht in der Parameterliste des Plugins.
+
+Die Q-Links drehen auf jeder Seite bis zu vier Gruppen, die obere Q-Link-Reihe die erste; auf dem Bildschirm ist jede Gruppe eingerahmt. Der Arp läuft im Tempo der MPC und rastet im
 Takt ein, wenn sie spielt. **QUALITY**: HIGH (2x Oversampling, Standard auf MPC XL / Live III) oder ECO (weniger
 CPU, Standard auf den 32-Bit-MPCs); ULTRA nur, wenn die CPU-Anzeige viel Luft hat. MAX 16X ist für den Rechner
 gedacht und auf der MPC meist zu schwer; RENDER 16X spielt auf der MPC wie ULTRA (sie rendert nicht offline).
 
-**LEARN** (Seite ARP): tippen, Akkord spielen, wieder tippen. Ohne KEY ist das der Akkord für jede Taste, mit KEY
+**LEARN** (Seite DIV): tippen, Akkord spielen, wieder tippen. Ohne KEY ist das der Akkord für jede Taste, mit KEY
 danach die Taste spielen, auf der er liegen soll. Key Maps 1–4 sind ab Werk mit Akkorden in C-Dur und c-Moll belegt.
 Akkorde und Key Maps werden mit dem Projekt gespeichert.
 

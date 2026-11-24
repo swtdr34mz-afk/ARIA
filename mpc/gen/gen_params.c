@@ -5,8 +5,8 @@
  *
  *   gen_params <params_data.cpp> <params.json>
  *
- * params_data.cpp: the same tables as C++; params.json: each parameter's index, MPC name, kind and choices (for
- * mpc/pages.py, which makes the MPC's screen pages). */
+ * params_data.cpp: the same tables as C++; params.json: each parameter's index, MPC name, kind and choices (a
+ * list to look things up in; the screen is mpc/skin/'s). */
 #include "aria.h"
 #include <stdio.h>
 
