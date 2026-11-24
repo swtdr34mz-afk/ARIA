@@ -73,18 +73,18 @@ public:
     }
     ~AriaMpc() override { aria_free(engine); }
 
+    /* INIT and LEARN are presses: the action now, the key back to off in the next block (so the MPC sees it on, and
+     * shows it as a switch) */
     void parameterChanged(int index, float plain) override
     {
         if (plain < 0.5f || busy) return;
-        if (index == kLearn) {           /* LEARN: the audio thread takes it; the key springs back */
+        if (index == kLearn) {           /* LEARN: the audio thread takes it */
             learnRequest.store(true);
-            busy = true; setAndTell(kLearn, 0.0f); busy = false;
         } else if (index == kInit) {     /* INIT: both timbres' sound as the INIT program's */
             busy = true;
             float v[ARIA_NPARAM];
             aria_preset_values(0, v);
             for (int p = 0; p < GP_FIRST; p++) setAndTell(mpcIndex(p), v[p]);
-            setAndTell(kInit, 0.0f);
             busy = false;
         }
     }
@@ -114,6 +114,8 @@ public:
             if (v != sent[p]) { aria_param(engine, p, v); sent[p] = v; }
         }
         if (learnRequest.exchange(false)) aria_chord_learn(engine);
+        for (int k : { kInit, kLearn })   /* (the presses' keys back to off) */
+            if (getBool(k)) { busy = true; set(k, 0.0f); busy = false; notifyHostParameterChanged(k); }
         const auto &t = ctx.transport;
         aria_transport(engine, t.valid && t.tempoValid ? (float)t.bpm : 120.0f, t.valid && t.ppqValid ? t.ppqPos : 0.0,
                        t.valid && t.playing && t.ppqValid ? 1 : 0);
