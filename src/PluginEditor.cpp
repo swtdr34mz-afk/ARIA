@@ -207,15 +207,15 @@ void StepKey::paint(juce::Graphics &g)
         g.setColour(ac.brighter(0.3f)); g.fillRoundedRectangle(led, 2.0f);
     } else { g.setColour(Colour(0xff2a1510)); g.fillRoundedRectangle(led, 2.0f); }
     /* the key: a light keycap in its well */
-    juce::Rectangle<float> k(3.0f, 11.0f, (float)getWidth() - 6.0f, 30.0f);
-    g.setColour(Colour(0xff050506)); g.fillRoundedRectangle(k.expanded(2.0f), 4.5f);
-    juce::Path cap; cap.addRoundedRectangle(k, 3.5f);
+    juce::Rectangle<float> k(3.0f, 11.0f, (float)getWidth() - 6.0f, (float)getHeight() - 14.0f);   /* (taller than wide) */
+    g.setColour(Colour(0xff050506)); g.fillRoundedRectangle(k.expanded(2.0f), 3.2f);
+    juce::Path cap; cap.addRoundedRectangle(k, 2.2f);
     juce::DropShadow(Colour(0x90000000), 3, { 0, 2 }).drawForPath(g, cap);
     Colour top = inLen ? Colour(0xffeeece6) : Colour(0xff8d8c88), bot = inLen ? Colour(0xffc4c2bb) : Colour(0xff6a6966);
     juce::ColourGradient cg(top, 0, k.getY(), bot, 0, k.getBottom(), false);
     g.setGradientFill(cg); g.fillPath(cap);
     juce::ColourGradient sheen(Colour(0x60ffffff), 0, k.getY(), Colour(0x00ffffff), 0, k.getY() + 10.0f, false);
-    g.setGradientFill(sheen); g.fillRoundedRectangle(k.reduced(1.5f, 1.0f).withHeight(10.0f), 2.5f);
+    g.setGradientFill(sheen); g.fillRoundedRectangle(k.reduced(1.5f, 1.0f).withHeight(12.0f), 2.0f);
     if (now) {                                       /* the arp is on this step */
         g.setColour(ac.withAlpha(0.55f)); g.fillPath(cap);
         g.setColour(ac.brighter(0.5f)); g.strokePath(cap, juce::PathStrokeType(1.4f));
@@ -223,7 +223,7 @@ void StepKey::paint(juce::Graphics &g)
     g.setColour(Colour(0xff1a1a1a)); g.strokePath(cap, juce::PathStrokeType(0.8f));
     g.setColour(inLen ? Colour(0xff3a3a3a) : Colour(0xff3c3c3a));
     g.setFont(Fonts::get().label(11.0f));
-    g.drawText(label, k.translated(0, 1.0f), juce::Justification::centred);
+    g.drawText(label, k.withTrimmedTop(k.getHeight() * 0.45f), juce::Justification::centred);
 }
 
 void StepKey::mouseDown(const juce::MouseEvent &)
@@ -560,22 +560,22 @@ void Panel::build()
         q->setBounds(W - 34 - 30 - 300 - 84 - 84, 28, 64, 38);
     }
     {   /* the ARP PATTERN: 16 steps in four groups, its LENGTH and ALL ON either side */
-        const int kw = 46, gap = 2, group = 10, total = 16 * kw + 15 * gap + 3 * group;
-        int x0 = (W - total) / 2, y0 = 684;
+        const int kw = 40, gap = 3, group = 12, total = 16 * kw + 15 * gap + 3 * group;
+        int x0 = (W - total) / 2, y0 = 680;
         for (int i = 0; i < 16; i++) {
             auto *k = new StepKey(*this, i);
             controls.emplace_back(k); addAndMakeVisible(k); steps.push_back(k);
-            k->setBounds(x0 + i * (kw + gap) + (i / 4) * group, y0, kw, 44);
+            k->setBounds(x0 + i * (kw + gap) + (i / 4) * group, y0, kw, 58);
         }
         auto *len = new Button(*this, Button::CYCLE, GP_ARP_LEN, false, "LENGTH");
         controls.emplace_back(len); addAndMakeVisible(len);
-        len->setBounds(x0 - 96, y0 + 6, 76, 38);
+        len->setBounds(x0 - 96, y0 + 12, 76, 38);
         auto *all = new Button(*this, Button::ACTION, 0, false, "ALL ON");
         all->onPress = [this] {
             for (int i = 0; i < 16; i++) { auto *p = proc.param(GP_ARP_STEP1 + i); p->beginChangeGesture(); p->setValueNotifyingHost(1.0f); p->endChangeGesture(); }
         };
         controls.emplace_back(all); addAndMakeVisible(all);
-        all->setBounds(x0 + total + 20, y0 + 6, 60, 38);
+        all->setBounds(x0 + total + 20, y0 + 12, 60, 38);
         patternX = x0 - 110; patternW = total + 220;
     }
     for (auto &m : modules) {
