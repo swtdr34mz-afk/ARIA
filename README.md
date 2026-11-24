@@ -5,7 +5,7 @@ per-voice mod oscillator, two 4-pole ladder filters (series, stereo or parallel)
 8 key maps, and a diffusion delay. Planned as a VST3 / standalone plugin (Cubase, Windows) and an MPC plugin.
 
 **Status:** the engine, the arpeggiator and the plugin (VST3 and standalone for Windows, with the panel) are here.
-Still to come: more factory sounds and the MPC version.
+Still to come: the MPC version.
 
 ## Download
 
@@ -36,7 +36,10 @@ Still to come: more factory sounds and the MPC version.
   Läuft im Takt von Cubase bzw. der MPC, sobald der Host spielt; sonst ab der ersten Taste. Mit der Chord Memory
   zusammen wird jeder Akkord einer Taste arpeggiert (Preset ARP CHORDS).
 - **QUALITY** (neben dem Display): ECO 1X, HIGH 2X (Standard), ULTRA 4X – das Oversampling der Stimmen.
-- **Patches:** PREV / NEXT neben dem Display (oder die Programme des Hosts).
+- **Patches:** PREV / NEXT neben dem Display (oder die Programme des Hosts): 40 Werkssounds in Kategorien (PAD, BASS,
+  KEYS, LEAD, BRASS, PLUCK, ARP, FX, SPLIT). **SAVE** speichert den Sound unter einem Namen als eigenes Preset
+  (Datei in `Dokumente/ARIA/Presets`, eine `.aria` je Sound); eigene Presets kommen nach den Werkssounds.
+- **TEMPO** (im ARPEGGIATOR): das Tempo, wenn kein Host eins vorgibt (Standalone-App).
 
 ## Auf Deutsch, kurz
 

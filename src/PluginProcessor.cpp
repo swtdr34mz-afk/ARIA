@@ -29,6 +29,7 @@ juce::String ariaValueText(int i, float v)
     if (i >= GP_FIRST) {
         switch (p) {
         case GP_VC_SPLIT: return noteName((int)std::lround(v * 127.0f));
+        case GP_TEMPO: return juce::String((int)std::lround(60.0f + 140.0f * v)) + " BPM";
         case GP_DL_TIME_L: case GP_DL_TIME_R: {
             float ms = 1.0f * std::pow(2000.0f, v);
             return ms < 1000.0f ? juce::String(ms, 0) + " ms" : juce::String(ms / 1000.0f, 2) + " s";
@@ -97,6 +98,7 @@ AriaProcessor::AriaProcessor()
     }
     engine = aria_new(44100.0f);
     aria_factory_keymaps(engine);
+    loadUserPresets();
 }
 
 AriaProcessor::~AriaProcessor() { aria_free(engine); }
@@ -150,7 +152,7 @@ void AriaProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce::MidiBuf
     keyboardState.processNextMidiBuffer(midi, 0, n, true);
     sendParams(false);
     {   /* the host's tempo and position: the arpeggiator's grid */
-        float bpm = 120.0f; double ppq = 0.0; bool playing = false;
+        float bpm = 60.0f + 140.0f * raw[GP_TEMPO]->load(); double ppq = 0.0; bool playing = false;   /* (TEMPO: without a host) */
         if (auto *ph = getPlayHead())
             if (auto pos = ph->getPosition()) {
                 if (auto b = pos->getBpm()) bpm = (float)*b;
@@ -207,22 +209,74 @@ int AriaProcessor::unpack(uint64_t v, int out[8])
 }
 
 /* -------------------------------------------------------------------------------- programs --- */
+static bool keptOnProgramChange(int i) { return i == GP_TEMPO || i == GP_QUALITY; }   /* (settings, not sound) */
+
 void AriaProcessor::setCurrentProgram(int index)
 {
-    if (index < 0 || index >= ARIA_NPRESETS) return;
+    if (index < 0 || index >= getNumPrograms()) return;
     program = index;
-    float v[ARIA_NPARAM];
-    aria_preset_values(index, v);
+    std::vector<float> v((size_t)ARIA_NPARAM);
+    if (index < ARIA_NPRESETS) aria_preset_values(index, v.data());
+    else v = userPresets[(size_t)(index - ARIA_NPRESETS)].v;
     for (int i = 0; i < ARIA_NPARAM; i++) {
+        if (keptOnProgramChange(i)) continue;
         auto *p = params[(size_t)i];
-        p->setValueNotifyingHost(p->convertTo0to1(v[i]));
+        p->setValueNotifyingHost(p->convertTo0to1(v[(size_t)i]));
     }
     updateHostDisplay(ChangeDetails().withProgramChanged(true));
 }
 
 const juce::String AriaProcessor::getProgramName(int index)
 {
-    return index >= 0 && index < ARIA_NPRESETS ? juce::String(ARIA_PRESETS[index].name) : juce::String();
+    if (index >= 0 && index < ARIA_NPRESETS) return ARIA_PRESETS[index].name;
+    if (index >= ARIA_NPRESETS && index < getNumPrograms()) return userPresets[(size_t)(index - ARIA_NPRESETS)].name;
+    return {};
+}
+
+juce::File AriaProcessor::presetFolder()
+{
+    return juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("ARIA").getChildFile("Presets");
+}
+
+void AriaProcessor::loadUserPresets()
+{
+    userPresets.clear();
+    auto files = presetFolder().findChildFiles(juce::File::findFiles, false, "*.aria");
+    files.sort();
+    float def[ARIA_NPARAM];
+    aria_preset_values(0, def);
+    for (auto &f : files)
+        if (auto xml = juce::XmlDocument::parse(f)) {
+            if (!xml->hasTagName("ARIAPRESET")) continue;
+            UserPreset u;
+            u.name = xml->getStringAttribute("name", f.getFileNameWithoutExtension());
+            u.v.resize((size_t)ARIA_NPARAM);
+            for (int i = 0; i < ARIA_NPARAM; i++)     /* (a parameter the file lacks: INIT's) */
+                u.v[(size_t)i] = juce::jlimit(0.0f, aria_param_max(i), (float)xml->getDoubleAttribute("p" + juce::String(i), def[i]));
+            userPresets.push_back(std::move(u));
+        }
+}
+
+int AriaProcessor::savePreset(const juce::String &name)
+{
+    auto clean = name.trim().toUpperCase().substring(0, 20);
+    if (clean.isEmpty()) return -1;
+    juce::XmlElement xml("ARIAPRESET");
+    xml.setAttribute("name", clean);
+    xml.setAttribute("version", 1);
+    for (int i = 0; i < ARIA_NPARAM; i++)
+        xml.setAttribute("p" + juce::String(i), (double)params[(size_t)i]->convertFrom0to1(params[(size_t)i]->getValue()));
+    auto folder = presetFolder();
+    folder.createDirectory();
+    if (!xml.writeTo(folder.getChildFile(juce::File::createLegalFileName(clean) + ".aria"))) return -1;
+    loadUserPresets();
+    for (size_t i = 0; i < userPresets.size(); i++)
+        if (userPresets[i].name == clean) {
+            program = ARIA_NPRESETS + (int)i;
+            updateHostDisplay(ChangeDetails().withProgramChanged(true));
+            return program;
+        }
+    return -1;
 }
 
 /* ----------------------------------------------------------------------------------- state --- */
@@ -246,7 +300,7 @@ void AriaProcessor::setStateInformation(const void *data, int size)
 {
     std::unique_ptr<juce::XmlElement> xml(getXmlFromBinary(data, size));
     if (!xml || !xml->hasTagName(apvts.state.getType())) return;
-    program = juce::jlimit(0, ARIA_NPRESETS - 1, xml->getIntAttribute("program", 0));
+    program = juce::jlimit(0, getNumPrograms() - 1, xml->getIntAttribute("program", 0));
     editTimbre.store(juce::jlimit(0, 1, xml->getIntAttribute("editTimbre", 0)));
     uiScale.store((float)juce::jlimit(0.5, 1.5, xml->getDoubleAttribute("uiScale", 0.8)));
     juce::MemoryOutputStream blob;

@@ -1,101 +1,400 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 swtdr34mz (ARIA) */
-/* The factory sounds (each the INIT sound with a few parameters changed) and the factory key maps of the chord
- * memory (the white keys play the chords of a key; the black keys stay single notes). */
+/* The factory sounds: made by tools/presets.py (edit them there), each INIT with a few parameters changed. */
 #include "presets.h"
 
-#define A_(p) TP(0, p)
-#define B_(p) TP(1, p)
-#define END { -1, 0 }
-
-static const aria_set_t INIT[] = { END };
-static const aria_set_t GLASS_PAD[] = {
-    { A_(TP_O2_OCT), OCT_16 }, { A_(TP_O2_FREQ), 0.5057f }, { A_(TP_MX_O2), 0.55f },
-    { A_(TP_F_ORDER), ORD_STEREO }, { A_(TP_F1_CUT), 0.52f }, { A_(TP_F2_CUT), 0.58f }, { A_(TP_F1_RES), 0.35f },
-    { A_(TP_F2_RES), 0.35f }, { A_(TP_F1_ENV), 0.68f }, { A_(TP_F2_ENV), 0.64f },
-    { A_(TP_FE_A), 0.62f }, { A_(TP_FE_D), 0.7f }, { A_(TP_FE_S), 0.4f }, { A_(TP_FE_R), 0.6f },
-    { A_(TP_AE_A), 0.58f }, { A_(TP_AE_S), 0.9f }, { A_(TP_AE_R), 0.62f },
-    { A_(TP_VCA_SPREAD), 0.8f }, { A_(TP_DETUNE), 0.45f },
-    { A_(TP_L2_AMT), 0.25f }, { A_(TP_L2_RATE), 0.25f }, { A_(TP_L2_DEST), LD_FILTERS },
-    { GP_DL_MIX, 0.38f }, { GP_DL_FB, 0.55f }, { GP_DL_DIFF, 0.7f }, { GP_DL_CHAR, 0.38f }, END
+static const aria_set_t S00[] = {   /* INIT */
+    { TP(0, TP_VCA_LEVEL), 0.6730f }, { -1, 0 }
 };
-static const aria_set_t OVERLOAD_BASS[] = {
-    { A_(TP_MONO), 1 }, { A_(TP_GLIDE), 0.12f }, { A_(TP_O1_OCT), OCT_16 }, { A_(TP_O1_MIX), 1 },
-    { A_(TP_MX_O2), 0.7f }, { A_(TP_O2_FREQ), 0.5043f }, { A_(TP_MX_OVERLOAD), 0.55f },
-    { A_(TP_F1_CUT), 0.22f }, { A_(TP_F1_RES), 0.55f }, { A_(TP_F1_ENV), 0.86f }, { A_(TP_F2_CUT), 0.6f },
-    { A_(TP_FE_D), 0.38f }, { A_(TP_FE_S), 0.1f }, { A_(TP_FE_VEL), 1 },
-    { A_(TP_AE_D), 0.5f }, { A_(TP_AE_S), 0.8f }, { A_(TP_AE_R), 0.2f }, END
+static const aria_set_t S01[] = {   /* WARM STRINGS */
+    { TP(0, TP_O2_FREQ), 0.5060f }, { TP(0, TP_MX_O2), 0.7000f }, { TP(0, TP_F1_CUT), 0.5500f },
+    { TP(0, TP_F1_RES), 0.1500f }, { TP(0, TP_F1_ENV), 0.6000f }, { TP(0, TP_F1_KB), KB_HALF },
+    { TP(0, TP_FE_A), 0.6200f }, { TP(0, TP_FE_D), 0.7000f }, { TP(0, TP_FE_S), 0.6000f },
+    { TP(0, TP_FE_R), 0.6500f }, { TP(0, TP_AE_A), 0.6000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.6500f },
+    { TP(0, TP_VCA_SPREAD), 0.7000f }, { TP(0, TP_DETUNE), 0.4000f }, { TP(0, TP_PL_AMT), 0.1200f },
+    { TP(0, TP_L2_AMT), 0.1500f }, { TP(0, TP_L2_RATE), 0.3000f }, { TP(0, TP_L2_DEST), LD_FILTERS },
+    { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.4500f }, { GP_DL_DIFF, 0.7500f }, { GP_DL_MOD, 0.5000f },
+    { TP(0, TP_VCA_LEVEL), 0.7610f }, { -1, 0 }
 };
-static const aria_set_t FM_KEYS[] = {
-    { A_(TP_O1_TRISAW), 0 }, { A_(TP_O2_TRISAW), 0 }, { A_(TP_O2_OCT), OCT_4 },
-    { A_(TP_FM_AMT), 0.55f }, { A_(TP_FM_21), 1 }, { A_(TP_MX_O2), 0.15f },
-    { A_(TP_F1_CUT), 0.55f }, { A_(TP_F1_ENV), 0.78f }, { A_(TP_F1_KB), KB_FULL },
-    { A_(TP_FE_D), 0.55f }, { A_(TP_FE_S), 0 }, { A_(TP_FE_R), 0.5f },
-    { A_(TP_AE_D), 0.72f }, { A_(TP_AE_S), 0 }, { A_(TP_AE_R), 0.6f }, { A_(TP_VCA_SPREAD), 0.5f },
-    { GP_DL_MIX, 0.25f }, { GP_DL_FB, 0.35f }, { GP_DL_TIME_L, 0.7f }, { GP_DL_TIME_R, 0.75f }, END
+static const aria_set_t S02[] = {   /* GLASS PAD */
+    { TP(0, TP_O2_OCT), OCT_16 }, { TP(0, TP_O2_FREQ), 0.5057f }, { TP(0, TP_MX_O2), 0.5500f },
+    { TP(0, TP_F_ORDER), ORD_STEREO }, { TP(0, TP_F1_CUT), 0.5200f }, { TP(0, TP_F2_CUT), 0.5800f },
+    { TP(0, TP_F1_RES), 0.3500f }, { TP(0, TP_F2_RES), 0.3500f }, { TP(0, TP_F1_ENV), 0.6800f },
+    { TP(0, TP_F2_ENV), 0.6400f }, { TP(0, TP_FE_A), 0.6200f }, { TP(0, TP_FE_D), 0.7000f },
+    { TP(0, TP_FE_S), 0.4000f }, { TP(0, TP_FE_R), 0.6000f }, { TP(0, TP_AE_A), 0.5800f },
+    { TP(0, TP_AE_S), 0.9000f }, { TP(0, TP_AE_R), 0.6200f }, { TP(0, TP_VCA_SPREAD), 0.8000f },
+    { TP(0, TP_DETUNE), 0.4500f }, { TP(0, TP_L2_AMT), 0.2500f }, { TP(0, TP_L2_RATE), 0.2500f },
+    { TP(0, TP_L2_DEST), LD_FILTERS }, { GP_DL_MIX, 0.3800f }, { GP_DL_FB, 0.5500f }, { GP_DL_DIFF, 0.7000f },
+    { GP_DL_CHAR, 0.3800f }, { TP(0, TP_VCA_LEVEL), 0.7840f }, { -1, 0 }
 };
-static const aria_set_t CHORD_KEYS[] = {
-    { GP_CH_ON, 1 }, { GP_CH_KEY, 1 }, { GP_CH_MAP, 0 },
-    { A_(TP_O1_TRISAW), 0.6f }, { A_(TP_MX_O2), 0.5f }, { A_(TP_O2_FREQ), 0.5071f },
-    { A_(TP_F1_CUT), 0.45f }, { A_(TP_F1_RES), 0.25f }, { A_(TP_F1_ENV), 0.7f }, { A_(TP_F1_KB), KB_HALF },
-    { A_(TP_FE_A), 0.2f }, { A_(TP_FE_D), 0.6f }, { A_(TP_FE_S), 0.3f },
-    { A_(TP_AE_A), 0.25f }, { A_(TP_AE_S), 0.8f }, { A_(TP_AE_R), 0.5f },
-    { A_(TP_VCA_SPREAD), 0.7f }, { A_(TP_DETUNE), 0.35f },
-    { GP_DL_MIX, 0.3f }, { GP_DL_FB, 0.45f }, { GP_DL_DIFF, 0.5f }, END
+static const aria_set_t S03[] = {   /* VELVET PAD */
+    { TP(0, TP_O1_TRISAW), 0.5000f }, { TP(0, TP_O2_TRISAW), 0.5000f }, { TP(0, TP_O2_FREQ), 0.5070f },
+    { TP(0, TP_MX_O2), 0.7000f }, { TP(0, TP_F_ORDER), ORD_STEREO }, { TP(0, TP_F1_CUT), 0.5000f },
+    { TP(0, TP_F2_CUT), 0.5600f }, { TP(0, TP_F1_RES), 0.3000f }, { TP(0, TP_F2_RES), 0.3000f },
+    { TP(0, TP_F1_ENV), 0.6200f }, { TP(0, TP_F2_ENV), 0.6000f }, { TP(0, TP_FE_A), 0.7000f },
+    { TP(0, TP_FE_D), 0.7500f }, { TP(0, TP_FE_S), 0.5000f }, { TP(0, TP_FE_R), 0.7000f },
+    { TP(0, TP_AE_A), 0.6800f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.7200f },
+    { TP(0, TP_MO_FREQ), 0.3000f }, { TP(0, TP_MO_PAN), 0.5000f }, { TP(0, TP_VCA_SPREAD), 0.6000f },
+    { TP(0, TP_DETUNE), 0.3500f }, { TP(0, TP_L2_AMT), 0.2000f }, { TP(0, TP_L2_RATE), 0.2200f },
+    { TP(0, TP_L2_DEST), LD_FILTERS }, { GP_DL_MIX, 0.4000f }, { GP_DL_FB, 0.6000f }, { GP_DL_DIFF, 0.8500f },
+    { GP_DL_MOD, 0.7000f }, { TP(0, TP_VCA_LEVEL), 0.8480f }, { -1, 0 }
 };
-static const aria_set_t SYNC_LEAD[] = {
-    { A_(TP_MONO), 1 }, { A_(TP_GLIDE), 0.18f }, { A_(TP_O2_SYNC), 1 }, { A_(TP_O2_OCT), OCT_4 },
-    { A_(TP_O2_FREQ), 0.62f }, { A_(TP_MX_O1), 0 }, { A_(TP_MX_O2), 0.85f },
-    { A_(TP_L1_DEST), LD_OSC2 }, { A_(TP_L1_AMT), 0.55f }, { A_(TP_L1_RATE), 0.3f }, { A_(TP_L1_WAVE), LW_TRI },
-    { A_(TP_F1_CUT), 0.7f }, { A_(TP_F1_RES), 0.2f }, { A_(TP_PL_AMT), 0.25f }, { A_(TP_MX_OVERLOAD), 0.3f },
-    { GP_DL_MIX, 0.3f }, { GP_DL_FB, 0.4f }, { GP_DL_TIME_L, 0.72f }, { GP_DL_TIME_R, 0.66f }, END
+static const aria_set_t S04[] = {   /* DARK MATTER */
+    { TP(0, TP_O1_OCT), OCT_16 }, { TP(0, TP_O2_FREQ), 0.5080f }, { TP(0, TP_MX_O2), 0.6000f },
+    { TP(0, TP_MX_NOISE), 0.3000f }, { TP(0, TP_F1_CUT), 0.3800f }, { TP(0, TP_F1_RES), 0.5000f },
+    { TP(0, TP_F2_CUT), 0.4500f }, { TP(0, TP_F1_ENV), 0.6000f }, { TP(0, TP_FE_A), 0.7500f },
+    { TP(0, TP_FE_D), 0.8000f }, { TP(0, TP_FE_S), 0.5000f }, { TP(0, TP_FE_R), 0.7500f },
+    { TP(0, TP_AE_A), 0.7000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.7500f },
+    { TP(0, TP_MX_OVERLOAD), 0.3500f }, { TP(0, TP_VCA_SPREAD), 0.6000f }, { TP(0, TP_DETUNE), 0.5000f },
+    { TP(0, TP_L1_AMT), 0.2000f }, { TP(0, TP_L1_RATE), 0.2000f }, { TP(0, TP_L1_DEST), LD_F1 },
+    { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.6000f }, { GP_DL_DIFF, 0.8000f }, { GP_DL_CHAR, 0.3500f },
+    { TP(0, TP_VCA_LEVEL), 0.8720f }, { -1, 0 }
 };
-static const aria_set_t SPLIT_BASS_PAD[] = {   /* timbre A a bass below C3, timbre B a pad above */
-    { GP_VC_MODE, VC_SPLIT }, { GP_VC_SPLIT, 48.0f / 127.0f }, { GP_VC_VOICES_A, 0 },
-    { A_(TP_MONO), 1 }, { A_(TP_O1_OCT), OCT_16 }, { A_(TP_O1_MIX), 1 }, { A_(TP_MX_O2), 0.6f },
-    { A_(TP_F1_CUT), 0.25f }, { A_(TP_F1_RES), 0.4f }, { A_(TP_F1_ENV), 0.8f }, { A_(TP_FE_D), 0.4f },
-    { A_(TP_FE_S), 0.15f }, { A_(TP_MX_OVERLOAD), 0.4f },
-    { B_(TP_O2_FREQ), 0.507f }, { B_(TP_MX_O2), 0.6f }, { B_(TP_F1_CUT), 0.5f }, { B_(TP_F1_ENV), 0.62f },
-    { B_(TP_FE_A), 0.55f }, { B_(TP_FE_D), 0.65f }, { B_(TP_AE_A), 0.5f }, { B_(TP_AE_R), 0.6f },
-    { B_(TP_VCA_SPREAD), 0.8f }, { B_(TP_DETUNE), 0.4f }, { B_(TP_F_ORDER), ORD_STEREO }, { B_(TP_F2_CUT), 0.56f },
-    { GP_DL_A, 0 }, { GP_DL_MIX, 0.35f }, { GP_DL_FB, 0.5f }, { GP_DL_DIFF, 0.6f }, END
+static const aria_set_t S05[] = {   /* SHIMMER HALO */
+    { TP(0, TP_O1_OCT), OCT_4 }, { TP(0, TP_O1_TRISAW), 0.0f }, { TP(0, TP_O2_OCT), OCT_2 },
+    { TP(0, TP_O2_TRISAW), 0.0f }, { TP(0, TP_O2_FREQ), 0.5050f }, { TP(0, TP_MX_O2), 0.5000f },
+    { TP(0, TP_MX_RING), 0.2000f }, { TP(0, TP_F1_HP), 1.0f }, { TP(0, TP_F1_CUT), 0.4500f },
+    { TP(0, TP_F2_CUT), 0.7500f }, { TP(0, TP_AE_A), 0.7000f }, { TP(0, TP_AE_S), 1.0f },
+    { TP(0, TP_AE_R), 0.7500f }, { TP(0, TP_VCA_SPREAD), 0.9000f }, { TP(0, TP_DETUNE), 0.3000f },
+    { TP(0, TP_PL_AMT), 0.1000f }, { GP_DL_MIX, 0.5000f }, { GP_DL_FB, 0.7500f }, { GP_DL_DIFF, 0.9000f },
+    { GP_DL_MOD, 0.8000f }, { GP_DL_CHAR, 0.6500f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
 };
-static const aria_set_t RING_BELLS[] = {
-    { A_(TP_O1_TRISAW), 0 }, { A_(TP_O2_TRISAW), 0 }, { A_(TP_O2_OCT), OCT_4 }, { A_(TP_O2_FREQ), 0.5f + 3.0f / 14.0f },
-    { A_(TP_MX_O1), 0.3f }, { A_(TP_MX_RING), 0.85f },
-    { A_(TP_F1_CUT), 0.75f }, { A_(TP_AE_D), 0.7f }, { A_(TP_AE_S), 0 }, { A_(TP_AE_R), 0.65f },
-    { A_(TP_VCA_SPREAD), 0.9f }, { GP_DL_MIX, 0.4f }, { GP_DL_FB, 0.6f }, { GP_DL_DIFF, 0.8f }, { GP_DL_CHAR, 0.6f }, END
+static const aria_set_t S06[] = {   /* SWEEP PAD */
+    { TP(0, TP_O2_FREQ), 0.5060f }, { TP(0, TP_MX_O2), 0.7000f }, { TP(0, TP_F_ORDER), ORD_STEREO },
+    { TP(0, TP_F1_CUT), 0.3000f }, { TP(0, TP_F2_CUT), 0.3400f }, { TP(0, TP_F1_RES), 0.6000f },
+    { TP(0, TP_F2_RES), 0.6000f }, { TP(0, TP_F1_ENV), 0.7500f }, { TP(0, TP_F2_ENV), 0.7200f },
+    { TP(0, TP_FE_A), 0.8200f }, { TP(0, TP_FE_D), 0.8500f }, { TP(0, TP_FE_S), 0.7000f },
+    { TP(0, TP_FE_R), 0.8000f }, { TP(0, TP_AE_A), 0.6000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.7500f },
+    { TP(0, TP_VCA_SPREAD), 0.8000f }, { TP(0, TP_DETUNE), 0.4000f }, { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.5000f },
+    { GP_DL_DIFF, 0.7000f }, { TP(0, TP_VCA_LEVEL), 0.6950f }, { -1, 0 }
 };
-static const aria_set_t PULSING_DRONE[] = {
-    { A_(TP_MO_FREQ), 0.35f }, { A_(TP_MO_VCA), 0.8f }, { A_(TP_MO_FILTER), 0.35f }, { A_(TP_MO_WAVE), MOW_SQUARE },
-    { A_(TP_MO_UNI), 1 }, { A_(TP_O2_OCT), OCT_16 }, { A_(TP_MX_O2), 0.6f }, { A_(TP_O2_FREQ), 0.5085f },
-    { A_(TP_F1_CUT), 0.4f }, { A_(TP_F1_RES), 0.5f }, { A_(TP_F_LINK), 1 }, { A_(TP_F2_CUT), 0.45f }, { A_(TP_F_ORDER), ORD_STEREO },
-    { A_(TP_AE_A), 0.45f }, { A_(TP_AE_R), 0.7f }, { A_(TP_VCA_SPREAD), 0.9f },
-    { GP_DL_MIX, 0.35f }, { GP_DL_FB, 0.6f }, { GP_DL_DIFF, 0.6f }, END
+static const aria_set_t S07[] = {   /* SLOW MOTION */
+    { TP(0, TP_O1_MIX), 0.5000f }, { TP(0, TP_O1_PW), 0.3500f }, { TP(0, TP_O2_MIX), 0.5000f },
+    { TP(0, TP_O2_PW), 0.6500f }, { TP(0, TP_O2_FREQ), 0.5060f }, { TP(0, TP_MX_O2), 0.7000f },
+    { TP(0, TP_MO_FREQ), 0.2800f }, { TP(0, TP_MO_PWM), 0.6000f }, { TP(0, TP_MO_UNI), 0.0f },
+    { TP(0, TP_F1_CUT), 0.4800f }, { TP(0, TP_F1_RES), 0.2500f }, { TP(0, TP_F1_ENV), 0.5500f },
+    { TP(0, TP_FE_A), 0.7000f }, { TP(0, TP_FE_S), 0.8000f }, { TP(0, TP_AE_A), 0.7200f }, { TP(0, TP_AE_S), 1.0f },
+    { TP(0, TP_AE_R), 0.7800f }, { TP(0, TP_VCA_SPREAD), 0.7500f }, { TP(0, TP_DETUNE), 0.3500f },
+    { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.5500f }, { GP_DL_DIFF, 0.8000f }, { GP_DL_MOD, 0.6000f },
+    { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
 };
-
-static const aria_set_t ARP_CHORDS[] = {   /* one key, a chord (key map 1), arpeggiated up and down over two octaves */
-    { GP_CH_ON, 1 }, { GP_CH_KEY, 1 }, { GP_CH_MAP, 0 },
-    { GP_ARP_ON, 1 }, { GP_ARP_MODE, ARP_UPDOWN }, { GP_ARP_OCT, 1 }, { GP_ARP_DIV, DIV_16 }, { GP_ARP_GATE, 0.45f },
-    { GP_ARP_SWING, 0.2f },
-    { A_(TP_O1_MIX), 0.6f }, { A_(TP_MX_O2), 0.5f }, { A_(TP_O2_FREQ), 0.5057f },
-    { A_(TP_F1_CUT), 0.38f }, { A_(TP_F1_RES), 0.55f }, { A_(TP_F1_ENV), 0.78f }, { A_(TP_F1_KB), KB_HALF },
-    { A_(TP_FE_D), 0.4f }, { A_(TP_FE_S), 0.05f }, { A_(TP_AE_D), 0.5f }, { A_(TP_AE_S), 0.3f }, { A_(TP_AE_R), 0.35f },
-    { A_(TP_VCA_SPREAD), 0.6f }, { A_(TP_MX_OVERLOAD), 0.25f },
-    { GP_DL_MIX, 0.32f }, { GP_DL_FB, 0.5f }, { GP_DL_TIME_L, 0.6f }, { GP_DL_TIME_R, 0.66f }, { GP_DL_DIFF, 0.45f }, END
+static const aria_set_t S08[] = {   /* OVERLOAD BASS */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.1200f }, { TP(0, TP_O1_OCT), OCT_16 },
+    { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_MX_O2), 0.7000f }, { TP(0, TP_O2_FREQ), 0.5043f },
+    { TP(0, TP_MX_OVERLOAD), 0.5500f }, { TP(0, TP_F1_CUT), 0.2200f }, { TP(0, TP_F1_RES), 0.5500f },
+    { TP(0, TP_F1_ENV), 0.8600f }, { TP(0, TP_F2_CUT), 0.6000f }, { TP(0, TP_FE_D), 0.3800f },
+    { TP(0, TP_FE_S), 0.1000f }, { TP(0, TP_FE_VEL), 1.0f }, { TP(0, TP_AE_D), 0.5000f },
+    { TP(0, TP_AE_S), 0.8000f }, { TP(0, TP_AE_R), 0.2000f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S09[] = {   /* SUB BASS */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_O1_OCT), OCT_16 }, { TP(0, TP_O1_TRISAW), 0.0f },
+    { TP(0, TP_MX_O1), 0.9000f }, { TP(0, TP_F1_CUT), 0.4500f }, { TP(0, TP_F1_ENV), 0.5500f },
+    { TP(0, TP_FE_D), 0.4500f }, { TP(0, TP_FE_S), 0.4000f }, { TP(0, TP_AE_D), 0.6000f },
+    { TP(0, TP_AE_S), 0.9000f }, { TP(0, TP_AE_R), 0.2500f }, { TP(0, TP_MX_OVERLOAD), 0.1500f },
+    { TP(0, TP_VCA_LEVEL), 0.9390f }, { -1, 0 }
+};
+static const aria_set_t S10[] = {   /* ACID LINE */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.1500f }, { TP(0, TP_F1_CUT), 0.2500f },
+    { TP(0, TP_F1_RES), 0.7800f }, { TP(0, TP_F1_ENV), 0.8500f }, { TP(0, TP_FE_D), 0.3500f },
+    { TP(0, TP_FE_S), 0.0f }, { TP(0, TP_FE_VEL), 1.0f }, { TP(0, TP_MX_OVERLOAD), 0.5000f },
+    { TP(0, TP_AE_S), 0.8000f }, { TP(0, TP_AE_R), 0.2000f }, { GP_DL_MIX, 0.1500f }, { GP_DL_FB, 0.3500f },
+    { TP(0, TP_VCA_LEVEL), 0.9910f }, { -1, 0 }
+};
+static const aria_set_t S11[] = {   /* FAT FIVE */
+    { TP(0, TP_UNISON), 1.0f }, { TP(0, TP_O1_OCT), OCT_16 }, { TP(0, TP_O2_OCT), OCT_16 },
+    { TP(0, TP_O2_MIX), 0.7000f }, { TP(0, TP_O2_FREQ), 0.5060f }, { TP(0, TP_MX_O2), 0.7000f },
+    { TP(0, TP_DETUNE), 0.5000f }, { TP(0, TP_F1_CUT), 0.3000f }, { TP(0, TP_F1_RES), 0.3000f },
+    { TP(0, TP_F1_ENV), 0.7000f }, { TP(0, TP_FE_D), 0.4500f }, { TP(0, TP_FE_S), 0.2000f },
+    { TP(0, TP_MX_OVERLOAD), 0.4000f }, { TP(0, TP_AE_S), 0.9000f }, { TP(0, TP_AE_R), 0.2500f },
+    { TP(0, TP_VCA_LEVEL), 0.5490f }, { -1, 0 }
+};
+static const aria_set_t S12[] = {   /* PLUCK BASS */
+    { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_O1_PW), 0.3000f }, { TP(0, TP_F1_CUT), 0.2000f },
+    { TP(0, TP_F1_RES), 0.4500f }, { TP(0, TP_F1_ENV), 0.8200f }, { TP(0, TP_FE_D), 0.3200f },
+    { TP(0, TP_FE_S), 0.0f }, { TP(0, TP_AE_D), 0.5600f }, { TP(0, TP_AE_S), 0.0f }, { TP(0, TP_AE_R), 0.3000f },
+    { TP(0, TP_MX_OVERLOAD), 0.2500f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S13[] = {   /* RUBBER BASS */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.0800f }, { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_FM_21), 1.0f },
+    { TP(0, TP_FM_AMT), 0.3000f }, { TP(0, TP_O2_OCT), OCT_16 }, { TP(0, TP_O2_TRISAW), 0.0f },
+    { TP(0, TP_MX_O2), 0.2000f }, { TP(0, TP_F1_CUT), 0.3000f }, { TP(0, TP_F1_RES), 0.5000f },
+    { TP(0, TP_F1_ENV), 0.7500f }, { TP(0, TP_FE_D), 0.4000f }, { TP(0, TP_FE_S), 0.1500f },
+    { TP(0, TP_AE_S), 0.8500f }, { TP(0, TP_AE_R), 0.2000f }, { TP(0, TP_VCA_LEVEL), 0.9000f }, { -1, 0 }
+};
+static const aria_set_t S14[] = {   /* LADDER GROWL */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_O1_OCT), OCT_16 }, { TP(0, TP_MX_O2), 0.8000f },
+    { TP(0, TP_O2_FREQ), 0.5200f }, { TP(0, TP_F_ORDER), ORD_SERIAL }, { TP(0, TP_F1_CUT), 0.2800f },
+    { TP(0, TP_F1_RES), 0.6200f }, { TP(0, TP_F2_CUT), 0.4000f }, { TP(0, TP_F2_RES), 0.4000f },
+    { TP(0, TP_F1_ENV), 0.7200f }, { TP(0, TP_F2_ENV), 0.6200f }, { TP(0, TP_FE_D), 0.5000f },
+    { TP(0, TP_FE_S), 0.3000f }, { TP(0, TP_L1_AMT), 0.2500f }, { TP(0, TP_L1_RATE), 0.5500f },
+    { TP(0, TP_L1_DEST), LD_FILTERS }, { TP(0, TP_MX_OVERLOAD), 0.6000f }, { TP(0, TP_AE_S), 0.9000f },
+    { TP(0, TP_AE_R), 0.2000f }, { TP(0, TP_VCA_LEVEL), 0.9150f }, { -1, 0 }
+};
+static const aria_set_t S15[] = {   /* FM KEYS */
+    { TP(0, TP_O1_TRISAW), 0.0f }, { TP(0, TP_O2_TRISAW), 0.0f }, { TP(0, TP_O2_OCT), OCT_4 },
+    { TP(0, TP_FM_AMT), 0.5500f }, { TP(0, TP_FM_21), 1.0f }, { TP(0, TP_MX_O2), 0.1500f },
+    { TP(0, TP_F1_CUT), 0.5500f }, { TP(0, TP_F1_ENV), 0.7800f }, { TP(0, TP_F1_KB), KB_FULL },
+    { TP(0, TP_FE_D), 0.5500f }, { TP(0, TP_FE_S), 0.0f }, { TP(0, TP_FE_R), 0.5000f }, { TP(0, TP_AE_D), 0.7200f },
+    { TP(0, TP_AE_S), 0.0f }, { TP(0, TP_AE_R), 0.6000f }, { TP(0, TP_VCA_SPREAD), 0.5000f },
+    { GP_DL_MIX, 0.2500f }, { GP_DL_FB, 0.3500f }, { GP_DL_TIME_L, 0.7000f }, { GP_DL_TIME_R, 0.7500f },
+    { TP(0, TP_VCA_LEVEL), 0.9330f }, { -1, 0 }
+};
+static const aria_set_t S16[] = {   /* VINTAGE EP */
+    { TP(0, TP_O1_TRISAW), 0.0f }, { TP(0, TP_O2_TRISAW), 0.0f }, { TP(0, TP_O2_OCT), OCT_4 },
+    { TP(0, TP_FM_21), 1.0f }, { TP(0, TP_FM_AMT), 0.3500f }, { TP(0, TP_MX_O2), 0.0500f },
+    { TP(0, TP_F1_CUT), 0.6000f }, { TP(0, TP_F1_KB), KB_FULL }, { TP(0, TP_F1_ENV), 0.6000f },
+    { TP(0, TP_FE_D), 0.6000f }, { TP(0, TP_FE_S), 0.2000f }, { TP(0, TP_AE_D), 0.7500f },
+    { TP(0, TP_AE_S), 0.2500f }, { TP(0, TP_AE_R), 0.5000f }, { TP(0, TP_AE_VEL), 1.0f },
+    { TP(0, TP_MO_FREQ), 0.5500f }, { TP(0, TP_MO_VCA), 0.2500f }, { TP(0, TP_VCA_SPREAD), 0.6000f },
+    { TP(0, TP_PL_AMT), 0.0500f }, { GP_DL_MIX, 0.1500f }, { GP_DL_DIFF, 0.5000f },
+    { TP(0, TP_VCA_LEVEL), 0.8370f }, { -1, 0 }
+};
+static const aria_set_t S17[] = {   /* CLAV FUNK */
+    { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_O1_PW), 0.2000f }, { TP(0, TP_F1_HP), 1.0f },
+    { TP(0, TP_F1_CUT), 0.3800f }, { TP(0, TP_F2_CUT), 0.7000f }, { TP(0, TP_F2_RES), 0.3000f },
+    { TP(0, TP_F2_ENV), 0.6500f }, { TP(0, TP_FE_D), 0.4200f }, { TP(0, TP_FE_S), 0.1000f },
+    { TP(0, TP_AE_D), 0.5200f }, { TP(0, TP_AE_S), 0.0500f }, { TP(0, TP_AE_R), 0.2500f },
+    { TP(0, TP_AE_VEL), 1.0f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S18[] = {   /* ORGANIC ORGAN */
+    { TP(0, TP_O1_MIX), 0.5000f }, { TP(0, TP_O1_TRISAW), 0.0f }, { TP(0, TP_O2_OCT), OCT_4 },
+    { TP(0, TP_O2_FREQ), 1.0f }, { TP(0, TP_O2_TRISAW), 0.0f }, { TP(0, TP_MX_O2), 0.4500f },
+    { TP(0, TP_MO_AUDIO), 1.0f }, { TP(0, TP_MO_KBTRK), 1.0f }, { TP(0, TP_MO_FREQ), 0.3750f },
+    { TP(0, TP_MX_MOD), 0.5000f }, { TP(0, TP_F1_CUT), 0.8500f }, { TP(0, TP_AE_A), 0.2500f },
+    { TP(0, TP_AE_D), 0.3000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.3000f },
+    { TP(0, TP_PL_AMT), 0.2500f }, { TP(0, TP_PL_RATE), 0.7000f }, { TP(0, TP_VCA_SPREAD), 0.4000f },
+    { GP_DL_MIX, 0.1200f }, { GP_DL_DIFF, 0.7000f }, { TP(0, TP_VCA_LEVEL), 0.6770f }, { -1, 0 }
+};
+static const aria_set_t S19[] = {   /* CHORD KEYS */
+    { GP_CH_ON, 1.0f }, { GP_CH_KEY, 1.0f }, { GP_CH_MAP, 0.0f }, { TP(0, TP_O1_TRISAW), 0.6000f },
+    { TP(0, TP_MX_O2), 0.5000f }, { TP(0, TP_O2_FREQ), 0.5071f }, { TP(0, TP_F1_CUT), 0.4500f },
+    { TP(0, TP_F1_RES), 0.2500f }, { TP(0, TP_F1_ENV), 0.7000f }, { TP(0, TP_F1_KB), KB_HALF },
+    { TP(0, TP_FE_A), 0.2000f }, { TP(0, TP_FE_D), 0.6000f }, { TP(0, TP_FE_S), 0.3000f },
+    { TP(0, TP_AE_A), 0.2500f }, { TP(0, TP_AE_S), 0.8000f }, { TP(0, TP_AE_R), 0.5000f },
+    { TP(0, TP_VCA_SPREAD), 0.7000f }, { TP(0, TP_DETUNE), 0.3500f }, { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.4500f },
+    { GP_DL_DIFF, 0.5000f }, { TP(0, TP_VCA_LEVEL), 0.9440f }, { -1, 0 }
+};
+static const aria_set_t S20[] = {   /* CRYSTAL BELLS */
+    { TP(0, TP_O1_TRISAW), 0.0f }, { TP(0, TP_O2_TRISAW), 0.0f }, { TP(0, TP_O2_OCT), OCT_2 },
+    { TP(0, TP_O2_FREQ), 0.6429f }, { TP(0, TP_FM_12), 1.0f }, { TP(0, TP_FM_21), 1.0f },
+    { TP(0, TP_FM_AMT), 0.4500f }, { TP(0, TP_MX_O2), 0.3000f }, { TP(0, TP_F1_CUT), 0.8000f },
+    { TP(0, TP_AE_D), 0.8000f }, { TP(0, TP_AE_S), 0.0f }, { TP(0, TP_AE_R), 0.7000f },
+    { TP(0, TP_VCA_SPREAD), 0.8000f }, { GP_DL_MIX, 0.4000f }, { GP_DL_FB, 0.5500f }, { GP_DL_DIFF, 0.7000f },
+    { TP(0, TP_VCA_LEVEL), 0.9350f }, { -1, 0 }
+};
+static const aria_set_t S21[] = {   /* RING BELLS */
+    { TP(0, TP_O1_TRISAW), 0.0f }, { TP(0, TP_O2_TRISAW), 0.0f }, { TP(0, TP_O2_OCT), OCT_4 },
+    { TP(0, TP_O2_FREQ), 0.7143f }, { TP(0, TP_MX_O1), 0.3000f }, { TP(0, TP_MX_RING), 0.8500f },
+    { TP(0, TP_F1_CUT), 0.7500f }, { TP(0, TP_AE_D), 0.7000f }, { TP(0, TP_AE_S), 0.0f },
+    { TP(0, TP_AE_R), 0.6500f }, { TP(0, TP_VCA_SPREAD), 0.9000f }, { GP_DL_MIX, 0.4000f }, { GP_DL_FB, 0.6000f },
+    { GP_DL_DIFF, 0.8000f }, { GP_DL_CHAR, 0.6000f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S22[] = {   /* SYNC LEAD */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.1800f }, { TP(0, TP_O2_SYNC), 1.0f },
+    { TP(0, TP_O2_OCT), OCT_4 }, { TP(0, TP_O2_FREQ), 0.6200f }, { TP(0, TP_MX_O1), 0.0f },
+    { TP(0, TP_MX_O2), 0.8500f }, { TP(0, TP_L1_DEST), LD_OSC2 }, { TP(0, TP_L1_AMT), 0.5500f },
+    { TP(0, TP_L1_RATE), 0.3000f }, { TP(0, TP_L1_WAVE), LW_TRI }, { TP(0, TP_F1_CUT), 0.7000f },
+    { TP(0, TP_F1_RES), 0.2000f }, { TP(0, TP_PL_AMT), 0.2500f }, { TP(0, TP_MX_OVERLOAD), 0.3000f },
+    { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.4000f }, { GP_DL_TIME_L, 0.7200f }, { GP_DL_TIME_R, 0.6600f },
+    { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S23[] = {   /* MOOGY LEAD */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.1200f }, { TP(0, TP_O2_OCT), OCT_4 },
+    { TP(0, TP_O2_FREQ), 0.5050f }, { TP(0, TP_MX_O2), 0.6000f }, { TP(0, TP_F1_CUT), 0.4500f },
+    { TP(0, TP_F1_RES), 0.3500f }, { TP(0, TP_F1_ENV), 0.7000f }, { TP(0, TP_FE_D), 0.5000f },
+    { TP(0, TP_FE_S), 0.4000f }, { TP(0, TP_MX_OVERLOAD), 0.3000f }, { TP(0, TP_PL_AMT), 0.2000f },
+    { TP(0, TP_PL_RATE), 0.5500f }, { GP_DL_MIX, 0.2500f }, { GP_DL_FB, 0.4000f }, { TP(0, TP_VCA_LEVEL), 0.9860f },
+    { -1, 0 }
+};
+static const aria_set_t S24[] = {   /* SQUARE SOLO */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.0600f }, { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_O2_MIX), 1.0f },
+    { TP(0, TP_O2_PW), 0.4500f }, { TP(0, TP_O2_FREQ), 0.5060f }, { TP(0, TP_MX_O2), 0.6000f },
+    { TP(0, TP_F1_CUT), 0.6000f }, { TP(0, TP_F1_RES), 0.2000f }, { TP(0, TP_F1_ENV), 0.5800f },
+    { TP(0, TP_PL_AMT), 0.2000f }, { GP_DL_MIX, 0.2000f }, { GP_DL_FB, 0.3500f }, { TP(0, TP_VCA_LEVEL), 0.7870f },
+    { -1, 0 }
+};
+static const aria_set_t S25[] = {   /* SCREAMER */
+    { TP(0, TP_UNISON), 1.0f }, { TP(0, TP_O2_FREQ), 0.5080f }, { TP(0, TP_MX_O2), 0.8000f },
+    { TP(0, TP_DETUNE), 0.4500f }, { TP(0, TP_F1_CUT), 0.5000f }, { TP(0, TP_F1_RES), 0.7000f },
+    { TP(0, TP_F1_ENV), 0.6000f }, { TP(0, TP_FE_A), 0.3000f }, { TP(0, TP_FE_D), 0.6000f },
+    { TP(0, TP_FE_S), 0.5000f }, { TP(0, TP_MX_OVERLOAD), 0.7000f }, { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.4500f },
+    { TP(0, TP_VCA_LEVEL), 0.5540f }, { -1, 0 }
+};
+static const aria_set_t S26[] = {   /* POLY BRASS */
+    { TP(0, TP_O2_FREQ), 0.5070f }, { TP(0, TP_MX_O2), 0.7500f }, { TP(0, TP_F1_CUT), 0.3500f },
+    { TP(0, TP_F1_RES), 0.1500f }, { TP(0, TP_F1_ENV), 0.7200f }, { TP(0, TP_F1_KB), KB_HALF },
+    { TP(0, TP_FE_A), 0.3800f }, { TP(0, TP_FE_D), 0.5500f }, { TP(0, TP_FE_S), 0.4500f },
+    { TP(0, TP_FE_R), 0.4000f }, { TP(0, TP_AE_A), 0.3000f }, { TP(0, TP_AE_S), 0.9000f },
+    { TP(0, TP_AE_R), 0.3500f }, { TP(0, TP_VCA_SPREAD), 0.5000f }, { TP(0, TP_DETUNE), 0.4000f },
+    { TP(0, TP_PL_AMT), 0.0800f }, { TP(0, TP_FE_VEL), 1.0f }, { GP_DL_MIX, 0.2000f }, { GP_DL_DIFF, 0.7000f },
+    { TP(0, TP_VCA_LEVEL), 0.7260f }, { -1, 0 }
+};
+static const aria_set_t S27[] = {   /* BRASS STABS */
+    { TP(0, TP_O2_FREQ), 0.5080f }, { TP(0, TP_MX_O2), 0.8000f }, { TP(0, TP_F1_CUT), 0.3200f },
+    { TP(0, TP_F1_RES), 0.2000f }, { TP(0, TP_F1_ENV), 0.7500f }, { TP(0, TP_FE_A), 0.3000f },
+    { TP(0, TP_FE_D), 0.4500f }, { TP(0, TP_FE_S), 0.2000f }, { TP(0, TP_AE_A), 0.2200f },
+    { TP(0, TP_AE_D), 0.5000f }, { TP(0, TP_AE_S), 0.3000f }, { TP(0, TP_AE_R), 0.3500f },
+    { TP(0, TP_VCA_SPREAD), 0.5000f }, { TP(0, TP_DETUNE), 0.3500f }, { TP(0, TP_MX_OVERLOAD), 0.3000f },
+    { TP(0, TP_FE_VEL), 1.0f }, { GP_DL_MIX, 0.2000f }, { GP_DL_DIFF, 0.8000f }, { TP(0, TP_VCA_LEVEL), 1.0f },
+    { -1, 0 }
+};
+static const aria_set_t S28[] = {   /* PLUCK ECHO */
+    { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_O1_PW), 0.4000f }, { TP(0, TP_F1_CUT), 0.3000f },
+    { TP(0, TP_F1_RES), 0.5000f }, { TP(0, TP_F1_ENV), 0.8000f }, { TP(0, TP_FE_D), 0.3800f },
+    { TP(0, TP_FE_S), 0.0f }, { TP(0, TP_AE_D), 0.5000f }, { TP(0, TP_AE_S), 0.0f }, { TP(0, TP_AE_R), 0.4500f },
+    { TP(0, TP_VCA_SPREAD), 0.6000f }, { GP_DL_MIX, 0.4000f }, { GP_DL_FB, 0.5500f }, { GP_DL_TIME_L, 0.6200f },
+    { GP_DL_TIME_R, 0.6800f }, { GP_DL_DIFF, 0.3000f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S29[] = {   /* ARP CHORDS */
+    { GP_CH_ON, 1.0f }, { GP_CH_KEY, 1.0f }, { GP_CH_MAP, 0.0f }, { GP_ARP_ON, 1.0f }, { GP_ARP_MODE, ARP_UPDOWN },
+    { GP_ARP_OCT, 1.0f }, { GP_ARP_DIV, DIV_16 }, { GP_ARP_GATE, 0.4500f }, { GP_ARP_SWING, 0.2000f },
+    { TP(0, TP_O1_MIX), 0.6000f }, { TP(0, TP_MX_O2), 0.5000f }, { TP(0, TP_O2_FREQ), 0.5057f },
+    { TP(0, TP_F1_CUT), 0.3800f }, { TP(0, TP_F1_RES), 0.5500f }, { TP(0, TP_F1_ENV), 0.7800f },
+    { TP(0, TP_F1_KB), KB_HALF }, { TP(0, TP_FE_D), 0.4000f }, { TP(0, TP_FE_S), 0.0500f },
+    { TP(0, TP_AE_D), 0.5000f }, { TP(0, TP_AE_S), 0.3000f }, { TP(0, TP_AE_R), 0.3500f },
+    { TP(0, TP_VCA_SPREAD), 0.6000f }, { TP(0, TP_MX_OVERLOAD), 0.2500f }, { GP_DL_MIX, 0.3200f },
+    { GP_DL_FB, 0.5000f }, { GP_DL_TIME_L, 0.6000f }, { GP_DL_TIME_R, 0.6600f }, { GP_DL_DIFF, 0.4500f },
+    { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S30[] = {   /* SEQ PULSE */
+    { GP_ARP_ON, 1.0f }, { GP_ARP_MODE, ARP_ORDER }, { GP_ARP_OCT, 1.0f }, { GP_ARP_DIV, DIV_16 },
+    { GP_ARP_GATE, 0.3000f }, { GP_ARP_STEP1 + 3, 0.0f }, { GP_ARP_STEP1 + 7, 0.0f }, { GP_ARP_STEP1 + 10, 0.0f },
+    { GP_ARP_STEP1 + 14, 0.0f }, { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_O1_PW), 0.3500f },
+    { TP(0, TP_F1_CUT), 0.3500f }, { TP(0, TP_F1_RES), 0.6000f }, { TP(0, TP_F1_ENV), 0.7200f },
+    { TP(0, TP_FE_D), 0.3500f }, { TP(0, TP_FE_S), 0.0f }, { TP(0, TP_AE_D), 0.4000f }, { TP(0, TP_AE_S), 0.0f },
+    { TP(0, TP_AE_R), 0.3000f }, { TP(0, TP_VCA_SPREAD), 0.7000f }, { TP(0, TP_MX_OVERLOAD), 0.3500f },
+    { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.4500f }, { GP_DL_TIME_L, 0.5800f }, { GP_DL_TIME_R, 0.6400f },
+    { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S31[] = {   /* TRANCE GATE */
+    { TP(0, TP_O2_FREQ), 0.5070f }, { TP(0, TP_MX_O2), 0.7000f }, { TP(0, TP_F1_CUT), 0.5500f },
+    { TP(0, TP_F1_RES), 0.3000f }, { TP(0, TP_AE_A), 0.2000f }, { TP(0, TP_AE_S), 1.0f },
+    { TP(0, TP_AE_R), 0.4000f }, { TP(0, TP_MO_FREQ), 0.6200f }, { TP(0, TP_MO_WAVE), MOW_SQUARE },
+    { TP(0, TP_MO_UNI), 1.0f }, { TP(0, TP_MO_VCA), 1.0f }, { TP(0, TP_MO_KBRESET), 1.0f },
+    { TP(0, TP_VCA_SPREAD), 0.6000f }, { TP(0, TP_DETUNE), 0.4000f }, { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.5000f },
+    { GP_DL_DIFF, 0.4000f }, { TP(0, TP_VCA_LEVEL), 0.7300f }, { -1, 0 }
+};
+static const aria_set_t S32[] = {   /* UP AND AWAY */
+    { GP_ARP_ON, 1.0f }, { GP_ARP_MODE, ARP_UP }, { GP_ARP_OCT, 2.0f }, { GP_ARP_DIV, DIV_16T },
+    { GP_ARP_GATE, 0.5000f }, { TP(0, TP_O1_TRISAW), 0.3000f }, { TP(0, TP_O2_OCT), OCT_4 },
+    { TP(0, TP_MX_O2), 0.3000f }, { TP(0, TP_F1_CUT), 0.5000f }, { TP(0, TP_F1_RES), 0.3500f },
+    { TP(0, TP_F1_ENV), 0.6500f }, { TP(0, TP_FE_D), 0.4200f }, { TP(0, TP_FE_S), 0.1000f },
+    { TP(0, TP_AE_D), 0.5000f }, { TP(0, TP_AE_S), 0.2000f }, { TP(0, TP_AE_R), 0.4000f },
+    { TP(0, TP_VCA_SPREAD), 0.9000f }, { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.5500f }, { GP_DL_DIFF, 0.6000f },
+    { GP_DL_MOD, 0.4000f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S33[] = {   /* PULSING DRONE */
+    { TP(0, TP_MO_FREQ), 0.3500f }, { TP(0, TP_MO_VCA), 0.8000f }, { TP(0, TP_MO_FILTER), 0.3500f },
+    { TP(0, TP_MO_WAVE), MOW_SQUARE }, { TP(0, TP_MO_UNI), 1.0f }, { TP(0, TP_O2_OCT), OCT_16 },
+    { TP(0, TP_MX_O2), 0.6000f }, { TP(0, TP_O2_FREQ), 0.5085f }, { TP(0, TP_F1_CUT), 0.4000f },
+    { TP(0, TP_F1_RES), 0.5000f }, { TP(0, TP_F_LINK), 1.0f }, { TP(0, TP_F2_CUT), 0.4500f },
+    { TP(0, TP_F_ORDER), ORD_STEREO }, { TP(0, TP_AE_A), 0.4500f }, { TP(0, TP_AE_R), 0.7000f },
+    { TP(0, TP_VCA_SPREAD), 0.9000f }, { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.6000f }, { GP_DL_DIFF, 0.6000f },
+    { TP(0, TP_VCA_LEVEL), 0.9460f }, { -1, 0 }
+};
+static const aria_set_t S34[] = {   /* WIND TUNNEL */
+    { TP(0, TP_MX_O1), 0.0f }, { TP(0, TP_MX_NOISE), 0.8500f }, { TP(0, TP_F1_HP), 1.0f },
+    { TP(0, TP_F_LINK), 1.0f }, { TP(0, TP_F1_CUT), 0.4500f }, { TP(0, TP_F2_CUT), 0.5500f },
+    { TP(0, TP_F1_RES), 0.6000f }, { TP(0, TP_F2_RES), 0.7000f }, { TP(0, TP_L1_AMT), 0.6000f },
+    { TP(0, TP_L1_RATE), 0.2500f }, { TP(0, TP_L1_WAVE), LW_SINE }, { TP(0, TP_L1_DEST), LD_FILTERS },
+    { TP(0, TP_L2_AMT), 0.6000f }, { TP(0, TP_L2_RATE), 0.3500f }, { TP(0, TP_L2_DEST), LD_PAN },
+    { TP(0, TP_AE_A), 0.8000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.8000f }, { GP_DL_MIX, 0.4000f },
+    { GP_DL_FB, 0.6000f }, { GP_DL_DIFF, 0.9000f }, { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S35[] = {   /* ROBOT TALK */
+    { TP(0, TP_MO_AUDIO), 1.0f }, { TP(0, TP_MO_KBTRK), 1.0f }, { TP(0, TP_MO_FREQ), 0.5600f },
+    { TP(0, TP_MO_WAVE), MOW_SQUARE }, { TP(0, TP_MO_FILTER), 0.4000f }, { TP(0, TP_MX_RING), 0.5000f },
+    { TP(0, TP_MX_O1), 0.5000f }, { TP(0, TP_O2_FREQ), 0.8571f }, { TP(0, TP_F_ORDER), ORD_STEREO },
+    { TP(0, TP_F1_CUT), 0.5500f }, { TP(0, TP_F2_CUT), 0.6200f }, { TP(0, TP_F1_RES), 0.6000f },
+    { TP(0, TP_F2_RES), 0.6000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.3000f }, { GP_DL_MIX, 0.2500f },
+    { TP(0, TP_VCA_LEVEL), 1.0f }, { -1, 0 }
+};
+static const aria_set_t S36[] = {   /* SPACE SIREN */
+    { TP(0, TP_MONO), 1.0f }, { TP(0, TP_GLIDE), 0.4500f }, { TP(0, TP_MX_O1), 0.2000f },
+    { TP(0, TP_F1_CUT), 0.5500f }, { TP(0, TP_F1_RES), 0.9500f }, { TP(0, TP_L1_AMT), 0.4500f },
+    { TP(0, TP_L1_RATE), 0.4000f }, { TP(0, TP_L1_DEST), LD_F1 }, { TP(0, TP_PL_AMT), 0.3000f },
+    { TP(0, TP_AE_A), 0.4000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.6000f }, { GP_DL_MIX, 0.4500f },
+    { GP_DL_FB, 0.7000f }, { GP_DL_DIFF, 0.8500f }, { GP_DL_MOD, 0.7000f }, { TP(0, TP_VCA_LEVEL), 1.0f },
+    { -1, 0 }
+};
+static const aria_set_t S37[] = {   /* SPLIT BASS PAD */
+    { GP_VC_MODE, VC_SPLIT }, { GP_VC_SPLIT, 0.3780f }, { GP_VC_VOICES_A, 0.0f }, { TP(0, TP_MONO), 1.0f },
+    { TP(0, TP_O1_OCT), OCT_16 }, { TP(0, TP_O1_MIX), 1.0f }, { TP(0, TP_MX_O2), 0.6000f },
+    { TP(0, TP_F1_CUT), 0.2500f }, { TP(0, TP_F1_RES), 0.4000f }, { TP(0, TP_F1_ENV), 0.8000f },
+    { TP(0, TP_FE_D), 0.4000f }, { TP(0, TP_FE_S), 0.1500f }, { TP(0, TP_MX_OVERLOAD), 0.4000f },
+    { TP(1, TP_O2_FREQ), 0.5070f }, { TP(1, TP_MX_O2), 0.6000f }, { TP(1, TP_F1_CUT), 0.5000f },
+    { TP(1, TP_F1_ENV), 0.6200f }, { TP(1, TP_FE_A), 0.5500f }, { TP(1, TP_FE_D), 0.6500f },
+    { TP(1, TP_AE_A), 0.5000f }, { TP(1, TP_AE_R), 0.6000f }, { TP(1, TP_VCA_SPREAD), 0.8000f },
+    { TP(1, TP_DETUNE), 0.4000f }, { TP(1, TP_F_ORDER), ORD_STEREO }, { TP(1, TP_F2_CUT), 0.5600f },
+    { GP_DL_A, 0.0f }, { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.5000f }, { GP_DL_DIFF, 0.6000f },
+    { TP(0, TP_VCA_LEVEL), 0.7350f }, { TP(1, TP_VCA_LEVEL), 0.7350f }, { -1, 0 }
+};
+static const aria_set_t S38[] = {   /* BASS + LEAD */
+    { GP_VC_MODE, VC_SPLIT }, { GP_VC_SPLIT, 0.4331f }, { GP_VC_VOICES_A, 0.0f }, { TP(0, TP_MONO), 1.0f },
+    { TP(0, TP_O1_OCT), OCT_16 }, { TP(0, TP_F1_CUT), 0.2800f }, { TP(0, TP_F1_RES), 0.5000f },
+    { TP(0, TP_F1_ENV), 0.7500f }, { TP(0, TP_FE_D), 0.4000f }, { TP(0, TP_FE_S), 0.2000f },
+    { TP(0, TP_MX_OVERLOAD), 0.4000f }, { TP(1, TP_MONO), 1.0f }, { TP(1, TP_GLIDE), 0.1200f },
+    { TP(1, TP_O2_OCT), OCT_4 }, { TP(1, TP_O2_FREQ), 0.5050f }, { TP(1, TP_MX_O2), 0.6000f },
+    { TP(1, TP_F1_CUT), 0.5000f }, { TP(1, TP_F1_RES), 0.3000f }, { TP(1, TP_F1_ENV), 0.6500f },
+    { TP(1, TP_FE_D), 0.5000f }, { TP(1, TP_FE_S), 0.4000f }, { TP(1, TP_PL_AMT), 0.2000f }, { GP_DL_A, 0.0f },
+    { GP_DL_MIX, 0.3000f }, { GP_DL_FB, 0.4500f }, { TP(0, TP_VCA_LEVEL), 0.8690f },
+    { TP(1, TP_VCA_LEVEL), 0.8690f }, { -1, 0 }
+};
+static const aria_set_t S39[] = {   /* STACK STRINGS */
+    { GP_VC_MODE, VC_STACK }, { GP_VC_VOICES_A, 3.0f }, { TP(0, TP_O2_FREQ), 0.5060f },
+    { TP(0, TP_MX_O2), 0.7000f }, { TP(0, TP_F1_CUT), 0.5000f }, { TP(0, TP_F1_ENV), 0.6000f },
+    { TP(0, TP_FE_A), 0.6000f }, { TP(0, TP_FE_D), 0.7000f }, { TP(0, TP_FE_S), 0.6000f },
+    { TP(0, TP_AE_A), 0.6000f }, { TP(0, TP_AE_S), 1.0f }, { TP(0, TP_AE_R), 0.6500f },
+    { TP(0, TP_VCA_SPREAD), 0.7000f }, { TP(0, TP_DETUNE), 0.4000f }, { TP(1, TP_O1_OCT), OCT_4 },
+    { TP(1, TP_O1_TRISAW), 0.0f }, { TP(1, TP_O2_OCT), OCT_4 }, { TP(1, TP_O2_TRISAW), 0.0f },
+    { TP(1, TP_O2_FREQ), 0.5080f }, { TP(1, TP_MX_O2), 0.6000f }, { TP(1, TP_F1_CUT), 0.7000f },
+    { TP(1, TP_AE_A), 0.7000f }, { TP(1, TP_AE_S), 1.0f }, { TP(1, TP_AE_R), 0.7000f },
+    { TP(1, TP_VCA_SPREAD), 0.9000f }, { TP(1, TP_PL_AMT), 0.1500f }, { GP_DL_MIX, 0.3500f }, { GP_DL_FB, 0.5500f },
+    { GP_DL_DIFF, 0.8000f }, { GP_DL_MOD, 0.5000f }, { TP(0, TP_VCA_LEVEL), 0.6800f },
+    { TP(1, TP_VCA_LEVEL), 0.6800f }, { -1, 0 }
 };
 
 const aria_preset_t ARIA_PRESETS[ARIA_NPRESETS] = {
-    { "INIT", INIT },
-    { "GLASS PAD", GLASS_PAD },
-    { "OVERLOAD BASS", OVERLOAD_BASS },
-    { "FM KEYS", FM_KEYS },
-    { "CHORD KEYS", CHORD_KEYS },
-    { "SYNC LEAD", SYNC_LEAD },
-    { "SPLIT BASS PAD", SPLIT_BASS_PAD },
-    { "RING BELLS", RING_BELLS },
-    { "PULSING DRONE", PULSING_DRONE },
-    { "ARP CHORDS", ARP_CHORDS },
+    { "INIT", "INIT", S00 },
+    { "WARM STRINGS", "PAD", S01 },
+    { "GLASS PAD", "PAD", S02 },
+    { "VELVET PAD", "PAD", S03 },
+    { "DARK MATTER", "PAD", S04 },
+    { "SHIMMER HALO", "PAD", S05 },
+    { "SWEEP PAD", "PAD", S06 },
+    { "SLOW MOTION", "PAD", S07 },
+    { "OVERLOAD BASS", "BASS", S08 },
+    { "SUB BASS", "BASS", S09 },
+    { "ACID LINE", "BASS", S10 },
+    { "FAT FIVE", "BASS", S11 },
+    { "PLUCK BASS", "BASS", S12 },
+    { "RUBBER BASS", "BASS", S13 },
+    { "LADDER GROWL", "BASS", S14 },
+    { "FM KEYS", "KEYS", S15 },
+    { "VINTAGE EP", "KEYS", S16 },
+    { "CLAV FUNK", "KEYS", S17 },
+    { "ORGANIC ORGAN", "KEYS", S18 },
+    { "CHORD KEYS", "KEYS", S19 },
+    { "CRYSTAL BELLS", "KEYS", S20 },
+    { "RING BELLS", "KEYS", S21 },
+    { "SYNC LEAD", "LEAD", S22 },
+    { "MOOGY LEAD", "LEAD", S23 },
+    { "SQUARE SOLO", "LEAD", S24 },
+    { "SCREAMER", "LEAD", S25 },
+    { "POLY BRASS", "BRASS", S26 },
+    { "BRASS STABS", "BRASS", S27 },
+    { "PLUCK ECHO", "PLUCK", S28 },
+    { "ARP CHORDS", "ARP", S29 },
+    { "SEQ PULSE", "ARP", S30 },
+    { "TRANCE GATE", "ARP", S31 },
+    { "UP AND AWAY", "ARP", S32 },
+    { "PULSING DRONE", "FX", S33 },
+    { "WIND TUNNEL", "FX", S34 },
+    { "ROBOT TALK", "FX", S35 },
+    { "SPACE SIREN", "FX", S36 },
+    { "SPLIT BASS PAD", "SPLIT", S37 },
+    { "BASS + LEAD", "SPLIT", S38 },
+    { "STACK STRINGS", "SPLIT", S39 },
 };
 
 void aria_preset_values(int i, float *out)

@@ -54,6 +54,7 @@ enum {
     GP_DL_MOD, GP_QUALITY,                                             /* (added: DELAY CHORUS, the oversampling) */
     GP_ARP_ON, GP_ARP_MODE, GP_ARP_OCT, GP_ARP_DIV, GP_ARP_GATE, GP_ARP_SWING, GP_ARP_LATCH,   /* ARPEGGIATOR */
     GP_ARP_LEN, GP_ARP_STEP1, GP_ARP_STEP16 = GP_ARP_STEP1 + 15,      /* ARP PATTERN: its length, each step on or a rest */
+    GP_TEMPO,                                                          /* the tempo without a host (60..200 BPM) */
     ARIA_NPARAM
 };
 

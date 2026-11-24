@@ -29,7 +29,7 @@ public:
     bool isMidiEffect() const override { return false; }
     double getTailLengthSeconds() const override { return 6.0; }
 
-    int getNumPrograms() override { return ARIA_NPRESETS; }
+    int getNumPrograms() override { return ARIA_NPRESETS + (int)userPresets.size(); }
     int getCurrentProgram() override { return program; }
     void setCurrentProgram(int index) override;
     const juce::String getProgramName(int index) override;
@@ -37,6 +37,13 @@ public:
 
     void getStateInformation(juce::MemoryBlock &destData) override;
     void setStateInformation(const void *data, int sizeInBytes) override;
+
+    /* the user's own sounds (SAVE): files in Documents/ARIA/Presets, after the factory ones */
+    struct UserPreset { juce::String name; std::vector<float> v; };
+    std::vector<UserPreset> userPresets;
+    static juce::File presetFolder();
+    void loadUserPresets();
+    int savePreset(const juce::String &name);   /* the sound as it is, under this name: its program number (-1: failed) */
 
     juce::AudioProcessorValueTreeState apvts;
     static juce::String paramId(int i) { return "p" + juce::String(i); }

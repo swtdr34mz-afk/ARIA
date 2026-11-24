@@ -247,7 +247,8 @@ void Display::paint(juce::Graphics &g)
     int prog = P.getCurrentProgram();
     const juce::String dot = juce::String::fromUTF8("  \xc2\xb7  ");
     juce::String top = "TIMBRE " + juce::String(P.editTimbre.load() ? "B" : "A") + dot +
-                       juce::String(prog + 1).paddedLeft('0', 3) + dot + "VOICES " + juce::String(P.activeVoices.load());
+                       juce::String(prog + 1).paddedLeft('0', 3) + " " + (prog < ARIA_NPRESETS ? juce::String(ARIA_PRESETS[prog].category) : juce::String("USER")) +
+                       dot + "VOICES " + juce::String(P.activeVoices.load());
     juce::String line;
     if (panel.learning == 1) { top = "CHORD LEARN"; line = "PLAY CHORD, PRESS LEARN"; }
     else if (panel.learning == 2) { top = "CHORD LEARN" + dot + "KEY MAP " + juce::String((int)std::lround(P.param(GP_CH_MAP)->convertFrom0to1(P.param(GP_CH_MAP)->getValue())) + 1); line = "PRESS THE KEY FOR IT"; }
@@ -414,7 +415,7 @@ Panel::Panel(AriaProcessor &p) : proc(p)
     for (int i = 0; i < 2; i++) {                /* the patch: back, on */
         auto *b = new Button(*this, Button::ACTION, 0, false, i ? "NEXT" : "PREV");
         b->onPress = [this, i] {
-            proc.setCurrentProgram((proc.getCurrentProgram() + (i ? 1 : ARIA_NPRESETS - 1)) % ARIA_NPRESETS);
+            { int n = proc.getNumPrograms(); proc.setCurrentProgram((proc.getCurrentProgram() + (i ? 1 : n - 1)) % n); }
             lastTouched = -1;
         };
         controls.emplace_back(b); addAndMakeVisible(b);
@@ -502,7 +503,7 @@ void Panel::build()
     { auto &m = add("PERFORM", x, ROW2, 100, H2); x += 100;
       knob(m, TP_GLIDE, true, "GLIDE"); knob(m, TP_BEND, true, "BEND"); }
     { auto &m = add("ARPEGGIATOR", x, ROW2, 198, H2); x += 198;
-      knob(m, GP_ARP_GATE, false, "GATE"); knob(m, GP_ARP_SWING, false, "SWING");
+      knob(m, GP_ARP_GATE, false, "GATE"); knob(m, GP_ARP_SWING, false, "SWING"); knob(m, GP_TEMPO, false, "TEMPO");
       button(m, B::SWITCH, GP_ARP_ON, false, "ON"); button(m, B::SWITCH, GP_ARP_LATCH, false, "LATCH");
       button(m, B::CYCLE, GP_ARP_DIV, false, ""); button(m, B::CYCLE, GP_ARP_MODE, false, "");
       button(m, B::CYCLE, GP_ARP_OCT, false, ""); }
@@ -537,6 +538,22 @@ void Panel::build()
     { auto &m = add("OUTPUT", x, ROW2, 120, H2);
       knob(m, GP_OUT_VOL, false, "VOLUME", true); knob(m, GP_OUT_LOWCUT, false, "LOW CUT"); }
     for (auto &m : modules) layoutModule(m);
+    {   /* SAVE: the sound as a preset of the user's own */
+        auto *sv = new Button(*this, Button::ACTION, 0, false, "SAVE");
+        sv->onPress = [this] {
+            auto *w = new juce::AlertWindow("SAVE PRESET", "A name for this sound:", juce::MessageBoxIconType::NoIcon, this);
+            w->addTextEditor("name", proc.getProgramName(proc.getCurrentProgram()));
+            w->addButton("SAVE", 1, juce::KeyPress(juce::KeyPress::returnKey));
+            w->addButton("CANCEL", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+            w->enterModalState(true, juce::ModalCallbackFunction::create([this, w](int r) {
+                if (r == 1 && proc.savePreset(w->getTextEditorContents("name")) < 0)
+                    juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, "SAVE PRESET", "Could not save it.");
+                lastTouched = -1;
+            }), true);
+        };
+        controls.emplace_back(sv); addAndMakeVisible(sv);
+        sv->setBounds(W - 34 - 30 - 300 - 84 - 84 - 72, 28, 64, 38);
+    }
     {   /* QUALITY: the oversampling, by the display */
         auto *q = new Button(*this, Button::CYCLE, GP_QUALITY, false, "");
         controls.emplace_back(q); addAndMakeVisible(q);
