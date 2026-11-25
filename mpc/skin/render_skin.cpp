@@ -13,7 +13,7 @@
  *   FILTER  LADDER FILTERS;  again: VOICES                                             (3)
  *   LFO     LFO 1, LFO 2, PITCH LFO                                                    (4)
  *   FX      DIFFUSION DELAY                                                            (5)
- *   DIV     LOW SPLIT, CHORD MEMORY;  again: ARP (ARPEGGIATOR with its pattern, PERFORM)   (6)
+ *   DIV     LOW SPLIT, CHORD MEMORY;  again: ARP (ARPEGGIATOR: its knobs and buttons above, the pattern below; PERFORM)   (6)
  *
  * A page is laid out at 2/3 of the MPC's 1280 x 628 and drawn at 1.5x: the VST's knobs and buttons, touch-sized.
  *
@@ -108,10 +108,10 @@ std::vector<Page> pages()
                                         { P_LEARN, SWITCH, "LEARN" } } } },
           { { GP_LS_SPLIT, GP_LS_POINT, GP_LS_BALANCE, -1 }, { GP_CH_MAP, -1, -1, -1 } } },
         { "ARP", 5, 1, {
-            { "ARPEGGIATOR", 1.25f, 3, { { GP_ARP_GATE, KNOB, "GATE" }, { GP_ARP_SWING, KNOB, "SWING" }, { GP_TEMPO, KNOB, "TEMPO" },
+            { "ARPEGGIATOR", 3.25f, 3, { { GP_ARP_GATE, KNOB, "GATE" }, { GP_ARP_SWING, KNOB, "SWING" }, { GP_TEMPO, KNOB, "TEMPO" },
                                         { GP_ARP_ON, SWITCH, "ON" }, { GP_ARP_LATCH, SWITCH, "LATCH" }, { GP_ARP_DIV, CHOICE, "" },
-                                        { GP_ARP_MODE, CHOICE, "" }, { GP_ARP_OCT, CHOICE, "" } } },
-            { "", 2.0f, 8, { { GP_ARP_STEP1, STEPS, "" }, { GP_ARP_LEN, CHOICE, "LENGTH" } } },   /* (ARPEGGIATOR's pattern) */
+                                        { GP_ARP_MODE, CHOICE, "" }, { GP_ARP_OCT, CHOICE, "" },
+                                        { GP_ARP_STEP1, STEPS, "" }, { GP_ARP_LEN, CHOICE, "LENGTH" } } },   /* (and its pattern) */
             { "PERFORM", 0.75f, 2, { { T(GLIDE), KNOB, "GLIDE" }, { T(BEND), KNOB, "BEND" }, { GP_HOLD, SWITCH, "HOLD" } } } },
           { { GP_ARP_GATE, GP_ARP_SWING, GP_TEMPO, -1 }, { T(GLIDE), T(BEND), -1, -1 } } },
     };
@@ -198,13 +198,13 @@ void drawButton(juce::Graphics &g, Rectangle<float> cell, Colour ac, bool on, co
 void drawStep(juce::Graphics &g, Rectangle<float> r, int i, Colour ac)
 {
     bool on = V[GP_ARP_STEP1 + i] > 0.5f;
-    Rectangle<float> k(r.getX() + 1.5f, r.getY() + 12, r.getWidth() - 3.0f, 58);
+    Rectangle<float> k(r.getX() + 2.5f, r.getY() + 14, r.getWidth() - 5.0f, r.getHeight() - 16.0f);
     g.setColour(Colour(0xff050506)); g.fillRoundedRectangle(k.expanded(1.5f), 4.0f);
     juce::ColourGradient body(on ? Colour(0xfff4f1ea) : Colour(0xff9b988f), 0, k.getY(), on ? Colour(0xffd6d2c8) : Colour(0xff6e6b64), 0, k.getBottom(), false);
     g.setGradientFill(body); g.fillRoundedRectangle(k, 3.0f);
     g.setColour(Colour(0xff3a3a3a)); g.setFont(aria_ui::Fonts::get().label(10.0f));
-    g.drawText(juce::String(i + 1), k.withTrimmedTop(36), juce::Justification::centred);
-    Rectangle<float> led(k.getCentreX() - 6, r.getY() + 3, 12, 5);
+    g.drawText(juce::String(i + 1), k.withTrimmedTop(k.getHeight() - 22.0f), juce::Justification::centred);
+    Rectangle<float> led(k.getCentreX() - 7, r.getY() + 3, 14, 5);
     g.setColour(on ? ac : ac.withMultipliedBrightness(0.25f)); g.fillRoundedRectangle(led, 2.0f);
 }
 
@@ -247,23 +247,6 @@ Layout layout(const Page &pg)
         Rectangle<float> plate(x + 4.0f, ptop, w - 8.0f, pbot - ptop);
         std::vector<const Ctl *> kn, fd, bt, st;
         for (auto &c : s.c) (c.k == KNOB ? kn : c.k == FADER ? fd : c.k == STEPS ? st : bt).push_back(&c);
-        if (!st.empty()) {                       /* the step keys in fours, LENGTH beside them */
-            float y = plate.getCentreY() - 50.0f, sx = x + 8.0f, sw = w - 100.0f;
-            float kw = (sw - 3 * 6.0f) / 16.0f;
-            for (int i = 0; i < 16; i++) {
-                Item it{ Item::ISTEP, GP_ARP_STEP1 + i, i };
-                it.r = Rectangle<float>(sx + kw * (float)i + 6.0f * (float)(i / 4), y, kw, 74);
-                it.col = Colour(0xff3ddc84);
-                L.items.push_back(it);
-            }
-            for (auto *c : bt) {
-                Item it{ Item::ICYCLE, c->p };
-                it.klabel = c->label; it.r = Rectangle<float>(x + w - 90, y + 24, 80, 40); it.col = col; it.white = true;
-                L.items.push_back(it);
-            }
-            x += w;
-            continue;
-        }
         /* the buttons: a choice of up to four as a button each (together on a row), longer ones a button that steps */
         struct Cell { Item it; int group; };
         std::vector<Cell> cells;
@@ -291,6 +274,96 @@ Layout layout(const Page &pg)
             }
         }
         const float cw = 56.0f, bh = 42.0f;
+        if (juce::String(s.title) == "DIFFUSION DELAY") {   /* as on the VST: five knobs in a row, CHORUS and MIX centred
+                                                             below, the buttons under them */
+            const float d = 68.0f, sp = 140.0f, cx0 = x + w * 0.5f, y0 = plate.getY() + 22.0f;
+            static const char *ROW1[5] = { "TIME L", "TIME R", "FDBK", "CHAR", "DIFF" };
+            for (auto *k : kn) {
+                juce::String l(k->label);
+                float cx = cx0, y = y0;
+                int i1 = -1;
+                for (int i = 0; i < 5; i++) if (l == ROW1[i]) i1 = i;
+                if (i1 >= 0) cx = cx0 + sp * (float)(i1 - 2);
+                else { y = y0 + 150.0f; cx = cx0 + (l == "CHORUS" ? -0.5f : 0.5f) * sp; }
+                Item it{ Item::IKNOB, k->p }; it.klabel = k->label; it.d = d; it.col = col;
+                it.r = Rectangle<float>(cx - (d + 34.0f) * 0.5f, y, d + 34.0f, d + 46.0f);
+                L.items.push_back(it);
+            }
+            float by = y0 + 150.0f + d + 46.0f + 22.0f, x0 = x + (w - cw * (float)cells.size()) * 0.5f;
+            for (size_t i = 0; i < cells.size(); i++) {
+                Item it = cells[i].it;
+                it.r = Rectangle<float>(x0 + cw * (float)i, by, cw, 40);
+                L.items.push_back(it);
+            }
+            x += w;
+            continue;
+        }
+        if (juce::String(s.title) == "LADDER FILTERS") {   /* as on the VST: the cutoffs large outside, the resonances small
+                                                            between them, the envelope amounts small below, the buttons under */
+            const float big = 92.0f, small = 58.0f, cx0 = x + w * 0.5f, y0 = plate.getY() + 22.0f;
+            auto knobAt = [&](int p, const char *lab, float d, float cx, float y) {
+                Item it{ Item::IKNOB, p }; it.klabel = lab; it.d = d; it.col = col;
+                it.r = Rectangle<float>(cx - (d + 34.0f) * 0.5f, y, d + 34.0f, d + 46.0f);
+                L.items.push_back(it);
+            };
+            for (auto *k : kn) {
+                juce::String l(k->label);
+                if (l == "CUTOFF 1") knobAt(k->p, k->label, big, cx0 - 235.0f, y0);
+                else if (l == "CUTOFF 2") knobAt(k->p, k->label, big, cx0 + 235.0f, y0);
+                else if (l == "RES 1") knobAt(k->p, k->label, small, cx0 - 78.0f, y0 + 6.0f);
+                else if (l == "RES 2") knobAt(k->p, k->label, small, cx0 + 78.0f, y0 + 6.0f);
+                else if (l == "ENV 1") knobAt(k->p, k->label, small, cx0 - 78.0f, y0 + 148.0f);
+                else knobAt(k->p, k->label, small, cx0 + 78.0f, y0 + 148.0f);
+            }
+            float by = y0 + 148.0f + small + 46.0f + 22.0f, x0 = x + (w - cw * (float)cells.size()) * 0.5f;
+            for (size_t i = 0; i < cells.size(); i++) {
+                Item it = cells[i].it;
+                it.r = Rectangle<float>(x0 + cw * (float)i, by, cw, 40);
+                L.items.push_back(it);
+            }
+            x += w;
+            continue;
+        }
+        if (!st.empty()) {   /* the arpeggiator: knobs and buttons side by side above, the 16 step keys spread out below */
+            const float kd = 56.0f, kcw = 96.0f;
+            float bw = 4 * cw, gw = kcw * (float)kn.size() + 40.0f + bw;
+            float gx = x + (w - gw) * 0.5f, gy = plate.getY() + 22.0f;
+            for (size_t i = 0; i < kn.size(); i++) {
+                Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.d = kd; it.col = col;
+                float cx = gx + kcw * ((float)i + 0.5f);
+                it.r = Rectangle<float>(cx - 42.0f, gy, 84.0f, kd + 46.0f);
+                L.items.push_back(it);
+            }
+            std::vector<Cell> rest;                       /* LENGTH goes beside the steps */
+            for (auto &cl : cells) if (cl.it.p == GP_ARP_LEN) { Item it = cl.it; it.k = Item::ICYCLE; it.klabel = "LENGTH"; it.white = true; it.label = "";
+                    it.r = Rectangle<float>(0, 0, 0, 0); rest.push_back({ it, cl.group }); }
+            float bx = gx + kcw * (float)kn.size() + 40.0f, by = gy + 8.0f;
+            int col4 = 0, row = 0, lastg = -1;
+            for (auto &cl : cells) {
+                if (cl.it.p == GP_ARP_LEN) continue;
+                if (cl.it.k == Item::IRADIO && cl.group != lastg && col4 > 0) { row++; col4 = 0; }   /* a choice on a row of its own */
+                if (col4 >= 4) { row++; col4 = 0; }
+                Item it = cl.it;
+                it.r = Rectangle<float>(bx + cw * (float)col4, by + bh * (float)row, cw, 40);
+                L.items.push_back(it);
+                col4++; lastg = cl.group;
+            }
+            float sy = plate.getY() + 188.0f, sx = x + 22.0f, lw = 92.0f, gap = 14.0f;
+            float kw = (w - 44.0f - lw - 3 * gap) / 16.0f;
+            for (int i = 0; i < 16; i++) {
+                Item it{ Item::ISTEP, GP_ARP_STEP1 + i, i };
+                it.r = Rectangle<float>(sx + kw * (float)i + gap * (float)(i / 4), sy, kw, 112);
+                it.col = Colour(0xff3ddc84);
+                L.items.push_back(it);
+            }
+            for (auto &cl : rest) {
+                Item it = cl.it; it.col = col;
+                it.r = Rectangle<float>(x + w - 22.0f - lw + 8.0f, sy + 40.0f, lw - 8.0f, 40);
+                L.items.push_back(it);
+            }
+            x += w;
+            continue;
+        }
         int per = std::max(1, (int)((w - 16.0f) / cw));
         std::vector<std::vector<size_t>> brows;
         for (size_t k = 0; k < cells.size();) {
