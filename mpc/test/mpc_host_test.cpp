@@ -459,14 +459,15 @@ int main(int argc, char **argv)
         p.e->setParameter(p.e, arpOn, 1.0f);
         automated = 0;
         std::vector<int> seen;
-        render(p, 256, {{0, 0x90, 60, 100}, {0, 0x90, 64, 100}}, {256});
+        /* (the transport stopped: the arp's own clock; each render() starts the host's position at 0 again) */
+        render(p, 256, {{0, 0x90, 60, 100}, {0, 0x90, 64, 100}}, {256}, nullptr, false);
         for (int k = 0; k < 40; k++) {
-            render(p, 2205, {}, {256});
+            render(p, 2205, {}, {256}, nullptr, false);
             seen.push_back((int)std::lround(p.e->getParameter(p.e, stp) * 16.0f));
         }
-        render(p, 256, {{0, 0x80, 60, 0}, {0, 0x80, 64, 0}}, {256});
+        render(p, 256, {{0, 0x80, 60, 0}, {0, 0x80, 64, 0}}, {256}, nullptr, false);
         p.e->setParameter(p.e, arpOn, 0.0f);
-        render(p, 44100, {}, {256});
+        render(p, 44100, {}, {256}, nullptr, false);
         int after = (int)std::lround(p.e->getParameter(p.e, stp) * 16.0f), lo = 99, hi = 0, moves = 0;
         for (size_t k = 0; k < seen.size(); k++) { lo = std::min(lo, seen[k]); hi = std::max(hi, seen[k]); if (k && seen[k] != seen[k - 1]) moves++; }
         check(lo >= 1 && hi <= 16 && moves >= 10 && after == 0 && automated >= 10,
