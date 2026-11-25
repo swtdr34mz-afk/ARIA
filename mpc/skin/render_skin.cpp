@@ -13,7 +13,7 @@
  *   FILTER  LADDER FILTERS;  again: VOICES                                             (3)
  *   LFO     LFO 1, LFO 2, PITCH LFO                                                    (4)
  *   FX      DIFFUSION DELAY                                                            (5)
- *   DIV     LOW SPLIT, CHORD MEMORY;  again: ARP (ARPEGGIATOR: its knobs and buttons above, the pattern below; PERFORM)   (6)
+ *   DIV     LOW SPLIT, CHORD MEMORY, PERFORM;  again: ARP (ARPEGGIATOR: knobs and buttons above, the pattern in 2 x 8 below)   (6)
  *
  * A page is laid out at 2/3 of the MPC's 1280 x 628 and drawn at 1.5x: the VST's knobs and buttons, touch-sized.
  *
@@ -104,16 +104,16 @@ std::vector<Page> pages()
         { "DIV", 5, 0, {
             { "LOW SPLIT", 1.0f, 3, { { GP_LS_SPLIT, KNOB, "SPLIT" }, { GP_LS_POINT, KNOB, "POINT" }, { GP_LS_BALANCE, KNOB, "BALANCE" },
                                      { GP_LS_HOLD, SWITCH, "LOW HOLD" } } },
-            { "CHORD MEMORY", 1.0f, 1, { { GP_CH_MAP, KNOB, "KEY MAP" }, { GP_CH_ON, SWITCH, "ON" }, { GP_CH_KEY, SWITCH, "KEY" },
-                                        { P_LEARN, SWITCH, "LEARN" } } } },
-          { { GP_LS_SPLIT, GP_LS_POINT, GP_LS_BALANCE, -1 }, { GP_CH_MAP, -1, -1, -1 } } },
+            { "CHORD MEMORY", 0.85f, 1, { { GP_CH_MAP, KNOB, "KEY MAP" }, { GP_CH_ON, SWITCH, "ON" }, { GP_CH_KEY, SWITCH, "KEY" },
+                                        { P_LEARN, SWITCH, "LEARN" } } },
+            { "PERFORM", 0.85f, 2, { { T(GLIDE), KNOB, "GLIDE" }, { T(BEND), KNOB, "BEND" }, { GP_HOLD, SWITCH, "HOLD" } } } },
+          { { GP_LS_SPLIT, GP_LS_POINT, GP_LS_BALANCE, -1 }, { GP_CH_MAP, T(GLIDE), T(BEND), -1 } } },
         { "ARP", 5, 1, {
             { "ARPEGGIATOR", 3.25f, 3, { { GP_ARP_GATE, KNOB, "GATE" }, { GP_ARP_SWING, KNOB, "SWING" }, { GP_TEMPO, KNOB, "TEMPO" },
                                         { GP_ARP_ON, SWITCH, "ON" }, { GP_ARP_LATCH, SWITCH, "LATCH" }, { GP_ARP_DIV, CHOICE, "" },
                                         { GP_ARP_MODE, CHOICE, "" }, { GP_ARP_OCT, CHOICE, "" },
-                                        { GP_ARP_STEP1, STEPS, "" }, { GP_ARP_LEN, CHOICE, "LENGTH" } } },   /* (and its pattern) */
-            { "PERFORM", 0.75f, 2, { { T(GLIDE), KNOB, "GLIDE" }, { T(BEND), KNOB, "BEND" }, { GP_HOLD, SWITCH, "HOLD" } } } },
-          { { GP_ARP_GATE, GP_ARP_SWING, GP_TEMPO, -1 }, { T(GLIDE), T(BEND), -1, -1 } } },
+                                        { GP_ARP_STEP1, STEPS, "" }, { GP_ARP_LEN, CHOICE, "LENGTH" } } } },   /* (and its pattern) */
+          { { GP_ARP_GATE, GP_ARP_SWING, GP_TEMPO, -1 } } },
     };
 }
 
@@ -245,6 +245,7 @@ Layout layout(const Page &pg)
             L.plates.push_back({ Rectangle<float>(x + 4.0f, ptop, pw - 8.0f, pbot - ptop), s.title, col });
         }
         Rectangle<float> plate(x + 4.0f, ptop, w - 8.0f, pbot - ptop);
+        size_t first = L.items.size();
         std::vector<const Ctl *> kn, fd, bt, st;
         for (auto &c : s.c) (c.k == KNOB ? kn : c.k == FADER ? fd : c.k == STEPS ? st : bt).push_back(&c);
         /* the buttons: a choice of up to four as a button each (together on a row), longer ones a button that steps */
@@ -274,6 +275,28 @@ Layout layout(const Page &pg)
             }
         }
         const float cw = 56.0f, bh = 42.0f;
+        if (juce::String(s.title) == "OSCILLATOR 1") {   /* four knobs in two rows, FM AMT larger centred below them, the
+                                                          octave buttons and FM 2>1 on one row under it */
+            const float d = 44.0f, big = 70.0f, y0 = plate.getY() + 8.0f;
+            for (size_t i = 0; i < kn.size(); i++) {
+                Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.col = col;
+                if (juce::String(kn[i]->label) == "FM AMT") {
+                    it.d = big; it.r = Rectangle<float>(x + w * 0.5f - (big + 34.0f) * 0.5f, y0 + 186.0f, big + 34.0f, big + 46.0f);
+                } else {
+                    float cx = x + w * (i % 2 == 0 ? 0.28f : 0.72f);
+                    it.d = d; it.r = Rectangle<float>(cx - 42.0f, y0 + 4.0f + 92.0f * (float)(i / 2), 84.0f, d + 46.0f);
+                }
+                L.items.push_back(it);
+            }
+            float bcw = std::min(cw, (w - 16.0f) / (float)cells.size()), x0 = x + (w - bcw * (float)cells.size()) * 0.5f;
+            for (size_t i = 0; i < cells.size(); i++) {
+                Item it = cells[i].it;
+                it.r = Rectangle<float>(x0 + bcw * (float)i, y0 + 186.0f + big + 46.0f + 12.0f, bcw, 40);
+                L.items.push_back(it);
+            }
+            x += w;
+            continue;
+        }
         if (juce::String(s.title) == "DIFFUSION DELAY") {   /* as on the VST: five knobs in a row, CHORUS and MIX centred
                                                              below, the buttons under them */
             const float d = 68.0f, sp = 140.0f, cx0 = x + w * 0.5f, y0 = plate.getY() + 22.0f;
@@ -327,7 +350,7 @@ Layout layout(const Page &pg)
         if (!st.empty()) {   /* the arpeggiator: knobs and buttons side by side above, the 16 step keys spread out below */
             const float kd = 56.0f, kcw = 96.0f;
             float bw = 4 * cw, gw = kcw * (float)kn.size() + 40.0f + bw;
-            float gx = x + (w - gw) * 0.5f, gy = plate.getY() + 22.0f;
+            float gx = x + (w - gw) * 0.5f, gy = plate.getY() + 12.0f;
             for (size_t i = 0; i < kn.size(); i++) {
                 Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.d = kd; it.col = col;
                 float cx = gx + kcw * ((float)i + 0.5f);
@@ -337,7 +360,7 @@ Layout layout(const Page &pg)
             std::vector<Cell> rest;                       /* LENGTH goes beside the steps */
             for (auto &cl : cells) if (cl.it.p == GP_ARP_LEN) { Item it = cl.it; it.k = Item::ICYCLE; it.klabel = "LENGTH"; it.white = true; it.label = "";
                     it.r = Rectangle<float>(0, 0, 0, 0); rest.push_back({ it, cl.group }); }
-            float bx = gx + kcw * (float)kn.size() + 40.0f, by = gy + 8.0f;
+            float bx = gx + kcw * (float)kn.size() + 40.0f, by = gy + 12.0f;
             int col4 = 0, row = 0, lastg = -1;
             for (auto &cl : cells) {
                 if (cl.it.p == GP_ARP_LEN) continue;
@@ -348,17 +371,19 @@ Layout layout(const Page &pg)
                 L.items.push_back(it);
                 col4++; lastg = cl.group;
             }
-            float sy = plate.getY() + 188.0f, sx = x + 22.0f, lw = 92.0f, gap = 14.0f;
-            float kw = (w - 44.0f - lw - 3 * gap) / 16.0f;
+            /* the steps: 2 rows of 8, square keys big enough for a finger on a small screen, LENGTH beside them */
+            const float key = 74.0f, pitch = 82.0f, gap = 16.0f, lw = 96.0f;
+            float gwid = pitch * 8.0f + gap, sx = x + (w - gwid - lw - 24.0f) * 0.5f, sy = plate.getY() + 150.0f;
             for (int i = 0; i < 16; i++) {
+                int row = i / 8, col = i % 8;
                 Item it{ Item::ISTEP, GP_ARP_STEP1 + i, i };
-                it.r = Rectangle<float>(sx + kw * (float)i + gap * (float)(i / 4), sy, kw, 112);
+                it.r = Rectangle<float>(sx + pitch * (float)col + gap * (float)(col / 4), sy + 100.0f * (float)row, key + 5.0f, key + 16.0f);
                 it.col = Colour(0xff3ddc84);
                 L.items.push_back(it);
             }
             for (auto &cl : rest) {
                 Item it = cl.it; it.col = col;
-                it.r = Rectangle<float>(x + w - 22.0f - lw + 8.0f, sy + 40.0f, lw - 8.0f, 40);
+                it.r = Rectangle<float>(sx + gwid + 20.0f, sy + 78.0f, lw, 40);
                 L.items.push_back(it);
             }
             x += w;
@@ -409,6 +434,28 @@ Layout layout(const Page &pg)
                 L.items.push_back(it);
             }
             y += bh;
+        }
+        /* a knob made larger and centred under the others (VCA's SPREAD, OSCILLATOR 1's FM AMT): what follows moves down */
+        for (size_t i = first; i < L.items.size(); i++) {
+            auto &it = L.items[i];
+            juce::String l(it.klabel);
+            if (it.k != Item::IKNOB || !(juce::String(s.title) == "VCA" && l == "SPREAD"))
+                continue;
+            const float grow = 26.0f;
+            float top = it.r.getY();
+            for (size_t j = first; j < L.items.size(); j++)
+                if (j != i && L.items[j].r.getY() > top + 1.0f) L.items[j].r.translate(0, grow);
+            it.d += grow;
+            it.r = Rectangle<float>(x + w * 0.5f - (it.d + 34.0f) * 0.5f, top + 6.0f, it.d + 34.0f, it.d + 46.0f);
+        }
+        /* VOICES: the buttons further apart and further from the knobs */
+        if (juce::String(s.title) == "VOICES") {
+            std::vector<Item *> b;
+            for (size_t i = first; i < L.items.size(); i++) if (L.items[i].k != Item::IKNOB) b.push_back(&L.items[i]);
+            const float sp = 92.0f;
+            float x0 = x + (w - sp * (float)b.size()) * 0.5f + (sp - cw) * 0.5f;
+            for (size_t i = 0; i < b.size(); i++) b[i]->r = Rectangle<float>(x0 + sp * (float)i, b[i]->r.getY() + 34.0f, cw + 8.0f, 40);
+            for (size_t i = first; i < L.items.size(); i++) if (L.items[i].k == Item::IKNOB) L.items[i].r.translate(0, -16.0f);
         }
         x += w;
     }

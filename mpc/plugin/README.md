@@ -22,7 +22,7 @@ zweiter Druck auf dieselbe Funktionstaste öffnet deren zweite Seite.
 | 3 | **FILTER**: beide Ladder-Filter (HP, LINK, Reihenfolge, Keytracking) | **VOICES**: Detune, Splitpunkt, Stimmen für A, Single/Split/Stack, Unison, Mono |
 | 4 | **LFO**: LFO 1, LFO 2, Pitch-LFO | – |
 | 5 | **FX**: Diffusion Delay | – |
-| 6 | **DIV**: LOW SPLIT, Chord Memory (ON, KEY, Key Map, LEARN) | **ARP**: Arpeggiator mit den 16 Pattern-Schritten, Perform (Glide, Bend, HOLD) |
+| 6 | **DIV**: LOW SPLIT, Chord Memory (ON, KEY, Key Map, LEARN), Perform (Glide, Bend, HOLD) | **ARP**: Arpeggiator, die 16 Pattern-Schritte in 2 Reihen zu 8 |
 
 Regler: ziehen oder mit dem Q-Link drehen; Doppeltipp öffnet das große Werte-Fenster (bei Auswahlen die Liste).
 Taster: antippen. Timbre B steht in der Parameterliste des Plugins.

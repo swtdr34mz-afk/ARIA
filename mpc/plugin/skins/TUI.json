@@ -649,7 +649,7 @@
                     "version": 3,
                     "knobType": "FilmStrip",
                     "filmStrip": "osc_004_knob_p25.png",
-                    "numFrames": 72,
+                    "numFrames": 56,
                     "invert": false,
                     "dragOrientation": "Vertical",
                     "handleName": "Data"
@@ -665,7 +665,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "0 0 126 135"
+                  "bounds": "0 0 156 174"
                 }
               },
               {
@@ -692,7 +692,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "WhenFocussed",
                   "boundsType": "Absolute",
-                  "bounds": "0 0 126 135"
+                  "bounds": "0 0 156 174"
                 }
               }
             ]
@@ -2587,7 +2587,7 @@
                     "version": 3,
                     "knobType": "FilmStrip",
                     "filmStrip": "mixer_008_knob_p61.png",
-                    "numFrames": 64,
+                    "numFrames": 51,
                     "invert": false,
                     "dragOrientation": "Vertical",
                     "handleName": "Data"
@@ -2603,7 +2603,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "Always",
                   "boundsType": "Absolute",
-                  "bounds": "0 0 126 153"
+                  "bounds": "0 0 174 192"
                 }
               },
               {
@@ -2630,7 +2630,7 @@
                   "showWhenDataModelInvalid": "Show",
                   "whenVisible": "WhenFocussed",
                   "boundsType": "Absolute",
-                  "bounds": "0 0 126 153"
+                  "bounds": "0 0 174 192"
                 }
               }
             ]
@@ -6615,6 +6615,210 @@
           }
         },
         {
+          "key": "div knob 8 p73",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "0",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "0",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "knob",
+                  "type": "Knob",
+                  "data": {
+                    "version": 3,
+                    "knobType": "FilmStrip",
+                    "filmStrip": "div_012_knob_p73.png",
+                    "numFrames": 64,
+                    "invert": false,
+                    "dragOrientation": "Vertical",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 126 153"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "19ffffff",
+                    "outlineColour": "ffff5b2e",
+                    "backgroundInset": 1.0,
+                    "outlineThickness": 1.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 126 153"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "key": "div knob 9 p77",
+          "value": {
+            "version": 2,
+            "actions": [
+              {
+                "version": 1,
+                "onAction": "Mouse Down",
+                "handler": "Q-Link",
+                "handleName": "Data",
+                "additionalData": ""
+              },
+              {
+                "version": 1,
+                "onAction": "Double Click",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              },
+              {
+                "version": 1,
+                "onAction": "Enter Pressed",
+                "handler": "Show Overlay",
+                "handleName": "Data",
+                "additionalData": "knob overlay"
+              }
+            ],
+            "backgroundData": {
+              "version": 1,
+              "focussed": {
+                "version": 1,
+                "colour": "0",
+                "image": ""
+              },
+              "unfocussed": {
+                "version": 1,
+                "colour": "0",
+                "image": ""
+              }
+            },
+            "ignoreMousePresses": false,
+            "disableCoarseDataWheel": false,
+            "componentsData": [
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "knob",
+                  "type": "Knob",
+                  "data": {
+                    "version": 3,
+                    "knobType": "FilmStrip",
+                    "filmStrip": "div_013_knob_p77.png",
+                    "numFrames": 64,
+                    "invert": false,
+                    "dragOrientation": "Vertical",
+                    "handleName": "Data"
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "Always",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 126 153"
+                }
+              },
+              {
+                "version": 2,
+                "componentData": {
+                  "version": 1,
+                  "name": "focus",
+                  "type": "Focus",
+                  "data": {
+                    "version": 1,
+                    "backgroundColour": "19ffffff",
+                    "outlineColour": "ffff5b2e",
+                    "backgroundInset": 1.0,
+                    "outlineThickness": 1.0
+                  }
+                },
+                "handle remapping": {
+                  "version": 1,
+                  "map": []
+                },
+                "bounds": {
+                  "version": 1,
+                  "acceptsHWFocus": "No",
+                  "showWhenDataModelInvalid": "Show",
+                  "whenVisible": "WhenFocussed",
+                  "boundsType": "Absolute",
+                  "bounds": "0 0 126 153"
+                }
+              }
+            ]
+          }
+        },
+        {
           "key": "arp knob 0 p177",
           "value": {
             "version": 2,
@@ -6915,210 +7119,6 @@
                   "whenVisible": "WhenFocussed",
                   "boundsType": "Absolute",
                   "bounds": "0 0 126 153"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "key": "arp knob 25 p73",
-          "value": {
-            "version": 2,
-            "actions": [
-              {
-                "version": 1,
-                "onAction": "Mouse Down",
-                "handler": "Q-Link",
-                "handleName": "Data",
-                "additionalData": ""
-              },
-              {
-                "version": 1,
-                "onAction": "Double Click",
-                "handler": "Show Overlay",
-                "handleName": "Data",
-                "additionalData": "knob overlay"
-              },
-              {
-                "version": 1,
-                "onAction": "Enter Pressed",
-                "handler": "Show Overlay",
-                "handleName": "Data",
-                "additionalData": "knob overlay"
-              }
-            ],
-            "backgroundData": {
-              "version": 1,
-              "focussed": {
-                "version": 1,
-                "colour": "0",
-                "image": ""
-              },
-              "unfocussed": {
-                "version": 1,
-                "colour": "0",
-                "image": ""
-              }
-            },
-            "ignoreMousePresses": false,
-            "disableCoarseDataWheel": false,
-            "componentsData": [
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
-                  "name": "knob",
-                  "type": "Knob",
-                  "data": {
-                    "version": 3,
-                    "knobType": "FilmStrip",
-                    "filmStrip": "arp_074_knob_p73.png",
-                    "numFrames": 64,
-                    "invert": false,
-                    "dragOrientation": "Vertical",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "0 0 100 153"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
-                  "name": "focus",
-                  "type": "Focus",
-                  "data": {
-                    "version": 1,
-                    "backgroundColour": "19ffffff",
-                    "outlineColour": "ffff5b2e",
-                    "backgroundInset": 1.0,
-                    "outlineThickness": 1.0
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "WhenFocussed",
-                  "boundsType": "Absolute",
-                  "bounds": "0 0 100 153"
-                }
-              }
-            ]
-          }
-        },
-        {
-          "key": "arp knob 26 p77",
-          "value": {
-            "version": 2,
-            "actions": [
-              {
-                "version": 1,
-                "onAction": "Mouse Down",
-                "handler": "Q-Link",
-                "handleName": "Data",
-                "additionalData": ""
-              },
-              {
-                "version": 1,
-                "onAction": "Double Click",
-                "handler": "Show Overlay",
-                "handleName": "Data",
-                "additionalData": "knob overlay"
-              },
-              {
-                "version": 1,
-                "onAction": "Enter Pressed",
-                "handler": "Show Overlay",
-                "handleName": "Data",
-                "additionalData": "knob overlay"
-              }
-            ],
-            "backgroundData": {
-              "version": 1,
-              "focussed": {
-                "version": 1,
-                "colour": "0",
-                "image": ""
-              },
-              "unfocussed": {
-                "version": 1,
-                "colour": "0",
-                "image": ""
-              }
-            },
-            "ignoreMousePresses": false,
-            "disableCoarseDataWheel": false,
-            "componentsData": [
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
-                  "name": "knob",
-                  "type": "Knob",
-                  "data": {
-                    "version": 3,
-                    "knobType": "FilmStrip",
-                    "filmStrip": "arp_075_knob_p77.png",
-                    "numFrames": 64,
-                    "invert": false,
-                    "dragOrientation": "Vertical",
-                    "handleName": "Data"
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "Always",
-                  "boundsType": "Absolute",
-                  "bounds": "0 0 100 153"
-                }
-              },
-              {
-                "version": 2,
-                "componentData": {
-                  "version": 1,
-                  "name": "focus",
-                  "type": "Focus",
-                  "data": {
-                    "version": 1,
-                    "backgroundColour": "19ffffff",
-                    "outlineColour": "ffff5b2e",
-                    "backgroundInset": 1.0,
-                    "outlineThickness": 1.0
-                  }
-                },
-                "handle remapping": {
-                  "version": 1,
-                  "map": []
-                },
-                "bounds": {
-                  "version": 1,
-                  "acceptsHWFocus": "No",
-                  "showWhenDataModelInvalid": "Show",
-                  "whenVisible": "WhenFocussed",
-                  "boundsType": "Absolute",
-                  "bounds": "0 0 100 153"
                 }
               }
             ]
@@ -7461,7 +7461,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "48 51 126 135"
+                "bounds": "51 51 126 135"
               }
             },
             {
@@ -7490,7 +7490,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "215 51 126 135"
+                "bounds": "211 51 126 135"
               }
             },
             {
@@ -7519,7 +7519,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "48 189 126 135"
+                "bounds": "51 189 126 135"
               }
             },
             {
@@ -7548,7 +7548,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "215 189 126 135"
+                "bounds": "211 189 126 135"
               }
             },
             {
@@ -7577,7 +7577,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "48 327 126 135"
+                "bounds": "116 324 156 174"
               }
             },
             {
@@ -7606,7 +7606,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "26 474 84 60"
+                "bounds": "24 516 68 60"
               }
             },
             {
@@ -7635,7 +7635,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "110 474 84 60"
+                "bounds": "92 516 68 60"
               }
             },
             {
@@ -7664,7 +7664,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "194 474 84 60"
+                "bounds": "160 516 68 60"
               }
             },
             {
@@ -7693,7 +7693,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "278 474 84 60"
+                "bounds": "228 516 68 60"
               }
             },
             {
@@ -7722,7 +7722,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "152 537 84 60",
+                "bounds": "296 516 68 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 26"]
               }
             },
@@ -7752,7 +7752,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "152 537 84 60",
+                "bounds": "296 516 68 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 26"]
               }
             },
@@ -8848,7 +8848,7 @@
             }
           ]
         },
-        "qlinkBoundsData": ["45 48 299 279", "406 87 305 321"]
+        "qlinkBoundsData": ["51 51 286 273", "406 87 305 321"]
       },
       {
         "version": 1,
@@ -9158,7 +9158,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "618 320 126 153"
+                "bounds": "672 329 174 192"
               }
             },
             {
@@ -9431,7 +9431,7 @@
             }
           ]
         },
-        "qlinkBoundsData": ["26 89 367 441", "390 89 186 441", "612 158 293 321", "1029 119 138 321"]
+        "qlinkBoundsData": ["26 89 367 441", "390 89 186 441", "612 158 293 369", "1029 119 138 321"]
       },
       {
         "version": 1,
@@ -10118,7 +10118,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "168 203 126 153"
+                "bounds": "168 179 126 153"
               }
             },
             {
@@ -10147,7 +10147,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "577 203 126 153"
+                "bounds": "577 179 126 153"
               }
             },
             {
@@ -10176,7 +10176,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "986 203 126 153"
+                "bounds": "986 179 126 153"
               }
             },
             {
@@ -10205,7 +10205,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "430 368 84 60"
+                "bounds": "322 419 96 60"
               }
             },
             {
@@ -10234,7 +10234,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "514 368 84 60"
+                "bounds": "460 419 96 60"
               }
             },
             {
@@ -10263,7 +10263,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "598 368 84 60"
+                "bounds": "598 419 96 60"
               }
             },
             {
@@ -10292,7 +10292,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "682 368 84 60",
+                "bounds": "736 419 96 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 75"]
               }
             },
@@ -10322,7 +10322,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "682 368 84 60",
+                "bounds": "736 419 96 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 75"]
               }
             },
@@ -10352,7 +10352,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "766 368 84 60",
+                "bounds": "874 419 96 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 76"]
               }
             },
@@ -10382,13 +10382,13 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "766 368 84 60",
+                "bounds": "874 419 96 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 76"]
               }
             }
           ]
         },
-        "qlinkBoundsData": ["162 197 956 165"]
+        "qlinkBoundsData": ["162 173 956 165"]
       },
       {
         "version": 1,
@@ -12824,7 +12824,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "64 203 126 153"
+                "bounds": "37 203 126 153"
               }
             },
             {
@@ -12853,7 +12853,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "263 203 126 153"
+                "bounds": "182 203 126 153"
               }
             },
             {
@@ -12882,7 +12882,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "462 203 126 153"
+                "bounds": "327 203 126 153"
               }
             },
             {
@@ -12911,7 +12911,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "284 368 84 60",
+                "bounds": "203 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 204"]
               }
             },
@@ -12941,7 +12941,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "284 368 84 60",
+                "bounds": "203 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 204"]
               }
             },
@@ -12971,7 +12971,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "891 203 126 153"
+                "bounds": "612 203 126 153"
               }
             },
             {
@@ -13000,7 +13000,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "828 368 84 60",
+                "bounds": "549 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 168"]
               }
             },
@@ -13030,7 +13030,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "828 368 84 60",
+                "bounds": "549 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 168"]
               }
             },
@@ -13060,7 +13060,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "912 368 84 60",
+                "bounds": "633 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 169"]
               }
             },
@@ -13090,7 +13090,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "912 368 84 60",
+                "bounds": "633 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 169"]
               }
             },
@@ -13120,7 +13120,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "996 368 84 60",
+                "bounds": "717 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 208"]
               }
             },
@@ -13150,13 +13150,131 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "996 368 84 60",
+                "bounds": "717 368 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 208"]
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "p73",
+                "type": "div knob 8 p73",
+                "data": {
+                  "version": 1,
+                  "handleName": "Data"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": [
+                  {
+                    "key": "Data",
+                    "value": "Parameter 73"
+                  }
+                ]
+              },
+              "bounds": {
+                "version": 1,
+                "acceptsHWFocus": "Yes",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "916 203 126 153"
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "p77",
+                "type": "div knob 9 p77",
+                "data": {
+                  "version": 1,
+                  "handleName": "Data"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": [
+                  {
+                    "key": "Data",
+                    "value": "Parameter 77"
+                  }
+                ]
+              },
+              "bounds": {
+                "version": 1,
+                "acceptsHWFocus": "Yes",
+                "showWhenDataModelInvalid": "Show",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "1099 203 126 153"
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "p206",
+                "type": "Button",
+                "data": {
+                  "version": 2,
+                  "onImage": "div_014_button_p206_0.png",
+                  "offImage": "div_014_button_p206_0.png",
+                  "buttonId": 1,
+                  "numButtonsInGroup": 2,
+                  "handleName": "Parameter 206",
+                  "gestureBehaviour": "Instant"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 2,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Hide",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "1028 368 84 60",
+                "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 206"]
+              }
+            },
+            {
+              "version": 2,
+              "componentData": {
+                "version": 1,
+                "name": "p206",
+                "type": "Button",
+                "data": {
+                  "version": 2,
+                  "onImage": "div_015_button_p206_1.png",
+                  "offImage": "div_015_button_p206_1.png",
+                  "buttonId": 0,
+                  "numButtonsInGroup": 2,
+                  "handleName": "Parameter 206",
+                  "gestureBehaviour": "Instant"
+                }
+              },
+              "handle remapping": {
+                "version": 1,
+                "map": []
+              },
+              "bounds": {
+                "version": 2,
+                "acceptsHWFocus": "No",
+                "showWhenDataModelInvalid": "Hide",
+                "whenVisible": "Always",
+                "boundsType": "Absolute",
+                "bounds": "1028 368 84 60",
+                "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 206"]
               }
             }
           ]
         },
-        "qlinkBoundsData": ["58 197 536 165", "885 197 138 165"]
+        "qlinkBoundsData": ["31 197 428 165", "606 197 625 165"]
       },
       {
         "version": 1,
@@ -13234,7 +13352,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "117 66 126 153"
+                "bounds": "235 51 126 153"
               }
             },
             {
@@ -13263,7 +13381,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "261 66 126 153"
+                "bounds": "379 51 126 153"
               }
             },
             {
@@ -13292,7 +13410,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "405 66 126 153"
+                "bounds": "523 51 126 153"
               }
             },
             {
@@ -13321,7 +13439,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "600 78 84 60",
+                "bounds": "718 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 173"]
               }
             },
@@ -13351,7 +13469,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "600 78 84 60",
+                "bounds": "718 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 173"]
               }
             },
@@ -13381,7 +13499,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "684 78 84 60",
+                "bounds": "802 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 179"]
               }
             },
@@ -13411,7 +13529,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "684 78 84 60",
+                "bounds": "802 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 179"]
               }
             },
@@ -13441,7 +13559,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 78 84 60",
+                "bounds": "886 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/6/Parameter 176"]
               }
             },
@@ -13471,7 +13589,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 78 84 60",
+                "bounds": "886 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/6/Parameter 176"]
               }
             },
@@ -13501,7 +13619,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 78 84 60",
+                "bounds": "886 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/2/6/Parameter 176"]
               }
             },
@@ -13531,7 +13649,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 78 84 60",
+                "bounds": "886 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/3/6/Parameter 176"]
               }
             },
@@ -13561,7 +13679,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 78 84 60",
+                "bounds": "886 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/4/6/Parameter 176"]
               }
             },
@@ -13591,7 +13709,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 78 84 60",
+                "bounds": "886 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/5/6/Parameter 176"]
               }
             },
@@ -13621,7 +13739,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "852 78 84 60",
+                "bounds": "970 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/5/Parameter 174"]
               }
             },
@@ -13651,7 +13769,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "852 78 84 60",
+                "bounds": "970 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/5/Parameter 174"]
               }
             },
@@ -13681,7 +13799,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "852 78 84 60",
+                "bounds": "970 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/2/5/Parameter 174"]
               }
             },
@@ -13711,7 +13829,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "852 78 84 60",
+                "bounds": "970 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/3/5/Parameter 174"]
               }
             },
@@ -13741,7 +13859,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "852 78 84 60",
+                "bounds": "970 69 84 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/4/5/Parameter 174"]
               }
             },
@@ -13771,7 +13889,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "600 141 84 60"
+                "bounds": "718 132 84 60"
               }
             },
             {
@@ -13800,7 +13918,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "684 141 84 60"
+                "bounds": "802 132 84 60"
               }
             },
             {
@@ -13829,7 +13947,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "768 141 84 60"
+                "bounds": "886 132 84 60"
               }
             },
             {
@@ -13858,7 +13976,7 @@
                 "showWhenDataModelInvalid": "Show",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "852 141 84 60"
+                "bounds": "970 132 84 60"
               }
             },
             {
@@ -13887,7 +14005,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "45 315 47 168",
+                "bounds": "46 258 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 181"]
               }
             },
@@ -13917,7 +14035,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "45 315 47 168",
+                "bounds": "46 258 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 181"]
               }
             },
@@ -13947,7 +14065,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "92 315 47 168",
+                "bounds": "169 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 182"]
               }
             },
@@ -13977,7 +14095,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "92 315 47 168",
+                "bounds": "169 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 182"]
               }
             },
@@ -14007,7 +14125,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "139 315 47 168",
+                "bounds": "292 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 183"]
               }
             },
@@ -14037,7 +14155,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "139 315 47 168",
+                "bounds": "292 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 183"]
               }
             },
@@ -14067,7 +14185,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "186 315 47 168",
+                "bounds": "415 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 184"]
               }
             },
@@ -14097,7 +14215,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "186 315 47 168",
+                "bounds": "415 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 184"]
               }
             },
@@ -14127,7 +14245,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "254 315 47 168",
+                "bounds": "562 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 185"]
               }
             },
@@ -14157,7 +14275,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "254 315 47 168",
+                "bounds": "562 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 185"]
               }
             },
@@ -14187,7 +14305,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "301 315 48 168",
+                "bounds": "685 258 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 186"]
               }
             },
@@ -14217,7 +14335,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "301 315 48 168",
+                "bounds": "685 258 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 186"]
               }
             },
@@ -14247,7 +14365,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "349 315 47 168",
+                "bounds": "808 258 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 187"]
               }
             },
@@ -14277,7 +14395,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "349 315 47 168",
+                "bounds": "808 258 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 187"]
               }
             },
@@ -14307,7 +14425,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "396 315 47 168",
+                "bounds": "931 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 188"]
               }
             },
@@ -14337,7 +14455,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "396 315 47 168",
+                "bounds": "931 258 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 188"]
               }
             },
@@ -14367,7 +14485,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "464 315 47 168",
+                "bounds": "46 408 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 189"]
               }
             },
@@ -14397,7 +14515,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "464 315 47 168",
+                "bounds": "46 408 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 189"]
               }
             },
@@ -14427,7 +14545,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "511 315 47 168",
+                "bounds": "169 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 190"]
               }
             },
@@ -14457,7 +14575,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "511 315 47 168",
+                "bounds": "169 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 190"]
               }
             },
@@ -14487,7 +14605,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "558 315 47 168",
+                "bounds": "292 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 191"]
               }
             },
@@ -14517,7 +14635,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "558 315 47 168",
+                "bounds": "292 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 191"]
               }
             },
@@ -14547,7 +14665,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "605 315 47 168",
+                "bounds": "415 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 192"]
               }
             },
@@ -14577,7 +14695,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "605 315 47 168",
+                "bounds": "415 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 192"]
               }
             },
@@ -14607,7 +14725,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "673 315 47 168",
+                "bounds": "562 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 193"]
               }
             },
@@ -14637,7 +14755,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "673 315 47 168",
+                "bounds": "562 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 193"]
               }
             },
@@ -14667,7 +14785,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "720 315 47 168",
+                "bounds": "685 408 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 194"]
               }
             },
@@ -14697,7 +14815,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "720 315 47 168",
+                "bounds": "685 408 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 194"]
               }
             },
@@ -14727,7 +14845,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "767 315 47 168",
+                "bounds": "808 408 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 195"]
               }
             },
@@ -14757,7 +14875,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "767 315 47 168",
+                "bounds": "808 408 118 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 195"]
               }
             },
@@ -14787,7 +14905,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "814 315 48 168",
+                "bounds": "931 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 196"]
               }
             },
@@ -14817,7 +14935,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "814 315 48 168",
+                "bounds": "931 408 119 135",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 196"]
               }
             },
@@ -14847,7 +14965,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/0/16/Parameter 180"]
               }
             },
@@ -14877,7 +14995,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/1/16/Parameter 180"]
               }
             },
@@ -14907,7 +15025,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/2/16/Parameter 180"]
               }
             },
@@ -14937,7 +15055,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/3/16/Parameter 180"]
               }
             },
@@ -14967,7 +15085,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/4/16/Parameter 180"]
               }
             },
@@ -14997,7 +15115,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/5/16/Parameter 180"]
               }
             },
@@ -15027,7 +15145,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/6/16/Parameter 180"]
               }
             },
@@ -15057,7 +15175,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/7/16/Parameter 180"]
               }
             },
@@ -15087,7 +15205,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/8/16/Parameter 180"]
               }
             },
@@ -15117,7 +15235,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/9/16/Parameter 180"]
               }
             },
@@ -15147,7 +15265,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/10/16/Parameter 180"]
               }
             },
@@ -15177,7 +15295,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/11/16/Parameter 180"]
               }
             },
@@ -15207,7 +15325,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/12/16/Parameter 180"]
               }
             },
@@ -15237,7 +15355,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/13/16/Parameter 180"]
               }
             },
@@ -15267,7 +15385,7 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/14/16/Parameter 180"]
               }
             },
@@ -15297,131 +15415,13 @@
                 "showWhenDataModelInvalid": "Hide",
                 "whenVisible": "Always",
                 "boundsType": "Absolute",
-                "bounds": "874 375 126 60",
+                "bounds": "1084 375 144 60",
                 "additionalInvalidatingHandles": ["IndexedEnabling/15/16/Parameter 180"]
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "p73",
-                "type": "arp knob 25 p73",
-                "data": {
-                  "version": 1,
-                  "handleName": "Data"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": [
-                  {
-                    "key": "Data",
-                    "value": "Parameter 73"
-                  }
-                ]
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "Yes",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1049 203 100 153"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "p77",
-                "type": "arp knob 26 p77",
-                "data": {
-                  "version": 1,
-                  "handleName": "Data"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": [
-                  {
-                    "key": "Data",
-                    "value": "Parameter 77"
-                  }
-                ]
-              },
-              "bounds": {
-                "version": 1,
-                "acceptsHWFocus": "Yes",
-                "showWhenDataModelInvalid": "Show",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1152 203 100 153"
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "p206",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "arp_076_button_p206_0.png",
-                  "offImage": "arp_076_button_p206_0.png",
-                  "buttonId": 1,
-                  "numButtonsInGroup": 2,
-                  "handleName": "Parameter 206",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 2,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Hide",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1108 368 84 60",
-                "additionalInvalidatingHandles": ["IndexedEnabling/0/2/Parameter 206"]
-              }
-            },
-            {
-              "version": 2,
-              "componentData": {
-                "version": 1,
-                "name": "p206",
-                "type": "Button",
-                "data": {
-                  "version": 2,
-                  "onImage": "arp_077_button_p206_1.png",
-                  "offImage": "arp_077_button_p206_1.png",
-                  "buttonId": 0,
-                  "numButtonsInGroup": 2,
-                  "handleName": "Parameter 206",
-                  "gestureBehaviour": "Instant"
-                }
-              },
-              "handle remapping": {
-                "version": 1,
-                "map": []
-              },
-              "bounds": {
-                "version": 2,
-                "acceptsHWFocus": "No",
-                "showWhenDataModelInvalid": "Hide",
-                "whenVisible": "Always",
-                "boundsType": "Absolute",
-                "bounds": "1108 368 84 60",
-                "additionalInvalidatingHandles": ["IndexedEnabling/1/2/Parameter 206"]
               }
             }
           ]
         },
-        "qlinkBoundsData": ["111 60 426 165", "1043 197 215 165"]
+        "qlinkBoundsData": ["229 45 426 165"]
       }
     ]
   }
