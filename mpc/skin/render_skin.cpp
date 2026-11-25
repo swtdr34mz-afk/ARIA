@@ -275,25 +275,27 @@ Layout layout(const Page &pg)
             }
         }
         const float cw = 56.0f, bh = 42.0f;
-        if (juce::String(s.title) == "OSCILLATOR 1") {   /* four knobs in two rows, FM AMT larger centred below them, the
-                                                          octave buttons and FM 2>1 on one row under it */
-            const float d = 44.0f, big = 70.0f, y0 = plate.getY() + 8.0f;
+        if (juce::String(s.title) == "OSCILLATOR 1") {   /* the four knobs and the octave buttons as OSCILLATOR 2's (same size,
+                                                          columns, rows); under them FM AMT (left column) and FM 2>1 (right) */
+            const float d = 56.0f, rh = d + 48.0f, y0 = plate.getY() + 8.0f, kw = (w - 20.0f) / 2.0f, ww = std::min(84.0f, kw - 2.0f);
+            size_t n4 = 0;
+            float by = y0 + rh * 2.0f + 10.0f;                 /* (OSCILLATOR 2's first button row) */
             for (size_t i = 0; i < kn.size(); i++) {
-                Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.col = col;
-                if (juce::String(kn[i]->label) == "FM AMT") {
-                    it.d = big; it.r = Rectangle<float>(x + w * 0.5f - (big + 34.0f) * 0.5f, y0 + 186.0f, big + 34.0f, big + 46.0f);
-                } else {
-                    float cx = x + w * (i % 2 == 0 ? 0.28f : 0.72f);
-                    it.d = d; it.r = Rectangle<float>(cx - 42.0f, y0 + 4.0f + 92.0f * (float)(i / 2), 84.0f, d + 46.0f);
-                }
+                Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.col = col; it.d = d;
+                float cx, y;
+                if (juce::String(kn[i]->label) == "FM AMT") { cx = x + 10 + kw * 0.5f; y = by + 40.0f; }
+                else { cx = x + 10 + kw * ((float)(n4 % 2) + 0.5f); y = y0 + 4 + rh * (float)(n4 / 2); n4++; }
+                it.r = Rectangle<float>(cx - ww * 0.5f, y, ww, d + 46.0f);
                 L.items.push_back(it);
             }
-            float bcw = std::min(cw, (w - 16.0f) / (float)cells.size()), x0 = x + (w - bcw * (float)cells.size()) * 0.5f;
-            for (size_t i = 0; i < cells.size(); i++) {
-                Item it = cells[i].it;
-                it.r = Rectangle<float>(x0 + bcw * (float)i, y0 + 186.0f + big + 46.0f + 12.0f, bcw, 40);
-                L.items.push_back(it);
+            std::vector<Item> oct;
+            for (auto &cl : cells) {
+                Item it = cl.it;
+                if (it.k == Item::ISWITCH) { it.r = Rectangle<float>(x + 10 + kw * 1.5f - cw * 0.5f, by + 40.0f + 4.0f + d * 0.5f - 8.0f, cw, 40); L.items.push_back(it); }
+                else oct.push_back(it);
             }
+            float x0 = x + (w - cw * (float)oct.size()) * 0.5f;
+            for (size_t i = 0; i < oct.size(); i++) { oct[i].r = Rectangle<float>(x0 + cw * (float)i, by, cw, 40); L.items.push_back(oct[i]); }
             x += w;
             continue;
         }
@@ -349,7 +351,7 @@ Layout layout(const Page &pg)
         }
         if (!st.empty()) {   /* the arpeggiator: knobs and buttons side by side above, the 16 step keys spread out below */
             const float kd = 56.0f, kcw = 96.0f;
-            float bw = 4 * cw, gw = kcw * (float)kn.size() + 40.0f + bw;
+            float bw = 5 * cw, gw = kcw * (float)kn.size() + 40.0f + bw;
             float gx = x + (w - gw) * 0.5f, gy = plate.getY() + 12.0f;
             for (size_t i = 0; i < kn.size(); i++) {
                 Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.d = kd; it.col = col;
@@ -372,8 +374,8 @@ Layout layout(const Page &pg)
                 col4++; lastg = cl.group;
             }
             /* the steps: 2 rows of 8, square keys big enough for a finger on a small screen, LENGTH beside them */
-            const float key = 74.0f, pitch = 82.0f, gap = 16.0f, lw = 96.0f;
-            float gwid = pitch * 8.0f + gap, sx = x + (w - gwid - lw - 24.0f) * 0.5f, sy = plate.getY() + 150.0f;
+            const float key = 74.0f, pitch = 82.0f, gap = 16.0f;
+            float gwid = pitch * 8.0f + gap - (pitch - key - 5.0f), sx = x + (w - gwid) * 0.5f, sy = plate.getY() + 150.0f;
             for (int i = 0; i < 16; i++) {
                 int row = i / 8, col = i % 8;
                 Item it{ Item::ISTEP, GP_ARP_STEP1 + i, i };
@@ -381,9 +383,9 @@ Layout layout(const Page &pg)
                 it.col = Colour(0xff3ddc84);
                 L.items.push_back(it);
             }
-            for (auto &cl : rest) {
+            for (auto &cl : rest) {                    /* LENGTH: at the end of the buttons' first row */
                 Item it = cl.it; it.col = col;
-                it.r = Rectangle<float>(sx + gwid + 20.0f, sy + 78.0f, lw, 40);
+                it.r = Rectangle<float>(bx + cw * 4.0f, by, cw + 12.0f, 40);
                 L.items.push_back(it);
             }
             x += w;
@@ -403,7 +405,8 @@ Layout layout(const Page &pg)
         float len = kn.empty() ? 250.0f : 170.0f;
         float fH = fd.empty() ? 0.0f : len + 46.0f, kH = rh * (float)krows, bH = bh * (float)brows.size();
         float tot = fH + kH + (bH > 0 ? bH + 10.0f : 0.0f);
-        float y = plate.getY() + std::max(8.0f, (plate.getHeight() - tot) * 0.5f);
+        float y = juce::String(s.title) == "OSCILLATOR 2" ? plate.getY() + 8.0f   /* (level with OSCILLATOR 1) */
+                                                           : plate.getY() + std::max(8.0f, (plate.getHeight() - tot) * 0.5f);
         if (!fd.empty()) {
             int n = (int)fd.size();
             float fw = (w - 20.0f) / (float)n;
