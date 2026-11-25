@@ -1,0 +1,13 @@
+{
+  "id": "aria",
+  "name": "ARIA",
+  "author": "swtdr34mz",
+  "repo": "swtdr34mz-afk/ARIA",
+  "kind": "instrument",
+  "license": "MPL-2.0",
+  "summary": "The MPC version of the ARIA VST3: an 8-voice bi-timbral analogue-modelling poly. Two oscillators with wave mix, FM and sync, a mod osc per voice, two ladder filters (series, stereo or parallel), looping envelopes, a chord memory with a chord on every key, an arp with a 16-step pattern, a low split and a diffusion delay. Panel-style touch pages.",
+  "style": "polysynth",
+  "tags": ["analog-modelling", "polyphonic", "arpeggiator", "delay"],
+  "asset_pattern": "ARIA-*-mpc-armv7.zip",
+  "screenshot": "https://raw.githubusercontent.com/swtdr34mz-afk/ARIA/v1.2.0/mpc/catalog/screenshot.png"
+}
