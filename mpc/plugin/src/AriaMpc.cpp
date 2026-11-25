@@ -9,6 +9,7 @@
 //   1..      every other parameter of the engine, in the engine's order (dsp/aria.h), ids "p<engine index>"
 //   then     INIT (a press: timbres A and B back to the INIT sound; arp, chord memory, delay, volume stay) and
 //            LEARN (a press: the chord memory's LEARN, as on the VST's panel)
+//   then     ARP STEP (shown, not set: the step the arpeggiator plays, 1..16, or 0; the ARP page lights that step)
 //
 // The chord memory's learned chord and its 8 key maps go with the project (the framework's extra state).
 // MIDI in: notes and velocity, pitch bend, channel and poly pressure, CC 1 mod wheel, CC 64 sustain, CC 120 all sound
@@ -31,7 +32,7 @@ namespace {
 /* the MPC's index of an engine parameter, and back */
 inline int mpcIndex(int p) { return p == GP_OUT_VOL ? 0 : p < GP_OUT_VOL ? p + 1 : p; }
 inline int engineIndex(int i) { return i == 0 ? GP_OUT_VOL : i <= GP_OUT_VOL ? i - 1 : i; }
-constexpr int kInit = ARIA_NPARAM, kLearn = ARIA_NPARAM + 1, kNumParams = ARIA_NPARAM + 2;
+constexpr int kInit = ARIA_NPARAM, kLearn = ARIA_NPARAM + 1, kArpStep = ARIA_NPARAM + 2, kNumParams = ARIA_NPARAM + 3;
 
 class AriaMpc : public mpc::Plugin
 {
@@ -57,6 +58,11 @@ public:
         }
         addParam(mpc::boolParam("init", "Init", false));
         addParam(mpc::boolParam("learn", "Chord Learn", false));
+        {
+            std::vector<std::string> st{ "-" };
+            for (int k = 1; k <= 16; k++) st.push_back(std::to_string(k));
+            addParam(mpc::choiceParam("arpstep", "Arp Step", st, 0));
+        }
 
         /* the factory sounds as the MPC's programs (QUALITY, TEMPO and VOLUME as they start) */
         for (int k = 0; k < ARIA_NPRESETS; k++) {
@@ -127,6 +133,10 @@ public:
             midi(e);
         }
         if (n > done) render(L, R, done, n - done);
+        /* the step the arpeggiator plays now, for the ARP page (told only when it moves) */
+        int s = aria_arp_step(engine);
+        float st = s < 0 ? 0.0f : (float)(s + 1);
+        if (get(kArpStep) != st) { busy = true; set(kArpStep, st); busy = false; notifyHostParameterChanged(kArpStep); }
     }
 
     bool formatValue(int index, float plain, std::string &out) override

@@ -196,9 +196,15 @@ void drawButton(juce::Graphics &g, Rectangle<float> cell, Colour ac, bool on, co
     g.drawFittedText(label, (int)cell.getX(), (int)b.getBottom() + 4, (int)cell.getWidth(), 13, juce::Justification::centredTop, 1, 0.7f);
 }
 
+int PLAYING = -1;                        /* the step the arpeggiator plays, lit orange (the MPC's ARP STEP) */
 void drawStep(juce::Graphics &g, Rectangle<float> r, int i, Colour ac)
 {
     bool on = V[GP_ARP_STEP1 + i] > 0.5f;
+    if (i == PLAYING) {
+        const Colour o(0xffff7a1a);
+        Rectangle<float> k(r.getX() + 2.5f, r.getY() + 14, r.getWidth() - 5.0f, r.getHeight() - 16.0f);
+        for (int j = 5; j >= 1; j--) { g.setColour(o.withAlpha(0.12f + 0.07f * (float)(5 - j))); g.fillRoundedRectangle(k.expanded((float)j * 0.7f + 0.5f), 3.5f + (float)j * 0.6f); }
+    }
     Rectangle<float> k(r.getX() + 2.5f, r.getY() + 14, r.getWidth() - 5.0f, r.getHeight() - 16.0f);
     g.setColour(Colour(0xff050506)); g.fillRoundedRectangle(k.expanded(1.5f), 4.0f);
     juce::ColourGradient body(on ? Colour(0xfff4f1ea) : Colour(0xff9b988f), 0, k.getY(), on ? Colour(0xffd6d2c8) : Colour(0xff6e6b64), 0, k.getBottom(), false);
@@ -206,7 +212,7 @@ void drawStep(juce::Graphics &g, Rectangle<float> r, int i, Colour ac)
     g.setColour(Colour(0xff3a3a3a)); g.setFont(aria_ui::Fonts::get().label(10.0f));
     g.drawText(juce::String(i + 1), k.withTrimmedTop(k.getHeight() - 22.0f), juce::Justification::centred);
     Rectangle<float> led(k.getCentreX() - 7, r.getY() + 3, 14, 5);
-    g.setColour(on ? ac : ac.withMultipliedBrightness(0.25f)); g.fillRoundedRectangle(led, 2.0f);
+    g.setColour(i == PLAYING ? Colour(0xffff7a1a) : on ? ac : ac.withMultipliedBrightness(0.25f)); g.fillRoundedRectangle(led, 2.0f);
 }
 
 /* ------------------------------------------------------------------------------------ the layout --- */
@@ -638,6 +644,39 @@ juce::var cutPage(const Page &pg, const juce::File &dir, const juce::Image &tag)
         }
         val(p) = keep;
         list.add(juce::var(o));
+    }
+    /* the arpeggiator's lamps: for each step, an orange frame round its key and its LED orange, shown while the MPC's
+     * ARP STEP (the plugin's, after INIT and LEARN) is that step; four strips outside the key, so a tap still reaches it */
+    {
+        juce::Array<juce::var> rows;
+        for (auto &it : L.items) {
+            if (it.k != Item::ISTEP) continue;
+            Rectangle<float> r = it.r, k(r.getX() + 2.5f, r.getY() + 14, r.getWidth() - 5.0f, r.getHeight() - 16.0f);
+            const float e = 4.0f;
+            Rectangle<float> strips[4] = { { k.getX() - e, r.getY(), k.getWidth() + 2 * e, k.getY() - r.getY() },
+                                           { k.getX() - e, k.getBottom(), k.getWidth() + 2 * e, e },
+                                           { k.getX() - e, k.getY(), e, k.getHeight() },
+                                           { k.getRight(), k.getY(), e, k.getHeight() } };
+            PLAYING = it.choice;
+            for (int sIdx = 0; sIdx < 4; sIdx++) {
+                auto RS = toMpc(strips[sIdx]);
+                auto *ro = new juce::DynamicObject();
+                ro->setProperty("rect", rectVar(RS));
+                ro->setProperty("a", it.choice + 1);
+                ro->setProperty("image", save(piece(bg, it, RS), "lamp_" + juce::String(it.choice + 1) + "_" + juce::String(sIdx)));
+                rows.add(juce::var(ro));
+            }
+            PLAYING = -1;
+        }
+        if (!rows.isEmpty()) {
+            auto *o = new juce::DynamicObject();
+            o->setProperty("mpc", ARIA_NPARAM + 2);
+            o->setProperty("names", juce::Array<juce::var>());
+            o->setProperty("kind", "lamps");
+            o->setProperty("steps", 17);
+            o->setProperty("rows", rows);
+            list.add(juce::var(o));
+        }
     }
     auto *po = new juce::DynamicObject();
     po->setProperty("name", juce::String(pg.name));

@@ -11,6 +11,7 @@ this places each picture where it was cut from, bound to the MPC plugin's parame
   knobs, faders  film strips (a frame a value), dragged; a double tap opens the MPC's editor (its list for a choice)
   switches       a picture a value, a tap the other (the arp's step keys too)
   choices        up to four: a button each, the one chosen lit; more: one button showing the value, a tap the next
+  lamps          pictures shown while a parameter has a value: the ARP page's orange frame round the step playing
 
 The pages sit on the function keys as the renderer says (key, and sub: pressing the key again): OSC, MIXER,
 FILTER / VOICES, ENV, LFO / FX, DIV / ARP. On each the 16 Q-Links turn up to four groups, the top row of Q-Links the
@@ -145,6 +146,11 @@ def main(argv):
                              ("numButtonsInGroup", c["steps"]), ("handleName", h), ("gestureBehaviour", "Instant"))
                     kids.append(entry("p%d" % n, "Button", data, bounds(c["rect"], "No", hide, "Hide")))
                 boxes.append((n, c["rect"]))
+            elif c["kind"] == "lamps":   # shown only: a picture while the parameter is its value (the arp's playing step)
+                for row in c["rows"]:
+                    hide = ["IndexedEnabling/%d/%d/%s" % (row["a"], c["steps"], h)]
+                    kids.append(entry("lamp p%d %d" % (n, row["a"]), "Image", image_data(use(row["image"])),
+                                      bounds(row["rect"], "No", hide, "Hide")))
             else:                        # a choice's buttons: radio buttons, one a choice
                 if len(c["rows"]) != c["steps"]:
                     sys.exit("p%d: %d buttons for %d values" % (n, len(c["rows"]), c["steps"]))

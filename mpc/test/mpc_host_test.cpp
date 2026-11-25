@@ -326,7 +326,7 @@ int main(int argc, char **argv)
     std::vector<float> before(p.e->numParams);
     for (int i = 0; i < p.e->numParams; i++)
         before[i] = p.e->getParameter(p.e, i);
-    for (int i = 0; i < p.e->numParams - 2; i++)
+    for (int i = 0; i < p.e->numParams - 3; i++)   /* (not INIT, LEARN, ARP STEP) */
         p.e->setParameter(p.e, i, (float)((i * 37) % 100) / 99.0f);
     p.d(effSetChunk, 0, (VstIntPtr)saved.size(), saved.data());
     bool same = sz > 9000;
@@ -353,7 +353,7 @@ int main(int argc, char **argv)
         e.push_back({44100 * 8, 0xB0, 64, 0});
         p.d(effSetProgram, 0, 0);
         for (int q = 0; q < 200; q++)
-            p.e->setParameter(p.e, 1 + (int)(rnd() % (p.e->numParams - 3)), (float)(rnd() % 1000) / 999.0f);
+            p.e->setParameter(p.e, 1 + (int)(rnd() % (p.e->numParams - 4)), (float)(rnd() % 1000) / 999.0f);
         auto st = render(p, 44100 * 9, e, {256, 33, 512});
         check(finite(st) && peak(st) < 4.0, "a storm of parameters and MIDI: finite and bounded");
         /* the sound tame again (INIT), every note let go: silent in the end */
@@ -450,6 +450,27 @@ int main(int argc, char **argv)
                                        {44100 * 3, 0x80, 64, 0}, {44100 * 3, 0x80, 67, 0}}, {256});
         p.e->setParameter(p.e, arpOn, 0.0f);
         check(rms(s, 4410, 44100 * 3) > 1e-3 && rms(s, 44100 * 5, 44100 * 6) < 1e-3, "the arp plays on the tempo and stops");
+    }
+
+    /* ARP STEP: while the arp plays, the step it plays (1..16, moving, the MPC told); 0 when it stops */
+    {
+        int arpOn = param(p, "Arp"), stp = param(p, "Arp Step");
+        p.d(effSetProgram, 0, 0);
+        p.e->setParameter(p.e, arpOn, 1.0f);
+        automated = 0;
+        std::vector<int> seen;
+        render(p, 256, {{0, 0x90, 60, 100}, {0, 0x90, 64, 100}}, {256});
+        for (int k = 0; k < 40; k++) {
+            render(p, 2205, {}, {256});
+            seen.push_back((int)std::lround(p.e->getParameter(p.e, stp) * 16.0f));
+        }
+        render(p, 256, {{0, 0x80, 60, 0}, {0, 0x80, 64, 0}}, {256});
+        p.e->setParameter(p.e, arpOn, 0.0f);
+        render(p, 44100, {}, {256});
+        int after = (int)std::lround(p.e->getParameter(p.e, stp) * 16.0f), lo = 99, hi = 0, moves = 0;
+        for (size_t k = 0; k < seen.size(); k++) { lo = std::min(lo, seen[k]); hi = std::max(hi, seen[k]); if (k && seen[k] != seen[k - 1]) moves++; }
+        check(lo >= 1 && hi <= 16 && moves >= 10 && after == 0 && automated >= 10,
+              "ARP STEP: the step played, 1..16, moving (" + std::to_string(moves) + " moves), 0 when the arp stops");
     }
 
     /* CPU: 8 voices of a pad, ECO, HIGH and ULTRA (this computer; the MPC's ARM is slower) */
