@@ -110,10 +110,11 @@ std::vector<Page> pages()
           { { GP_LS_SPLIT, GP_LS_POINT, GP_LS_BALANCE, -1 }, { GP_CH_MAP, T(GLIDE), T(BEND), -1 } } },
         { "ARP", 5, 1, {
             { "ARPEGGIATOR", 3.25f, 3, { { GP_ARP_GATE, KNOB, "GATE" }, { GP_ARP_SWING, KNOB, "SWING" }, { GP_TEMPO, KNOB, "TEMPO" },
+                                        { GP_ARP_LEN, KNOB, "LENGTH" },
                                         { GP_ARP_ON, SWITCH, "ON" }, { GP_ARP_LATCH, SWITCH, "LATCH" }, { GP_ARP_DIV, CHOICE, "" },
                                         { GP_ARP_MODE, CHOICE, "" }, { GP_ARP_OCT, CHOICE, "" },
-                                        { GP_ARP_STEP1, STEPS, "" }, { GP_ARP_LEN, CHOICE, "LENGTH" } } } },   /* (and its pattern) */
-          { { GP_ARP_GATE, GP_ARP_SWING, GP_TEMPO, -1 } } },
+                                        { GP_ARP_STEP1, STEPS, "" } } } },   /* (and its pattern) */
+          { { GP_ARP_GATE, GP_ARP_SWING, GP_TEMPO, GP_ARP_LEN } } },
     };
 }
 
@@ -351,7 +352,7 @@ Layout layout(const Page &pg)
         }
         if (!st.empty()) {   /* the arpeggiator: knobs and buttons side by side above, the 16 step keys spread out below */
             const float kd = 56.0f, kcw = 96.0f;
-            float bw = 5 * cw, gw = kcw * (float)kn.size() + 40.0f + bw;
+            float bw = 4 * cw, gw = kcw * (float)kn.size() + 40.0f + bw;
             float gx = x + (w - gw) * 0.5f, gy = plate.getY() + 12.0f;
             for (size_t i = 0; i < kn.size(); i++) {
                 Item it{ Item::IKNOB, kn[i]->p }; it.klabel = kn[i]->label; it.d = kd; it.col = col;
