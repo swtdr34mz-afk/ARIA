@@ -33,7 +33,8 @@ Preferences → Enhancements (Beta) → Enable Enhancements and External Plugin 
 - **Regler:** ziehen (Shift: fein), Doppelklick: Grundwert, Mausrad.
 - **EDIT A / EDIT B** (VOICES): welches Timbre das Panel zeigt. **SINGLE / SPLIT / STACK**: wie die Tasten die Timbres
   spielen; **SPLIT** ist der Splitpunkt, **A** wie viele der 8 Stimmen Timbre A bekommt.
-- **Taster mit Wert** (Oktave, Wellenform, LFO-Ziel …): klicken weiter, Rechtsklick zurück.
+- **Taster mit Wert** (Oktave, Wellenform, LFO-Ziel …): klicken weiter, Shift-Klick zurück.
+- **Rechtsklick** auf einen Regler, Taster, Step oder eine LED-Auswahl: das Menü der DAW für diesen Parameter (MIDI Learn, Automation …); der Wert bleibt, wie er ist.
 - **CHORD MEMORY:** ON schaltet sie ein, KEY den Modus „ein Akkord pro Taste“. LEARN drücken, Akkord spielen, LEARN
   noch einmal: ohne KEY ist das der Akkord (verschoben auf jede Taste), mit KEY drückst du danach die Taste, auf der er
   liegen soll. Die Punkte 1–8 sind die Key Maps; 1–4 kommen fertig mit: C-Dur-Septakkorde, C-Dur-Dreiklänge,
