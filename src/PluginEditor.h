@@ -41,6 +41,10 @@ public:
     bool changed();                          /* its value moved since it was last drawn */
     juce::String label;
 protected:
+    /* a right-click: the host's own menu for this parameter (MIDI learn, automation, ...); true when it was one, and
+     * then the value stays as it is (the drag and the release that follow are ignored too) */
+    bool hostMenu(const juce::MouseEvent &e);
+    bool menuClick = false;
     Panel &panel;
     int rel;
     bool isTimbre;

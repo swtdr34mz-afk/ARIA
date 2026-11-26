@@ -52,6 +52,16 @@ void Control::setValue(float v)
     p->setValueNotifyingHost(p->convertTo0to1(juce::jlimit(0.0f, aria_param_max(index()), v)));
     panel.touched(index());
 }
+bool Control::hostMenu(const juce::MouseEvent &e)
+{
+    menuClick = e.mods.isPopupMenu();
+    if (!menuClick) return false;
+    if (auto *ed = findParentComponentOfClass<juce::AudioProcessorEditor>())
+        if (auto *host = ed->getHostContext())
+            if (auto menu = host->getContextMenuForParameter(panel.proc.param(index())))
+                menu->showNativeMenu(ed->getMouseXYRelative());
+    return true;
+}
 void Control::begin() { panel.proc.param(index())->beginChangeGesture(); panel.touched(index()); }
 void Control::end() { panel.proc.param(index())->endChangeGesture(); }
 bool Control::changed()
@@ -82,17 +92,19 @@ void Knob::paint(juce::Graphics &g)
     g.fillEllipse(cx + sx * (rc - 3.2f) - 1.2f, cy + sy * (rc - 3.2f) - 1.2f, 2.4f, 2.4f);
 }
 
-void Knob::mouseDown(const juce::MouseEvent &) { startV = value(); begin(); }
+void Knob::mouseDown(const juce::MouseEvent &e) { if (hostMenu(e)) return; startV = value(); begin(); }
 void Knob::mouseDrag(const juce::MouseEvent &e)
 {
+    if (menuClick || e.mods.isPopupMenu()) return;
     float range = aria_param_max(index());
     float sens = e.mods.isShiftDown() ? 900.0f : 220.0f;
     if (aria_param_info(index())->kind == PK_CHOICE) sens = 40.0f * range;   /* (40 px a step) */
     setValue(startV - (float)e.getDistanceFromDragStartY() / sens * range);
 }
-void Knob::mouseUp(const juce::MouseEvent &) { end(); }
-void Knob::mouseDoubleClick(const juce::MouseEvent &)
+void Knob::mouseUp(const juce::MouseEvent &) { if (!menuClick) end(); menuClick = false; }
+void Knob::mouseDoubleClick(const juce::MouseEvent &e)
 {
+    if (e.mods.isPopupMenu()) return;
     auto *p = panel.proc.param(index());
     begin(); p->setValueNotifyingHost(p->getDefaultValue()); end();
 }
@@ -130,6 +142,7 @@ void LedList::paint(juce::Graphics &g)
 }
 void LedList::mouseDown(const juce::MouseEvent &e)
 {
+    if (hostMenu(e)) return;
     int i = juce::jlimit(0, (int)aria_param_info(index())->count - 1, (e.y - 3) / LINE);
     begin(); setValue((float)i); end();
 }
@@ -145,15 +158,17 @@ void Fader::paint(juce::Graphics &g)
     g.drawImage(img, juce::Rectangle<float>(cx - 16.0f, y - 4.0f, 32.0f, 26.0f), juce::RectanglePlacement::stretchToFit);
 }
 
-void Fader::mouseDown(const juce::MouseEvent &) { startV = value(); begin(); }
+void Fader::mouseDown(const juce::MouseEvent &e) { if (hostMenu(e)) return; startV = value(); begin(); }
 void Fader::mouseDrag(const juce::MouseEvent &e)
 {
+    if (menuClick || e.mods.isPopupMenu()) return;
     float sens = e.mods.isShiftDown() ? 400.0f : 96.0f;
     setValue(startV - (float)e.getDistanceFromDragStartY() / sens);
 }
-void Fader::mouseUp(const juce::MouseEvent &) { end(); }
-void Fader::mouseDoubleClick(const juce::MouseEvent &)
+void Fader::mouseUp(const juce::MouseEvent &) { if (!menuClick) end(); menuClick = false; }
+void Fader::mouseDoubleClick(const juce::MouseEvent &e)
 {
+    if (e.mods.isPopupMenu()) return;
     auto *p = panel.proc.param(index());
     begin(); p->setValueNotifyingHost(p->getDefaultValue()); end();
 }
@@ -219,12 +234,14 @@ void Button::paint(juce::Graphics &g)
 
 void Button::mouseDown(const juce::MouseEvent &e)
 {
+    if (kind != ACTION && hostMenu(e)) return;   /* (an action, INIT or LEARN, is no parameter: a right-click does nothing) */
+    if (kind == ACTION && e.mods.isPopupMenu()) return;
     switch (kind) {
     case SWITCH: begin(); setValue(value() > 0.5f ? 0.0f : 1.0f); end(); break;
     case RADIO: begin(); setValue((float)radioValue); end(); break;
     case CYCLE: {
         int n = (int)aria_param_max(index()) + 1, v = (int)std::lround(value());
-        v = e.mods.isRightButtonDown() || e.mods.isShiftDown() ? (v + n - 1) % n : (v + 1) % n;
+        v = e.mods.isShiftDown() ? (v + n - 1) % n : (v + 1) % n;   /* (shift-click: back) */
         begin(); setValue((float)v); end();
         break;
     }
@@ -268,8 +285,9 @@ void StepKey::paint(juce::Graphics &g)
     g.drawText(label, k.withTrimmedTop(k.getHeight() * 0.45f), juce::Justification::centred);
 }
 
-void StepKey::mouseDown(const juce::MouseEvent &)
+void StepKey::mouseDown(const juce::MouseEvent &e)
 {
+    if (hostMenu(e)) return;
     begin(); setValue(value() > 0.5f ? 0.0f : 1.0f); end();
     repaint();
 }
