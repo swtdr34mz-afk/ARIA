@@ -38,12 +38,16 @@ else()
     if(APPLE)
         list(APPEND FORMATS AU)
     endif()
+    if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        list(APPEND FORMATS LV2)
+    endif()
 endif()
 
 juce_add_plugin(Aria
     PRODUCT_NAME "ARIA"
     COMPANY_NAME "swtdr34mz"
     BUNDLE_ID "com.swtdr34mz.aria"
+    LV2URI "https://github.com/swtdr34mz-afk/ARIA"
     PLUGIN_MANUFACTURER_CODE Swtd
     PLUGIN_CODE Aria
     FORMATS ${FORMATS}
