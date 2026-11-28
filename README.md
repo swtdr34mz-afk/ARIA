@@ -28,6 +28,8 @@ Preferences → Enhancements (Beta) → Enable Enhancements and External Plugin 
 4. `ARIA.exe` ist die Standalone-App. Audio- und MIDI-Gerät stellt man unter *Options* ein. Windows SmartScreen kann
    beim ersten Start warnen (die App ist nicht signiert): *Weitere Informationen → Trotzdem ausführen*.
 
+**Linux (Bitwig, Reaper, Ardour, ...):** Die `.tar.gz` entpacken. `ARIA.vst3` nach `~/.vst3/` kopieren, `ARIA.lv2` nach `~/.lv2/`. Die App `ARIA` startet auch ohne DAW. 64 Bit, gebaut auf Ubuntu 22.04.
+
 ## Bedienung
 
 - **Regler:** ziehen (Shift: fein), Doppelklick: Grundwert, Mausrad.
