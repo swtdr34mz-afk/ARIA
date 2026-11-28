@@ -204,6 +204,7 @@ int main(void)
         float b1[512], b2[512];
         aria_panic(a); aria_defaults(a);
         aria_param(a, GP_LS_SPLIT, 1);                       /* -1 OCT below C4 */
+        aria_param(a, GP_LS_POINT, 36.0f / 72.0f);           /* (POINT C4; its default is C3) */
         aria_note_on(a, 48, 48, 1);
         CHECK(aria_held_notes(a, hn) == 1 && hn[0] == 36, "LOW SPLIT -1 OCT: C3 below the point plays C2");
         aria_note_on(a, 72, 72, 1);
