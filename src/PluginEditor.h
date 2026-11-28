@@ -207,6 +207,7 @@ class AriaEditor : public juce::AudioProcessorEditor
 public:
     explicit AriaEditor(AriaProcessor &);
     void resized() override;
+    bool sized = false;                      /* (resizes during the constructor keep nothing) */
     void paint(juce::Graphics &g) override { g.fillAll(juce::Colour(0xff0a0a0b)); }
 private:
     AriaProcessor &proc;

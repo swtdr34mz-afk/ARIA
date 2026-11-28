@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 swtdr34mz (ARIA) */
 #include "PluginEditor.h"
+#include "PanelDialog.h"
+#include "WindowSize.h"
 #include "BinaryData.h"
 #include "Art.h"
 #include <cmath>
@@ -657,9 +659,10 @@ void Panel::build()
               w->addTextEditor("name", proc.getProgramName(proc.getCurrentProgram()));
               w->addButton("SAVE", 1, juce::KeyPress(juce::KeyPress::returnKey));
               w->addButton("CANCEL", 0, juce::KeyPress(juce::KeyPress::escapeKey));
+              pdlg::showInside(*this, w);
               w->enterModalState(true, juce::ModalCallbackFunction::create([this, w](int r) {
                   if (r == 1 && proc.savePreset(w->getTextEditorContents("name")) < 0)
-                      juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::WarningIcon, "SAVE PRESET", "Could not save it.");
+                      pdlg::message(*this, "SAVE PRESET", "Could not save it.");
                   lastTouched = -1;
               }), true);
           };
@@ -870,10 +873,15 @@ void Panel::timerCallback()
 AriaEditor::AriaEditor(AriaProcessor &p) : AudioProcessorEditor(&p), proc(p), panel(p)
 {
     addAndMakeVisible(panel);
+    /* the size it was left at, read before the limits below resize the empty window; a new instance (still at the
+     * default size): the size last used anywhere */
+    const float kept = proc.uiScale.load();
     setResizable(true, true);
     getConstrainer()->setFixedAspectRatio((double)Panel::W / Panel::H);
     setResizeLimits(Panel::W / 2, Panel::H / 2, Panel::W * 3 / 2, Panel::H * 3 / 2);
-    float s = proc.uiScale.load();
+    float s = std::abs(kept - 0.8f) < 1e-4f ? (float)winsize::last("ARIA", 0.8) : kept;
+    s = juce::jlimit(0.5f, 1.5f, s);
+    sized = true;
     setSize((int)std::lround(Panel::W * s), (int)std::lround(Panel::H * s));
 }
 
@@ -881,5 +889,8 @@ void AriaEditor::resized()
 {
     float s = (float)getWidth() / (float)Panel::W;
     panel.setTransform(juce::AffineTransform::scale(s));
+    if (!sized)
+        return;
     proc.uiScale.store(s);
+    winsize::remember("ARIA", (double)s);
 }

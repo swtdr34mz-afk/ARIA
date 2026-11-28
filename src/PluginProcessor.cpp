@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 swtdr34mz (ARIA) */
 #include "PluginProcessor.h"
+#include "PanelDialog.h"
 #include "PluginEditor.h"
 #include <cmath>
 
@@ -195,7 +196,7 @@ const juce::String AriaProcessor::getProgramName(int index)
 
 juce::File AriaProcessor::presetFolder()
 {
-    return juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("ARIA").getChildFile("Presets");
+    return pdlg::docsOrAppData().getChildFile("ARIA").getChildFile("Presets");
 }
 
 void AriaProcessor::loadUserPresets()
