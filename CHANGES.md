@@ -4,6 +4,9 @@ The newest first. To release a new version: raise the number in VERSION and put 
 "## <the new number>". After the merge into main the release is made by itself (auto-release.yml), the
 downloads are built into it, and the website and the Discord post follow.
 
+## 1.3.6
+LOW SPLIT: POINT starts at C3 (before C4) - in a new instance, after INIT and in the factory sounds. Your saved projects and sounds keep their own split point.
+
 ## 1.3.5
 New: ARIA for Linux - VST3, LV2 and a standalone app (64-bit, built on Ubuntu 22.04). Checked with pluginval like the Windows version.
 
